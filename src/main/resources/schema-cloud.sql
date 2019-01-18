@@ -1,1 +1,1 @@
-CREATE SCHEMA casesvc;
+CREATE SCHEMA rhsvc;

@@ -14,9 +14,6 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import uk.gov.ons.ctp.integration.rhsvc.endpoint.CaseDetailsEndpoint;
 
-// import springfox.documentation.swagger2.annotations.EnableSwagger2;
-// import uk.gov.ons.ctp.response.casesvc.endpoint.CaseEndpoint;
-
 /** Created by stevee on 23/06/2017. */
 // @CoverageIgnore
 // @EnableSwagger2
@@ -53,7 +50,7 @@ public class SwaggerConfig {
 
     return new Docket(DocumentationType.SWAGGER_2)
         .select()
-        .apis(RequestHandlerSelectors.basePackage("uk.gov.ons.ctp.response.casesvc.endpoint"))
+        .apis(RequestHandlerSelectors.basePackage("uk.gov.ons.ctp.integration.rhsvc.endpoint"))
         .paths(pathSelector::test)
         .build()
         .groupName(swaggerSettings.getGroupName())

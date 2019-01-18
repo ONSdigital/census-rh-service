@@ -13,23 +13,7 @@ import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseDetailsService;
 
-// import java.util.stream.Collectors;
-// import java.util.Objects;
-// import org.springframework.data.domain.Example;
-// import org.springframework.data.domain.ExampleMatcher;
-// import uk.gov.ons.ctp.integration.casesvc.representation.CaseDetailsDTO;
-// import uk.gov.ons.ctp.integration.casesvc.representation.CaseEventCreationRequestDTO;
-// import uk.gov.ons.ctp.integration.casesvc.representation.CaseEventDTO;
-// import uk.gov.ons.ctp.integration.casesvc.representation.CaseGroupDTO;
-// import uk.gov.ons.ctp.integration.casesvc.representation.CategoryDTO;
-// import uk.gov.ons.ctp.integration.casesvc.representation.CreatedCaseEventDTO;
-// import uk.gov.ons.ctp.integration.rhsvc.domain.model.Case;
-// import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
-// import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseGroup;
-// import uk.gov.ons.ctp.integration.rhsvc.domain.model.Category;
-// import uk.gov.ons.ctp.integration.rhsvc.domain.repository.CaseRepository;
-
-/** The REST endpoint controller for CaseSvc Cases */
+/** The REST endpoint controller for RHSvc Case Details */
 @RestController
 @RequestMapping(value = "/cases", produces = "application/json")
 public final class CaseDetailsEndpoint implements CTPEndpoint {
@@ -67,33 +51,4 @@ public final class CaseDetailsEndpoint implements CTPEndpoint {
 
     return null;
   }
-
-  //  /**
-  //   * Creates a new event for the Access Code Authorisation Attempt
-  //   *
-  //   * @param caze Case Object to be used in CaseDTO
-  //   * @param caseevents If caseevents exist
-  //   * @param iac If IAC exists
-  //   * @return CaseDetailsDTO caseDetails object
-  //   */
-  //  private CaseDetailsDTO buildDetailedCaseDTO(Case caze, boolean caseevents, boolean iac) {
-  //    CaseDetailsDTO caseDetailsDTO = mapperFacade.map(caze, CaseDetailsDTO.class);
-  //
-  //    CaseGroup parentCaseGroup =
-  // caseGroupService.findCaseGroupByCaseGroupPK(caze.getCaseGroupFK());
-  //    caseDetailsDTO.setCaseGroup(mapperFacade.map(parentCaseGroup, CaseGroupDTO.class));
-  //
-  //    if (caseevents) {
-  //      List<CaseEvent> caseEvents = caseDetailsService.findCaseEventsByCaseFK(caze.getCasePK());
-  //      List<CaseEventDTO> caseEventDTOs = mapperFacade.mapAsList(caseEvents, CaseEventDTO.class);
-  //      caseDetailsDTO.setCaseEvents(caseEventDTOs);
-  //    }
-  //
-  //    if (!iac) {
-  //      caseDetailsDTO.setIac(null);
-  //    }
-  //
-  //    return caseDetailsDTO;
-  //  }
-
 }

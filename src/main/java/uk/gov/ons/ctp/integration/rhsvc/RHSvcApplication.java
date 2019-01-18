@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 
-/** The 'main' entry point for the CaseSvc SpringBoot Application. */
+/** The 'main' entry point for the RHSvc SpringBoot Application. */
 // @CoverageIgnore
 // @EnableTransactionManagement
 // @IntegrationComponentScan
@@ -25,9 +25,6 @@ import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 // @ImportResource("springintegration/main.xml")
 @SpringBootApplication
 public class RHSvcApplication {
-
-  //  public static final String CASE_DISTRIBUTION_LIST = "casesvc.case.distribution";
-  //  public static final String REPORT_EXECUTION_LOCK = "casesvc.report.execution";
 
   private AppConfig appConfig;
 
