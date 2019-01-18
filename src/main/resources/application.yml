@@ -1,0 +1,156 @@
+info:
+  name: ${project.artifactId}
+  version: ${project.version}
+  origin: ${scm.url}
+  commit: ${buildNumber}
+  branch: ${scmBranch}
+  built: ${timestamp}
+
+# logging config here as a reminder as to how to override logback from cmd line
+# ie -Dlogging.level.org.springframework=DEBUG
+logging:
+  level:
+    uk.gov.ons.ctp: DEBUG
+    org.springframework: ERROR
+  profile: DEV
+  useJson: false
+
+liquibase:
+  user: postgres
+  password: postgres
+  default-schema: casesvc
+  url: jdbc:postgresql://localhost:6432/postgres
+  changeLog: classpath:/database/changelog-master.yml
+
+security:
+  basic:
+    enabled: true
+    realm: sdc
+  user:
+    name: admin
+    password: secret
+
+management:
+  security:
+    roles: SUPERUSER
+    enabled: true
+  health:
+    rabbit:
+      enabled: false
+
+server:
+  port: 8171
+  servlet-path: /
+
+endpoints:
+  enabled: true
+  info:
+    enabled: true
+    sensitive: false
+
+spring:
+  output:
+    ansi:
+      enabled: never
+  application:
+    name: ONS CaseDetailsService
+  datasource:
+    url: jdbc:postgresql://localhost:6432/postgres
+    username: postgres
+    password: postgres
+    driverClassName: org.postgresql.Driver
+    continue-on-error: true
+    tomcat:
+      initial-size: 5
+      max-active: 10
+      max-idle: 5
+      min-idle: 3
+  zipkin:
+    baseUrl: http://localhost:9411
+    enabled: false
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL94Dialect
+    show-sql: false
+    properties:
+      hibernate:
+        ddl-auto: none
+        default_schema: casesvc
+
+data-grid:
+  address: localhost:7379
+  list-time-to-live-seconds: 60
+  list-time-to-wait-seconds: 60
+  report-lock-time-to-live-seconds: 300
+
+internet-access-code-svc:
+  iac-get-path: /iacs/{iac}
+  iac-post-path: /iacs
+  iac-put-path: /iacs/{iac}
+  connection-config:
+    scheme: http
+    host: localhost
+    port: 8121
+    username: admin
+    password: secret
+
+action-svc:
+  actions-path: /actions
+  action-plans-path: /actionplans
+  connection-config:
+    scheme: http
+    host: localhost
+    port: 8151
+    username: admin
+    password: secret
+    
+collection-exercise-svc:
+  collection-exercise-path: /collectionexercises/{exerciseId}
+  collection-exercise-survey-path: /collectionexercises/survey/{surveyId}
+  collection-exercises-path: /collectionexercises
+  connection-config:
+    scheme: http
+    host: localhost
+    port: 8145
+    username: admin
+    password: secret
+
+case-distribution:
+  retrieval-max: 50
+  delay-milli-seconds: 500
+
+redelivery-policy:
+  maxRedeliveries: 10
+  initialRedeliveryDelay: 1000
+  redeliveryDelay: 1000
+
+rabbitmq:
+  username: guest
+  password: guest
+  host: localhost
+  port: 6672
+  virtualhost: /
+
+messaging:
+  backoffInitial: 5000
+  backoffMultiplier: 3
+  backoffMax: 45000
+  consumingThreads: 1
+  pubMaxAttempts: 3
+  conMaxAttempts: 3
+  prefetchCount: 10
+  txSize: 1
+
+report-settings:
+  cron-expression: "0 * * * * *"
+
+swagger-settings:
+  swagger-ui-active: true
+  group-name: caseservice-api
+  title: Case Service API
+  description: API for ${project.artifactId}
+  version: ${project.version}
+
+retries:
+  maxAttempts: 3
+  backoff: 5000
