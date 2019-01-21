@@ -5,7 +5,6 @@ import com.godaddy.logging.LoggerFactory;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,16 +38,24 @@ public final class CaseDetailsEndpoint implements CTPEndpoint {
   }
 
   /**
-   * the GET endpoint to find a Case by UUID
+   * the GET endpoint to get Case Details
    *
-   * @return the case found
+   * @return the case details found
    * @throws CTPException something went wrong
    */
   @RequestMapping(value = "/getCaseDetails", method = RequestMethod.GET)
-  public ResponseEntity getCaseDetails() {
+  public String getCaseDetails() {
 
-    // return ResponseEntity.ok(buildDetailedCaseDTO(caseObj, caseevents, iac));
+    String helloTeam = "Hello Tiger Nation!";
 
-    return null;
+    return helloTeam;
   }
+
+  //  @RequestMapping(value = "/getCaseDetails", method = RequestMethod.GET)
+  //  public ResponseEntity getCaseDetails() {
+  //
+  //    // return ResponseEntity.ok(buildDetailedCaseDTO(caseObj, caseevents, iac));
+  //
+  //    return null;
+  //  }
 }
