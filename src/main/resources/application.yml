@@ -15,20 +15,13 @@ logging:
   profile: DEV
   useJson: false
 
-liquibase:
-  user: postgres
-  password: postgres
-  default-schema: casesvc
-  url: jdbc:postgresql://localhost:6432/postgres
-  changeLog: classpath:/database/changelog-master.yml
-
-security:
-  basic:
-    enabled: true
-    realm: sdc
-  user:
-    name: admin
-    password: secret
+  #security:
+  # basic:
+  #   enabled: false
+  #   realm: sdc
+  # user:
+  #   name: admin
+  #   password: secret
 
 management:
   security:
@@ -49,17 +42,21 @@ endpoints:
     sensitive: false
 
 spring:
+  security:
+    user:
+      name: admin
+      password: secret
   output:
     ansi:
       enabled: never
   application:
-    name: ONS CaseDetailsService
-  datasource:
-    url: jdbc:postgresql://localhost:6432/postgres
-    username: postgres
-    password: postgres
-    driverClassName: org.postgresql.Driver
-    continue-on-error: true
+    name: ONS RespondentHomeService
+    #  datasource:
+    # url: jdbc:postgresql://localhost:6432/postgres
+    # username: postgres
+    # password: postgres
+    # driverClassName: org.postgresql.Driver
+    # continue-on-error: true
     tomcat:
       initial-size: 5
       max-active: 10
@@ -69,55 +66,11 @@ spring:
     baseUrl: http://localhost:9411
     enabled: false
 
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQL94Dialect
-    show-sql: false
-    properties:
-      hibernate:
-        ddl-auto: none
-        default_schema: casesvc
-
-data-grid:
-  address: localhost:7379
-  list-time-to-live-seconds: 60
-  list-time-to-wait-seconds: 60
-  report-lock-time-to-live-seconds: 300
-
-internet-access-code-svc:
-  iac-get-path: /iacs/{iac}
-  iac-post-path: /iacs
-  iac-put-path: /iacs/{iac}
-  connection-config:
-    scheme: http
-    host: localhost
-    port: 8121
-    username: admin
-    password: secret
-
-action-svc:
-  actions-path: /actions
-  action-plans-path: /actionplans
-  connection-config:
-    scheme: http
-    host: localhost
-    port: 8151
-    username: admin
-    password: secret
-    
-collection-exercise-svc:
-  collection-exercise-path: /collectionexercises/{exerciseId}
-  collection-exercise-survey-path: /collectionexercises/survey/{surveyId}
-  collection-exercises-path: /collectionexercises
-  connection-config:
-    scheme: http
-    host: localhost
-    port: 8145
-    username: admin
-    password: secret
-
-case-distribution:
-  retrieval-max: 50
-  delay-milli-seconds: 500
+    #data-grid:
+    #address: localhost:7379
+    #list-time-to-live-seconds: 60
+    #list-time-to-wait-seconds: 60
+    #report-lock-time-to-live-seconds: 300
 
 redelivery-policy:
   maxRedeliveries: 10
@@ -146,8 +99,8 @@ report-settings:
 
 swagger-settings:
   swagger-ui-active: true
-  group-name: caseservice-api
-  title: Case Service API
+  group-name: respondenthome-api
+  title: RespondentHomeService
   description: API for ${project.artifactId}
   version: ${project.version}
 

@@ -43,7 +43,7 @@ public final class CaseDetailsEndpoint implements CTPEndpoint {
    * @return the case details found
    * @throws CTPException something went wrong
    */
-  @RequestMapping(value = "/getCaseDetails", method = RequestMethod.GET)
+  @RequestMapping(value = "/detail", method = RequestMethod.GET)
   public String getCaseDetails() {
 
     String helloTeam = "Hello Tiger Nation!";
