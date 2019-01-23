@@ -5,6 +5,4 @@ applications:
   memory: 1024M
   path: target/rhsvc.jar
   services:
-    - rm-pg-db
-    - rm-redis
     - rm-rabbitmq

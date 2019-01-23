@@ -5,54 +5,10 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:15432/postgres
 
-survey-svc:
-  connection-config:
-    username: admin
-    password: secret
-    retry-attempts: 5
-
-action-svc:
-  connection-config:
-    port: 38151
-
-redisson-config:
-  address: localhost:17379
-
 rabbitmq:
   host: localhost
   port: 35672
 
-data-grid:
-  address: localhost:17379
-
-case-distribution:
-  retrieval-max: 50
-  delay-milli-seconds: 500
-
 schedules:
   validation-schedule-delay-milli-seconds: 1000
   distribution-schedule-delay-milli-seconds: 1000
-
-collection-instrument-svc:
-    connection-config:
-        port: 18002
-
-party-svc:
-    connection-config:
-        port: 18002
-
-internet-access-code-svc:
-  iac-post-path: /iacs
-  iac-put-path: /iacs/{iac}
-  connection-config:
-    scheme: http
-    host: localhost
-    port: 18002
-    username: admin
-    password: secret
-
-collection-exercise-svc:
-  connection-config:
-    port: 38145
-    username: admin
-    password: secret

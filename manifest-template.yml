@@ -6,25 +6,5 @@ applications:
   memory: 1024M
   path: target/rhsvc.jar
   services:
-    - DATABASE
-    - rm-redis
     - rm-rabbitmq
-  env:
-    internetAccessCodeSvc_connectionConfig_host: iacsvc-SPACE.DOMAIN
-    internetAccessCodeSvc_connectionConfig_port: "REPLACE_PORT"
-    internetAccessCodeSvc_connectionConfig_scheme: REPLACE_PROTOCOL
-    internetAccessCodeSvc_connectionConfig_username: REPLACE_BA_USERNAME
-    internetAccessCodeSvc_connectionConfig_password: REPLACE_BA_PASSWORD
-    collectionExerciseSvc_connectionConfig_host: collectionexercisesvc-SPACE.DOMAIN
-    collectionExerciseSvc_connectionConfig_port: "REPLACE_PORT"
-    collectionExerciseSvc_connectionConfig_scheme: REPLACE_PROTOCOL
-    collectionExerciseSvc_connectionConfig_username: REPLACE_BA_USERNAME
-    collectionExerciseSvc_connectionConfig_password: REPLACE_BA_PASSWORD
-    actionSvc_connectionConfig_host: actionsvc-SPACE.DOMAIN
-    actionSvc_connectionConfig_port: "REPLACE_PORT"
-    actionSvc_connectionConfig_scheme: REPLACE_PROTOCOL
-    actionSvc_connectionConfig_username: REPLACE_BA_USERNAME
-    actionSvc_connectionConfig_password: REPLACE_BA_PASSWORD
-    endpoints_enabled: ENDPOINT_ENABLED
-    security_user_name: REPLACE_BA_USERNAME
-    security_user_password: REPLACE_BA_PASSWORD
+

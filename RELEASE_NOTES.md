@@ -1,6 +1,6 @@
-Case Service
+Respondent Data Service
 ============
-Version 10.45.1
+Version 0.0.0
 
 Changes
 -------
@@ -10,11 +10,11 @@ Known Issues
 ------------
 None.
 
-Version: 10.45.0
+Version: 0.0.0
 
 Changes
 -------
-This is the first formal release of the Case service.
+This is the first formal release of the Respondent Data service.
 
 Known Issues
 ------------

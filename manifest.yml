@@ -6,16 +6,5 @@ applications:
   memory: 1024M
   path: target/rhsvc.jar
   services:
-    - rm-pg-db
-    - rm-redis
     - rm-rabbitmq
-#  env:
-#    internetAccessCodeSvc_connectionConfig_host: iacsvc.apps.devtest.onsclofo.uk
-#    internetAccessCodeSvc_connectionConfig_port: "80"
-#    internetAccessCodeSvc_connectionConfig_scheme: http
-#    collectionExerciseSvc_connectionConfig_host: collectionexercisesvc.apps.devtest.onsclofo.uk
-#    collectionExerciseSvc_connectionConfig_port: "80"
-#    collectionExerciseSvc_connectionConfig_scheme: http
-#    actionSvc_connectionConfig_host: actionsvc.apps.devtest.onsclofo.uk
-#    actionSvc_connectionConfig_port: "80"
-#    actionSvc_connectionConfig_scheme: http
+

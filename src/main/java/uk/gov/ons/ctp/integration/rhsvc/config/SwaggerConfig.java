@@ -12,13 +12,13 @@ import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
-import uk.gov.ons.ctp.integration.rhsvc.endpoint.CaseDetailsEndpoint;
+import uk.gov.ons.ctp.integration.rhsvc.endpoint.RespondentDataEndpoint;
 
 /** Created by stevee on 23/06/2017. */
 // @CoverageIgnore
 // @EnableSwagger2
 @Configuration
-@ComponentScan(basePackageClasses = {CaseDetailsEndpoint.class})
+@ComponentScan(basePackageClasses = {RespondentDataEndpoint.class})
 public class SwaggerConfig {
 
   @Autowired private AppConfig appConfig;
