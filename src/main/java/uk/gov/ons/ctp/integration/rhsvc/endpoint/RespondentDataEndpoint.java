@@ -41,7 +41,6 @@ public final class RespondentDataEndpoint implements CTPEndpoint {
    */
   @RequestMapping(value = "/data", method = RequestMethod.GET)
   public String getRespondentData() {
-
     String helloTeam = "Hello Census Integration!";
 
     return helloTeam;
