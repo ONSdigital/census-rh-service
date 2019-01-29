@@ -5,7 +5,7 @@
 # Respondent Data Service
 This repository contains the Respondent Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/). It manages respondent data, where a Respondent Data object represents an expected response from the Respondent Data service, which provides all the data that is required by Respondent Home in order for it to verify the respondent's UAC code and connect them to the relevant EQ questionnaire.
 
-##Set Up
+## Set Up
 
 Do the following steps to set up the code to run locally:
 * Install Java 11 locally
