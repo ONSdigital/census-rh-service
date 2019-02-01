@@ -7,8 +7,12 @@ import uk.gov.ons.ctp.integration.rhsvc.domain.model.UACContext;
 import java.io.IOException;
 
 public interface DataInCloud {
-    void writeObject(UACContext uac) throws JsonProcessingException;
-    void writeObject(CaseContext uac) throws JsonProcessingException;
-    UACContext readUac(String key) throws IOException;
-    CaseContext readCase(String key) throws IOException;
+
+    void writeUACContext(UACContext uac) throws JsonProcessingException;
+
+    void writeCaseContext(CaseContext uac) throws JsonProcessingException;
+
+    UACContext readUacContext(String key) throws IOException;
+
+    CaseContext readCaseContext(String key) throws IOException;
 }

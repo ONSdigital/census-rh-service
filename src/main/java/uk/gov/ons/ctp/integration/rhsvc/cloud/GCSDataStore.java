@@ -6,9 +6,9 @@ import com.google.cloud.storage.*;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GCSService implements CloudService {
-    private static final Logger log = LoggerFactory.getLogger(GCSService.class);
-    public static final String EUROPE_WEST_2 = "europe-west2";
+public class GCSDataStore implements CloudDataStore {
+    private static final Logger log = LoggerFactory.getLogger(GCSDataStore.class);
+    private static final String EUROPE_WEST_2 = "europe-west2";
 
     /**
      * Write object in Cloud Storage for UAC details inside specified bucket
@@ -23,15 +23,13 @@ public class GCSService implements CloudService {
         Storage storage = StorageOptions.getDefaultInstance().getService();
         try {
             storage.create(BucketInfo.newBuilder(bucket)
-                    // This is the cheapes option
+                    // This is the cheapest option
                     // See here for possible values: http://g.co/cloud/storage/docs/storage-classes
                     .setStorageClass(StorageClass.COLDLINE)
                     // As John mentioned, I used Europe west 2 - location where data will be held
                     // Possible values: http://g.co/cloud/storage/docs/bucket-locations#location-mr
                     .setLocation(EUROPE_WEST_2)
                     .build());
-
-
         } catch (StorageException se) {
             //This Storage Exception is the only one declared on this API.
             // If a bucket exists, this exception will be thrown
@@ -50,19 +48,28 @@ public class GCSService implements CloudService {
      *
      * @param bucket - represents the bucket where the object will be stored
      * @param key    - represents the unique object identifier in the bucket for the object stored
-     * @return
+     * @return       - JSON string representation of the object retrieved
      */
     @Override
     public String retrieveObject(final String bucket, final String key) {
         Storage storage = StorageOptions.getDefaultInstance().getService();
+        if (null == bucket || bucket.length() == 0){
+            log.info("Bucket name was not set for object retrieval");
+            return "";
+        }
+        if (null == key || key.length() == 0){
+            log.info("Key was not set for object retrieval");
+            return "";
+        }
         BlobId blobId = BlobId.of(bucket, key);
         Blob blob = storage.get(blobId);
-        String value = new String(blob.getContent());
-        if (blob != null) {
-            log.info("Found BLOB:\n blobId = " + blobId + "\ncontent= " + value);
-        } else {
-            log.info("Blob not found");
+        if (null == blob){
+            log.info("Object could not be retrieved within cloud in bucket = <"+bucket+"> having key = <" + key + ">");
+            return "";
         }
+
+        String value = new String(blob.getContent());
+        log.info("Found BLOB:\n blobId = " + blobId + "\ncontent= " + value);
         return value;
     }
 }
