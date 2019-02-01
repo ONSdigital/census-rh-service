@@ -33,6 +33,11 @@ When running successfully the words "Hello Census Integration!" should be found 
     
 * localhost:8171/respondent/data
     
+## Docker image build
+
+Is switched off by default for clean deploy. Switch on with;
+
+* mvn dockerfile:build -Dskip.dockerfile=false
 
     
 ## Copyright
