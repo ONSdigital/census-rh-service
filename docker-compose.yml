@@ -1,7 +1,7 @@
 version: '2.1'
 services:
   rabbitmq:
-    container_name: rabbitmq-case-it
+    container_name: rabbitmq-rhsvc-it
     image: rabbitmq:3.6.10-management
     ports:
     - "34369:4369"

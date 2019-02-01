@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-slim
+FROM openjdk:11-jre-slim
 
 ARG JAR_FILE=rhsvc*.jar
 RUN apt-get update
