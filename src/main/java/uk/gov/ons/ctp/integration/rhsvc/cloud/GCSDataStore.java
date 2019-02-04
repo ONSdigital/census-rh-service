@@ -2,7 +2,14 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.cloud.storage.*;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.BucketInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageClass;
+import com.google.cloud.storage.StorageException;
+import com.google.cloud.storage.StorageOptions;
 import org.springframework.stereotype.Service;
 
 @Service
