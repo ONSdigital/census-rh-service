@@ -15,6 +15,7 @@
     <description>Census Integration RH Service</description>
 
     <properties>
+        <skip.integration.tests>true</skip.integration.tests>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
@@ -190,6 +191,7 @@
             <artifactId>docker-compose-maven-plugin</artifactId>
             <version>2.0.1</version>
         </dependency>
+
         <dependency>
             <groupId>javax.xml.soap</groupId>
             <artifactId>javax.xml.soap-api</artifactId>
@@ -201,41 +203,11 @@
             <version>1.5.0</version>
         </dependency>
 
-
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
             <version>1.59.0</version>
         </dependency>
-
-        <!--
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <dependency>
-             <groupId>com.sun.xml.bind</groupId>
-             <artifactId>jaxb-core</artifactId>
-         </dependency>
-            <dependency>
-                 <groupId>com.sun.xml.bind</groupId>
-                 <artifactId>jaxb-impl</artifactId>
-            </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.0</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>javax.activation-api</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-        -->
-        <!-- Third party end -->
 
         <!-- Testing -->
 
@@ -274,7 +246,7 @@
                         </goals>
                         <configuration>
                             <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-                            <skip>${dockerComposeSkip}</skip>
+                            <skip>${skip.integration.tests}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -286,7 +258,7 @@
                         <configuration>
                             <composeFile>${project.basedir}/docker-compose.yml</composeFile>
                             <detachedMode>true</detachedMode>
-                            <skip>${dockerComposeSkip}</skip>
+                            <skip>${skip.integration.tests}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -297,7 +269,7 @@
                         </goals>
                         <configuration>
                             <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-                            <skip>${dockerComposeSkip}</skip>
+                            <skip>${skip.integration.tests}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -367,7 +339,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.18.1</version>
+                <version>3.0.0-M3</version>
+                <configuration>
+                  <skipTests>${skip.integration.tests}</skipTests>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
