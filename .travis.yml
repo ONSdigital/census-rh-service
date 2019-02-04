@@ -3,9 +3,6 @@ sudo: required
 
 services:
   - docker
-env:
-  global:
-    - CODECOV_TOKEN=:uuid-repo-token
 
 language: java
 jdk: openjdk11
