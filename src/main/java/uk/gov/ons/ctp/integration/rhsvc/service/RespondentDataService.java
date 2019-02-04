@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.cloud.storage.StorageException;
+import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
@@ -12,23 +13,18 @@ import uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseContext;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UACContext;
 
-import java.io.IOException;
-
 /**
  * A RespondentDataService implementation which encapsulates all business logic operating on the
  * Core Respondent Details entity model.
  */
 @Service
-public class RespondentDataService implements DataInCloud{
+public class RespondentDataService implements DataInCloud {
   private static final Logger log = LoggerFactory.getLogger(RespondentDataService.class);
 
   private static final String UAC_BUCKET = "uac_bucket";
   private static final String CASE_BUCKET = "case_bucket";
 
-
-  @Autowired
-  private CloudDataStore cloudDataStore;
-
+  @Autowired private CloudDataStore cloudDataStore;
 
   RespondentDataService() {
     this.cloudDataStore = new GCSDataStore();
@@ -36,6 +32,7 @@ public class RespondentDataService implements DataInCloud{
 
   /**
    * Serialize an UACContext object into JSON string and store it in the cloud
+   *
    * @param uacContext - object to be serialised and stored in the cloud
    * @throws JsonProcessingException
    */
@@ -55,13 +52,15 @@ public class RespondentDataService implements DataInCloud{
       log.info("Exception while storing UAC context object into cloud", e);
       throw e;
     }
-    log.info("UAC object  with code = " + uacContext.getUac() + " has just been stored in the cloud");
+    log.info(
+        "UAC object  with code = " + uacContext.getUac() + " has just been stored in the cloud");
   }
 
   /**
    * Read an UAC object from cloud and de-serialize to an UACContext object from JSON
+   *
    * @param key - the unique id of the object stored
-   * @return    - de-serialised version of the stored object
+   * @return - de-serialised version of the stored object
    * @throws IOException
    */
   @Override
@@ -87,6 +86,7 @@ public class RespondentDataService implements DataInCloud{
 
   /**
    * Serialize an CaseContext object into JSON string and store it in the cloud
+   *
    * @param caseContext - object to be serialised and stored in the cloud
    * @throws JsonProcessingException
    */
@@ -106,13 +106,17 @@ public class RespondentDataService implements DataInCloud{
       log.info("Exception while storing case context object into cloud", e);
       throw e;
     }
-    log.info("Case object  with caseId = " + caseContext.getCaseId() + " has just been stored in the cloud");
+    log.info(
+        "Case object  with caseId = "
+            + caseContext.getCaseId()
+            + " has just been stored in the cloud");
   }
 
   /**
    * Read an Case object from cloud and de-serialize to an CaseContext object from JSON
+   *
    * @param key - the unique id of the object stored
-   * @return    - de-serialised version of the stored object
+   * @return - de-serialised version of the stored object
    * @throws IOException
    */
   @Override
@@ -132,7 +136,10 @@ public class RespondentDataService implements DataInCloud{
       log.info("Exception while de-serializing case context object from JSON", e);
       throw e;
     }
-    log.info("CaseContext object  with code = " + caseObject.getCaseId() + " has just been retrieved from the cloud");
+    log.info(
+        "CaseContext object  with code = "
+            + caseObject.getCaseId()
+            + " has just been retrieved from the cloud");
     return caseObject;
   }
 }
