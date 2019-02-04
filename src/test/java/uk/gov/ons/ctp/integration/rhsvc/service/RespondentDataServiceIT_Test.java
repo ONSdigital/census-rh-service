@@ -1,15 +1,14 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseContext;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UACContext;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
 
 public class RespondentDataServiceIT_Test {
 

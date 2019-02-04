@@ -1,11 +1,11 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import static org.junit.Assert.assertEquals;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GCSDataStoreIT_Test {
