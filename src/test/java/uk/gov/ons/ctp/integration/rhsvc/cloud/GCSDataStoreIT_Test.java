@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -38,6 +39,7 @@ public class GCSDataStoreIT_Test {
 
   CloudDataStore cloudDataStore = new GCSDataStore();
 
+  @Ignore
   @Test()
   public void storeAndReceive_Uac() {
     cloudDataStore.storeObject(UAC_BUCKET, UAC_1, CASE_ID_1);
@@ -49,6 +51,7 @@ public class GCSDataStoreIT_Test {
     assertEquals(UAC_CONTENT, value2);
   }
 
+  @Ignore
   @Test()
   public void storeAndReceive_Case() {
     cloudDataStore.storeObject(CASE_BUCKET, CASE_ID_1, CASE_ID_2);
