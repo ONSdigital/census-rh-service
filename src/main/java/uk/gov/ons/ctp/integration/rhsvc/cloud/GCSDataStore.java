@@ -10,6 +10,7 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageClass;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -57,15 +58,15 @@ public class GCSDataStore implements CloudDataStore {
    * @return - JSON string representation of the object retrieved
    */
   @Override
-  public String retrieveObject(final String bucket, final String key) {
+  public Optional<String> retrieveObject(final String bucket, final String key) {
     Storage storage = StorageOptions.getDefaultInstance().getService();
     if (null == bucket || bucket.length() == 0) {
       log.info("Bucket name was not set for object retrieval");
-      return "";
+      return Optional.empty();
     }
     if (null == key || key.length() == 0) {
       log.info("Key was not set for object retrieval");
-      return "";
+      return Optional.empty();
     }
     BlobId blobId = BlobId.of(bucket, key);
     Blob blob = storage.get(blobId);
@@ -76,11 +77,11 @@ public class GCSDataStore implements CloudDataStore {
               + "> having key = <"
               + key
               + ">");
-      return "";
+      return Optional.empty();
     }
 
     String value = new String(blob.getContent());
     log.info("Found BLOB:\n blobId = " + blobId + "\ncontent= " + value);
-    return value;
+    return Optional.of(value);
   }
 }

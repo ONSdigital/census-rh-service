@@ -1,5 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+
 import com.google.cloud.storage.*;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -12,10 +14,8 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-
 @RunWith(PowerMockRunner.class)
-//@PrepareForTest(GCSDataStore.class)
+// @PrepareForTest(GCSDataStore.class)
 @PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 @PrepareForTest(BlobId.class)
 public class GCSDataStoreUnitTest {
@@ -50,14 +50,12 @@ public class GCSDataStoreUnitTest {
     PowerMockito.when(BlobInfo.newBuilder(blobIdMock)).thenReturn(bibMock);
     PowerMockito.when(mockStorage.create(blobInfoMock)).thenReturn(blobMock);
 
-
     PowerMockito.when(BlobInfo.newBuilder(blobIdMock)).thenReturn(bibMock);
     PowerMockito.when(BlobInfo.newBuilder(blobIdMock).build()).thenReturn(blobInfoMock);
     PowerMockito.when(mockStorage.create(blobInfoMock, value.getBytes())).thenReturn(blobMock);
 
     underTest.storeObject(BUCKET, KEY, value);
   }
-
 
   @Test
   @Ignore
@@ -72,6 +70,6 @@ public class GCSDataStoreUnitTest {
     PowerMockito.when(BlobInfo.newBuilder(fcMock).build()).thenReturn(blobInfoMock);
     PowerMockito.when(mockStorage.create(blobInfoMock, value.getBytes())).thenReturn(blobMock);
 
-//    underTest.
+    //    underTest.
   }
 }

@@ -1,19 +1,19 @@
-package uk.gov.ons.ctp.integration.rhsvc.service;
+package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseContext;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UACContext;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
+import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 public class RespondentDataServiceIT_Test {
 
-  private DataInCloud cloud;
+  private RespondentDataService cloud;
   private String caseId;
   private String uacCode;
   private UACContext uac;
@@ -21,7 +21,7 @@ public class RespondentDataServiceIT_Test {
 
   @Before
   public void setup() {
-    cloud = new RespondentDataService();
+    cloud = new RespondentDataServiceImpl();
     caseId = "123456789";
     uacCode = "abcd-defg-1234";
     String case_type = "H";
@@ -63,9 +63,10 @@ public class RespondentDataServiceIT_Test {
 
   @Ignore
   @Test
-  public void writeAndReadUACContext() throws IOException {
+  public void writeAndReadUACContext() throws Exception {
     cloud.writeUACContext(uac);
-    UACContext uac2 = cloud.readUacContext(uacCode);
+    Optional<UACContext> uac2Opt = cloud.readUACContext(uacCode);
+    UACContext uac2 = uac2Opt.get();
     assertEquals(uac.getUac(), uac2.getUac());
     assertEquals(uac.getCaseId(), uac2.getCaseId());
     assertEquals(uac.getCaseType(), uac2.getCaseType());
@@ -76,9 +77,10 @@ public class RespondentDataServiceIT_Test {
 
   @Ignore
   @Test
-  public void writeAndReadCaseContext() throws IOException {
+  public void writeAndReadCaseContext() throws Exception {
     cloud.writeCaseContext(caseContext);
-    CaseContext caseContext2 = cloud.readCaseContext(caseId);
+    Optional<CaseContext> caseContext2Opt = cloud.readCaseContext(caseId);
+    CaseContext caseContext2 = caseContext2Opt.get();
     assertEquals(caseContext.getCaseType(), caseContext2.getCaseType());
     assertEquals(caseContext.getCaseId(), caseContext2.getCaseId());
     assertEquals(caseContext.getUprn(), caseContext2.getUprn());
