@@ -15,12 +15,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(GCSDataStore.class)
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
+@Ignore
 public class GCSDataStoreUnitTest {
   private static final String BUCKET = "bucket";
   private static final String KEY = "key";
