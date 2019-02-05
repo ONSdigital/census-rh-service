@@ -1,0 +1,16 @@
+{
+  "caseId": {
+    "caseId": "123456789",
+    "uprn": "123456789012",
+    "address": {
+      "line1": "2A Secondary Way",
+      "line2": "Dino Close",
+      "city": "London"
+    },
+    "postcode": "SO14 9HJ",
+    "caseType": "H",
+    "region": "EN",
+    "collectionExercise": "census",
+    "timestamp": "2007-12-03T10:15:30+00:00"
+  }
+}
