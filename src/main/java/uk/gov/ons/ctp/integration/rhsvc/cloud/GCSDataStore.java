@@ -42,9 +42,10 @@ public class GCSDataStore implements CloudDataStore {
       // If a bucket exists, this exception will be thrown
       log.info("Bucket with name = " + bucket + " exists in the cloud storage.");
     }
-    storage.create(
-        BlobInfo.newBuilder(BlobId.of(bucket, key)).setContentType("text/plain").build(),
-        value.getBytes());
+    BlobId blobId = BlobId.of(bucket, key);
+    BlobInfo.Builder builder = BlobInfo.newBuilder(blobId);
+    BlobInfo blobInfo = builder.setContentType("text/plain").build();
+    storage.create(blobInfo, value.getBytes());
     log.info("Blob with name = " + key + " has been created in cloud storage");
   }
 

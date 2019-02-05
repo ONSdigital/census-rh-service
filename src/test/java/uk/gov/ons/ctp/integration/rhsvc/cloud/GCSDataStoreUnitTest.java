@@ -1,72 +1,77 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
-
-import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
-import org.junit.Assert;
+import com.google.cloud.storage.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.mockito.Mockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@Ignore
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(GCSDataStore.class)
+//@PrepareForTest(GCSDataStore.class)
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
+@PrepareForTest(BlobId.class)
 public class GCSDataStoreUnitTest {
-    private static final String BUCKET = "bucket";
-    private static final String KEY = "key";
-    @Mock
-    private StorageOptions mockStorageOptions;
-    @Mock
-    private Storage mockStorage;
-    @Mock
-    private Blob mockBlob;
+  private static final String BUCKET = "bucket";
+  private static final String KEY = "key";
+  @Mock private StorageOptions mockStorageOptions;
+  @Mock private Storage mockStorage;
+  @Mock private Blob mockBlob;
 
-    GCSDataStore underTest;
+  GCSDataStore underTest;
 
-    @Before
-    public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
+    mockStorage = PowerMockito.mock(Storage.class);
+    MockitoAnnotations.initMocks(this);
+    underTest = new GCSDataStore();
+  }
 
-        mockStorage = PowerMockito.mock(Storage.class);
-        MockitoAnnotations.initMocks(this);
-        underTest  = new GCSDataStore();
-    }
-    @Test
-    public void storeObject() {
+  @Test
+  @PrepareForTest(BlobInfo.class)
+  @Ignore
+  public void storeObject() {
+    String value = "blob content";
 
-    }
-    @Test
-    public void retrieveObject() {
+    BlobId blobIdMock = PowerMockito.mock(BlobId.class);
+    BlobInfo blobInfoMock = PowerMockito.mock(BlobInfo.class);
+    Blob blobMock = PowerMockito.mock(Blob.class);
+    BlobInfo.Builder bibMock = PowerMockito.mock(BlobInfo.Builder.class);
+    mockStatic(BlobInfo.class);
 
-/*
-        BlobInfo.Builder b = Blob.newBuilder("bucket", "blobid");
-        b.setBlobId(BlobId.of("bucket", "name"));
-        // CollectionUtil mock = org.mockito.Mockito.mock(CollectionUtil.class);
-        // PowerMockito.mockStatic(CollectionUtil.class,w_abc);
-//        PowerMockito.when(CollectionUtil.createHashMap(Mockito.eq("abc:89"), Mockito.eq(":"))).thenReturn(w_abc);
-        try {
-            PowerMockito.when(underTest.retrieveObject("uac", "uac"), "").thenReturn(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-//        assertEquals("abc:89:", TestHarnes.removeHashedSettings("1", "abc:89", ":"));
+    PowerMockito.when(BlobInfo.newBuilder(blobIdMock)).thenReturn(bibMock);
+    PowerMockito.when(mockStorage.create(blobInfoMock)).thenReturn(blobMock);
 
 
-*/
-        BlobId b = mock(BlobId.class);
-        Mockito.when(mockStorage.get(b)).thenReturn(mockBlob);
-        Mockito.when(mockBlob.getContent()).thenReturn(null);
-        Assert.assertEquals(underTest.retrieveObject("uac", "uac"), "");
-    }
+    PowerMockito.when(BlobInfo.newBuilder(blobIdMock)).thenReturn(bibMock);
+    PowerMockito.when(BlobInfo.newBuilder(blobIdMock).build()).thenReturn(blobInfoMock);
+    PowerMockito.when(mockStorage.create(blobInfoMock, value.getBytes())).thenReturn(blobMock);
+
+    underTest.storeObject(BUCKET, KEY, value);
+  }
+
+
+  @Test
+  @Ignore
+  public void retrieveObject() {
+    String value = "blob content";
+
+    BlobId fcMock = PowerMockito.mock(BlobId.class);
+    BlobInfo blobInfoMock = PowerMockito.mock(BlobInfo.class);
+    Blob blobMock = PowerMockito.mock(Blob.class);
+    BlobInfo.Builder bibMock = PowerMockito.mock(BlobInfo.Builder.class);
+    PowerMockito.when(BlobInfo.newBuilder(fcMock)).thenReturn(bibMock);
+    PowerMockito.when(BlobInfo.newBuilder(fcMock).build()).thenReturn(blobInfoMock);
+    PowerMockito.when(mockStorage.create(blobInfoMock, value.getBytes())).thenReturn(blobMock);
+
+//    underTest.
+  }
 }
