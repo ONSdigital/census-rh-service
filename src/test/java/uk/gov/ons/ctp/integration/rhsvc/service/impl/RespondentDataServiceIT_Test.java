@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseContext;
@@ -61,7 +62,7 @@ public class RespondentDataServiceIT_Test {
     caseContext.setRegion(region);
   }
 
-//  @Ignore
+  @Ignore
   @Test
   public void writeAndReadUACContext() throws Exception {
     cloud.writeUACContext(uac);
@@ -75,7 +76,7 @@ public class RespondentDataServiceIT_Test {
     assertEquals(uac.getTimestamp(), uac2.getTimestamp());
   }
 
-//  @Ignore
+  @Ignore
   @Test
   public void writeAndReadCaseContext() throws Exception {
     cloud.writeCaseContext(caseContext);
