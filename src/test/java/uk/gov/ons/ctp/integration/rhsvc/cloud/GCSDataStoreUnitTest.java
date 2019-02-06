@@ -1,8 +1,9 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-
-import com.google.cloud.storage.*;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -14,21 +15,20 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+
 @RunWith(PowerMockRunner.class)
-// @PrepareForTest(GCSDataStore.class)
 @PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 @PrepareForTest(BlobId.class)
 public class GCSDataStoreUnitTest {
   private static final String BUCKET = "bucket";
   private static final String KEY = "key";
-  @Mock private StorageOptions mockStorageOptions;
   @Mock private Storage mockStorage;
-  @Mock private Blob mockBlob;
 
-  GCSDataStore underTest;
+  private GCSDataStore underTest;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
 
     mockStorage = PowerMockito.mock(Storage.class);
     MockitoAnnotations.initMocks(this);
@@ -69,7 +69,5 @@ public class GCSDataStoreUnitTest {
     PowerMockito.when(BlobInfo.newBuilder(fcMock)).thenReturn(bibMock);
     PowerMockito.when(BlobInfo.newBuilder(fcMock).build()).thenReturn(blobInfoMock);
     PowerMockito.when(mockStorage.create(blobInfoMock, value.getBytes())).thenReturn(blobMock);
-
-    //    underTest.
   }
 }

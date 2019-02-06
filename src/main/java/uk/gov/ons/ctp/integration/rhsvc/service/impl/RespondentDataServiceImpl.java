@@ -39,11 +39,11 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    * Serialize an UACContext object into JSON string and store it in the cloud
    *
    * @param uacContext - object to be serialised and stored in the cloud
-   * @throws JsonProcessingException
+   * @throws CTPException - this is the exception thrown to the client.
    */
   @Override
   public void writeUACContext(final UACContext uacContext) throws CTPException {
-    if (uacContext == null){
+    if (uacContext == null) {
       throw new CTPException(Fault.BAD_REQUEST);
     }
     ObjectMapper mapper = new ObjectMapper();
@@ -55,7 +55,8 @@ public class RespondentDataServiceImpl implements RespondentDataService {
       log.with(universalAccessCode).error("Could not serialize UAC context object to JSON", e);
       throw new CTPException(Fault.SYSTEM_ERROR, e);
     }
-    writeJsonToCloud(jsonInString, universalAccessCode, UAC_BUCKET, "UAC context object stored in cloud");
+    writeJsonToCloud(
+        jsonInString, universalAccessCode, UAC_BUCKET, "UAC context object stored in cloud");
   }
 
   /**
@@ -63,11 +64,15 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    *
    * @param universalAccessCode - the unique id of the object stored
    * @return - de-serialised version of the stored object
-   * @throws IOException
+   * @throws CTPException - this is the exception thrown to the client.
    */
   @Override
   public Optional<UACContext> readUACContext(final String universalAccessCode) throws CTPException {
-    Optional<String> uacContextStrOpt = getJsonFromCloud(universalAccessCode, UAC_BUCKET, "Could not retrieve the UAC Context object from cloud");
+    Optional<String> uacContextStrOpt =
+        getJsonFromCloud(
+            universalAccessCode,
+            UAC_BUCKET,
+            "Could not retrieve the UAC Context object from cloud");
     return deserializeUACContext(universalAccessCode, uacContextStrOpt);
   }
 
@@ -75,11 +80,11 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    * Serialize an CaseContext object into JSON string and store it in the cloud
    *
    * @param caseContext - object to be serialised and stored in the cloud
-   * @throws JsonProcessingException
+   * @throws CTPException - this is the exception thrown to the client.
    */
   @Override
   public void writeCaseContext(final CaseContext caseContext) throws CTPException {
-    if (caseContext == null){
+    if (caseContext == null) {
       throw new CTPException(Fault.BAD_REQUEST);
     }
     ObjectMapper mapper = new ObjectMapper();
@@ -99,16 +104,19 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    *
    * @param caseId - the unique id of the object stored
    * @return - de-serialised version of the stored object
-   * @throws IOException
+   * @throws CTPException - this is the exception thrown to the client.
    */
   @Override
   public Optional<CaseContext> readCaseContext(final String caseId) throws CTPException {
     Optional<String> caseContextStrOpt;
-    caseContextStrOpt = getJsonFromCloud(caseId, CASE_BUCKET, "Could not retrieve case context object from cloud");
+    caseContextStrOpt =
+        getJsonFromCloud(caseId, CASE_BUCKET, "Could not retrieve case context object from cloud");
     return deserializeCaseContext(caseId, caseContextStrOpt);
   }
 
-  private void writeJsonToCloud(String jsonInString, String universalAccessCode, String uacBucket, String s) throws CTPException {
+  private void writeJsonToCloud(
+      String jsonInString, String universalAccessCode, String uacBucket, String s)
+      throws CTPException {
     try {
       cloudDataStore.storeObject(uacBucket, universalAccessCode, jsonInString);
     } catch (StorageException e) {
@@ -118,14 +126,16 @@ public class RespondentDataServiceImpl implements RespondentDataService {
     log.with(universalAccessCode).debug(s);
   }
 
-  private Optional<UACContext> deserializeUACContext(String universalAccessCode, Optional<String> uacContextStrOpt) throws CTPException {
+  private Optional<UACContext> deserializeUACContext(
+      String universalAccessCode, Optional<String> uacContextStrOpt) throws CTPException {
     Optional<UACContext> uacContextOpt = Optional.empty();
     if (uacContextStrOpt.isPresent()) {
       ObjectMapper mapper = new ObjectMapper();
       try {
         uacContextOpt = Optional.of(mapper.readValue(uacContextStrOpt.get(), UACContext.class));
       } catch (IOException e) {
-        log.with(universalAccessCode).error("Could not de-serialize UAC context object from JSON", e);
+        log.with(universalAccessCode)
+            .error("Could not de-serialize UAC context object from JSON", e);
         throw new CTPException(Fault.SYSTEM_ERROR, e);
       }
       log.with(universalAccessCode).debug("UAC Context object has been retrieved from the cloud");
@@ -133,7 +143,8 @@ public class RespondentDataServiceImpl implements RespondentDataService {
     return uacContextOpt;
   }
 
-  private Optional<CaseContext> deserializeCaseContext(String caseId, Optional<String> caseContextStrOpt) throws CTPException {
+  private Optional<CaseContext> deserializeCaseContext(
+      String caseId, Optional<String> caseContextStrOpt) throws CTPException {
     Optional<CaseContext> caseContextOpt = Optional.empty();
     if (caseContextStrOpt.isPresent()) {
       ObjectMapper mapper = new ObjectMapper();
@@ -144,12 +155,12 @@ public class RespondentDataServiceImpl implements RespondentDataService {
         throw new CTPException(Fault.SYSTEM_ERROR, e);
       }
       log.with(caseId).debug("Case Context object has been retrieved from the cloud");
-
     }
     return caseContextOpt;
   }
 
-  private Optional<String> getJsonFromCloud(String caseId, String caseBucket, String s) throws CTPException {
+  private Optional<String> getJsonFromCloud(String caseId, String caseBucket, String s)
+      throws CTPException {
     Optional<String> caseContextStrOpt;
     try {
       caseContextStrOpt = cloudDataStore.retrieveObject(caseBucket, caseId);
