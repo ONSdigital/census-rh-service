@@ -1,15 +1,15 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Optional;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseContext;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UACContext;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
+
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
 
 public class RespondentDataServiceIT_Test {
 
@@ -37,7 +37,7 @@ public class RespondentDataServiceIT_Test {
     String uprn = "123456789012";
 
     uac = new UACContext();
-    uac.setUac(uacCode);
+    uac.setUniversalAccessCode(uacCode);
     uac.setCaseId(caseId);
     uac.setCaseType(case_type);
     uac.setQuestionnaireId(questionaireId);
@@ -61,13 +61,13 @@ public class RespondentDataServiceIT_Test {
     caseContext.setRegion(region);
   }
 
-  @Ignore
+//  @Ignore
   @Test
   public void writeAndReadUACContext() throws Exception {
     cloud.writeUACContext(uac);
     Optional<UACContext> uac2Opt = cloud.readUACContext(uacCode);
     UACContext uac2 = uac2Opt.get();
-    assertEquals(uac.getUac(), uac2.getUac());
+    assertEquals(uac.getUniversalAccessCode(), uac2.getUniversalAccessCode());
     assertEquals(uac.getCaseId(), uac2.getCaseId());
     assertEquals(uac.getCaseType(), uac2.getCaseType());
     assertEquals(uac.getQuestionnaireId(), uac2.getQuestionnaireId());
@@ -75,7 +75,7 @@ public class RespondentDataServiceIT_Test {
     assertEquals(uac.getTimestamp(), uac2.getTimestamp());
   }
 
-  @Ignore
+//  @Ignore
   @Test
   public void writeAndReadCaseContext() throws Exception {
     cloud.writeCaseContext(caseContext);
