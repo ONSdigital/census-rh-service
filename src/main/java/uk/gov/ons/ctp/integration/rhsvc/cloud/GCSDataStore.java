@@ -32,12 +32,13 @@ public class GCSDataStore implements CloudDataStore {
     Storage storage = StorageOptions.getDefaultInstance().getService();
     try {
       createBucket(bucket, storage);
+
     } catch (StorageException se) {
       // This Storage Exception is the only one declared on this API.
       // If a bucket exists, this exception will be thrown
       log.with(bucket).error("Bucket exists in the cloud storage.");
     }
-    storeObject(bucket, key, value, storage);
+    saveObjectToCloud(bucket, key, value, storage);
   }
 
   /**
@@ -61,14 +62,16 @@ public class GCSDataStore implements CloudDataStore {
     }
     BlobId blobId = BlobId.of(bucket, key);
     Blob blob = storage.get(blobId);
-    if (retrieveObject(bucket, key, blob)) return Optional.empty();
+    if (getObjectFromCloud(bucket, key, blob)) {
+      return Optional.empty();
+    }
 
     String value = new String(blob.getContent());
     log.with(blobId).debug("Found BLOB: " + value);
     return Optional.of(value);
   }
 
-  private void storeObject(String bucket, String key, String value, Storage storage)
+  private void saveObjectToCloud(String bucket, String key, String value, Storage storage)
       throws StorageException {
     BlobId blobId = BlobId.of(bucket, key);
     BlobInfo.Builder builder = BlobInfo.newBuilder(blobId);
@@ -89,7 +92,7 @@ public class GCSDataStore implements CloudDataStore {
             .build());
   }
 
-  private boolean retrieveObject(String bucket, String key, Blob blob) {
+  private boolean getObjectFromCloud(String bucket, String key, Blob blob) {
     if (null == blob) {
       log.with(key)
           .debug("Object could not be retrieved within cloud in bucket = <" + bucket + ">");

@@ -1,5 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -7,10 +10,6 @@ import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseContext;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UACContext;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
-
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
 
 public class RespondentDataServiceIT_Test {
 
