@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.cloud.storage.StorageException;
+import java.io.IOException;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -14,9 +16,6 @@ import uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseContext;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UACContext;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
-
-import java.io.IOException;
-import java.util.Optional;
 
 /**
  * A RespondentDataService implementation which encapsulates all business logic operating on the
@@ -73,7 +72,11 @@ public class RespondentDataServiceImpl implements RespondentDataService {
             universalAccessCode,
             UAC_BUCKET,
             "Could not retrieve the UAC Context object from cloud");
-    return deserializeUACContext(universalAccessCode, uacContextStrOpt);
+    if (uacContextStrOpt.isPresent()) {
+      return deserializeUACContext(universalAccessCode, uacContextStrOpt.get());
+    } else {
+      return Optional.empty();
+    }
   }
 
   /**
@@ -111,7 +114,11 @@ public class RespondentDataServiceImpl implements RespondentDataService {
     Optional<String> caseContextStrOpt;
     caseContextStrOpt =
         getJsonFromCloud(caseId, CASE_BUCKET, "Could not retrieve case context object from cloud");
-    return deserializeCaseContext(caseId, caseContextStrOpt);
+    if (caseContextStrOpt.isPresent()) {
+      return deserializeCaseContext(caseId, caseContextStrOpt.get());
+    } else {
+      return Optional.empty();
+    }
   }
 
   private void writeJsonToCloud(
@@ -127,12 +134,12 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   }
 
   private Optional<UACContext> deserializeUACContext(
-      String universalAccessCode, Optional<String> uacContextStrOpt) throws CTPException {
+      String universalAccessCode, String uacContextStrOpt) throws CTPException {
     Optional<UACContext> uacContextOpt = Optional.empty();
-    if (uacContextStrOpt.isPresent()) {
+    if (uacContextStrOpt != null) {
       ObjectMapper mapper = new ObjectMapper();
       try {
-        uacContextOpt = Optional.of(mapper.readValue(uacContextStrOpt.get(), UACContext.class));
+        uacContextOpt = Optional.of(mapper.readValue(uacContextStrOpt, UACContext.class));
       } catch (IOException e) {
         log.with(universalAccessCode)
             .error("Could not de-serialize UAC context object from JSON", e);
@@ -143,13 +150,13 @@ public class RespondentDataServiceImpl implements RespondentDataService {
     return uacContextOpt;
   }
 
-  private Optional<CaseContext> deserializeCaseContext(
-      String caseId, Optional<String> caseContextStrOpt) throws CTPException {
+  private Optional<CaseContext> deserializeCaseContext(String caseId, String caseContextStrOpt)
+      throws CTPException {
     Optional<CaseContext> caseContextOpt = Optional.empty();
-    if (caseContextStrOpt.isPresent()) {
+    if (caseContextStrOpt != null) {
       ObjectMapper mapper = new ObjectMapper();
       try {
-        caseContextOpt = Optional.of(mapper.readValue(caseContextStrOpt.get(), CaseContext.class));
+        caseContextOpt = Optional.of(mapper.readValue(caseContextStrOpt, CaseContext.class));
       } catch (IOException e) {
         log.with(caseId).error("Could not de-serialize case context object from JSON", e);
         throw new CTPException(Fault.SYSTEM_ERROR, e);
