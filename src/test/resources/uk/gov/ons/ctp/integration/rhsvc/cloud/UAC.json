@@ -1,0 +1,11 @@
+{
+  "UAC": {
+    "UAC": "abcd-defg-1234",
+    "questionnaireId": "123456789",
+    "transactionId": "123456789",
+    "caseType": "H",
+    "region": "EN",
+    "caseId": "123456789",
+    "timestamp": "2007-12-03T10:15:30+00:00"
+  }
+}

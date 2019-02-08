@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
+import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /** The REST endpoint controller for RHSvc Core Respondent Details */
 @RestController
@@ -21,13 +21,13 @@ public final class RespondentDataEndpoint implements CTPEndpoint {
   public static final String CATEGORY_ACCESS_CODE_AUTHENTICATION_ATTEMPT_NOT_FOUND =
       "Category ACCESS_CODE_AUTHENTICATION_ATTEMPT does not exist";
 
-  private RespondentDataService respondentDataService;
+  private RespondentDataServiceImpl respondentDataService;
   private MapperFacade mapperFacade;
 
   /** Contructor for RespondentDataEndpoint */
   @Autowired
   public RespondentDataEndpoint(
-      final RespondentDataService respondentDataService,
+      final RespondentDataServiceImpl respondentDataService,
       final @Qualifier("RHSvcBeanMapper") MapperFacade mapperFacade) {
     this.respondentDataService = respondentDataService;
     this.mapperFacade = mapperFacade;
