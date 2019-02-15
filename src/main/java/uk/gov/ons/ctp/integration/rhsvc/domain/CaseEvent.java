@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.rhsvc.message;
+package uk.gov.ons.ctp.integration.rhsvc.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;

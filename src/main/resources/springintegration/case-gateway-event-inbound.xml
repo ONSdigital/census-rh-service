@@ -13,16 +13,53 @@
     <bean id="caseEventListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
         <property name="connectionFactory" ref="connectionFactory" />
         <property name="queueNames" value="Case.Gateway" />
+        <property name="adviceChain" ref="caseEventRetryAdvice" />
         <property name="concurrentConsumers" value="${messaging.consumingThreads}" />
         <property name="prefetchCount" value="${messaging.prefetchCount}" />
     </bean>
 
     <int:channel id="jsonCaseEventMessage" />
     <bean id="simpleMessageConverter" class="org.springframework.amqp.support.converter.SimpleMessageConverter" />
-    <int-amqp:inbound-channel-adapter id="caseEventInboundAmqp" listener-container="caseEventListenerContainer"
-                                      message-converter="simpleMessageConverter" channel="jsonCaseEventMessage" />
+    <int-amqp:inbound-channel-adapter id="caseEventInboundAmqp" 
+                                      listener-container="caseEventListenerContainer"
+                                      message-converter="simpleMessageConverter" 
+                                      channel="jsonCaseEventMessage" />
 
-    <int:channel id="acceptCaseEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent" />
-    <int:json-to-object-transformer id="caseEventObject" input-channel="jsonCaseEventMessage" output-channel="acceptCaseEvent" type="uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent" />
+    <int:channel id="acceptCaseEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.domain.CaseEvent" />
+
+    <int:json-to-object-transformer id="caseEventObject" 
+                                    input-channel="jsonCaseEventMessage" 
+                                    output-channel="acceptCaseEvent" 
+                                    type="uk.gov.ons.ctp.integration.rhsvc.domain.CaseEvent" />
+
+    <!-- Start of section to deal with retries and DLQ after max attempts -->
+    <int:channel id="caseEventDlqChannel" />
+
+    <!-- Not expected to store to a transactional resource such as a database, if need rollback on a transactional
+         datastore for instance look into using StatefulRetryOperationsInterceptorFactoryBean  -->
+    <bean id="caseEventRetryAdvice" class="org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptorFactoryBean" >
+        <property name="messageRecoverer" ref="rejectAndDontRequeueRecoverer" />
+        <property name="retryOperations" ref="retryTemplate" /> 
+    </bean>
     
+    <bean id="rejectAndDontRequeueRecoverer" class="org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer"/>
+
+    <bean id="retryTemplate" class="org.springframework.retry.support.RetryTemplate">
+        <property name="backOffPolicy">
+            <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
+                <property name="initialInterval" value="${messaging.backoffInitial}" />
+                <property name="multiplier" value="${messaging.backoffMultiplier}" />
+                <property name="maxInterval" value="${messaging.backoffMax}" />
+            </bean>
+        </property>
+        <property name="retryPolicy">
+            <bean class="uk.gov.ons.ctp.common.retry.CTPRetryPolicy">
+                <constructor-arg type="int">
+                    <value>${messaging.conMaxAttempts}</value>
+                </constructor-arg>
+            </bean>
+        </property>
+    </bean>
+    <!-- End of section to deal with retries and DLQ after max attempts -->
+
 </beans>

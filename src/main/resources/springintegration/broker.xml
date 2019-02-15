@@ -12,23 +12,12 @@
 							   virtual-host="${rabbitmq.virtualhost}"
 	                           password="${rabbitmq.password}"/>
 
-	<rabbit:admin id="amqpAdmin" connection-factory="connectionFactory"/>
+	<!-- Set up general purpose AmqpTemplate/RabbitTemplate with no exchange, queue set. -->
+	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" />
 
-	<!-- Retry policy for a failed publish -->
-	<bean id="retryTemplate" class="org.springframework.retry.support.RetryTemplate">
-      <property name="backOffPolicy">
-        <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
-          <property name="initialInterval" value="1000" />
-          <property name="multiplier" value="3" />
-          <property name="maxInterval" value="30000" />
-        </bean>
-      </property>
-      <property name="retryPolicy">
-        <bean class="org.springframework.retry.policy.SimpleRetryPolicy">
-          <property name="maxAttempts" value="${messaging.pubMaxAttempts}" />
-        </bean>
-      </property>
-   </bean>
+	<!-- Request that queues, exchanges and bindings be automatically declared
+		on the broker -->
+	<rabbit:admin id="amqpAdmin" connection-factory="connectionFactory"/>
 
 	<!-- Start of Queues -->
 	<rabbit:queue name="Case.Gateway" durable="true">

@@ -1,24 +1,16 @@
 package uk.gov.ons.ctp.integration.rhsvc.message;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.integration.annotation.MessageEndpoint;
+import uk.gov.ons.ctp.integration.rhsvc.domain.CaseEvent;
 
-/** Service implementation responsible for publishing an event from the Respondent service. */
-@MessageEndpoint
-public class RespondentEventPublisher {
-
-  @Qualifier("respondentEventRabbitTemplate")
-  @Autowired
-  private RabbitTemplate rabbitTemplate;
+/**
+ * Service responsible for the publication of respondent events to the Response Management System.
+ */
+public interface RespondentEventPublisher {
 
   /**
-   * To publish an Respondent Event message
+   * Method to send event to Response Management
    *
-   * @param event as place marker, just send out the incoming CaseEvent at the moment.
+   * @param event CaseEvent to publish.
    */
-  public void sendEvent(CaseEvent event) {
-    rabbitTemplate.convertAndSend(event);
-  }
+  void sendEvent(CaseEvent event);
 }
