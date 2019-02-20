@@ -5,6 +5,7 @@ import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.integration.rhsvc.domain.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
+import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 
 /**
  * Service implementation responsible for receipt of Case Events. See Spring Integration flow for
@@ -13,7 +14,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
 @MessageEndpoint
 public class CaseEventReceiverImpl implements CaseEventReceiver {
 
-  @Autowired private RespondentEventPublisherImpl publisher;
+  @Autowired private RespondentEventPublisher publisher;
 
   /**
    * Message end point for events from Response Management. At present sends straight to publisher
