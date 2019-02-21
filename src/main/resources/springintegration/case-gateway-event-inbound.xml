@@ -25,12 +25,12 @@
                                       message-converter="simpleMessageConverter" 
                                       channel="jsonCaseEventMessage" />
 
-    <int:channel id="acceptCaseEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.domain.CaseEvent" />
+    <int:channel id="acceptCaseEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent" />
 
     <int:json-to-object-transformer id="caseEventObject" 
                                     input-channel="jsonCaseEventMessage" 
                                     output-channel="acceptCaseEvent" 
-                                    type="uk.gov.ons.ctp.integration.rhsvc.domain.CaseEvent" />
+                                    type="uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent" />
 
     <!-- Start of section to deal with retries and DLQ after max attempts -->
     <int:channel id="caseEventDlqChannel" />

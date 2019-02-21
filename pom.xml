@@ -1,26 +1,27 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <parent>
-    <groupId>uk.gov.ons.ctp.integration</groupId>
-    <artifactId>census-int-common-config</artifactId>
-    <version>0.0.0-SNAPSHOT</version>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
   <artifactId>rhsvc</artifactId>
   <version>0.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
+
+  <parent>
+    <groupId>uk.gov.ons.ctp.integration</groupId>
+    <artifactId>census-int-common-config</artifactId>
+    <version>0.0.3</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
 
   <name>Census Integration RH Service</name>
   <description>Census Integration RH Service</description>
 
   <properties>
-    <skip.integration.tests>false</skip.integration.tests>
+    <skip.integration.tests>true</skip.integration.tests>
     <skip.dockerfile>true</skip.dockerfile>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <powermock-version>2.0.0</powermock-version>
   </properties>
 
   <scm>
@@ -82,7 +83,6 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-aspects</artifactId>
-      <version>4.3.8.RELEASE</version>
     </dependency>
 
     <dependency>
@@ -136,22 +136,17 @@
     <!-- SPRING END -->
 
     <!-- ONS libraries -->
-    <!--<dependency> -->
-    <!--<groupId>uk.gov.ons.tools</groupId> -->
-    <!--<artifactId>rabbit</artifactId> -->
-    <!--<version>1.0.2</version> -->
-    <!--</dependency> -->
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.0-SNAPSHOT</version>
+      <version>0.0.5</version>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>test-framework</artifactId>
-      <version>0.0.0-SNAPSHOT</version>
+      <version>0.0.0</version>
       <scope>test</scope>
     </dependency>
 
@@ -198,7 +193,11 @@
       <version>1.5.0</version>
     </dependency>
 
-    <!-- Third party end -->
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-storage</artifactId>
+      <version>1.59.0</version>
+    </dependency>
 
     <!-- Testing -->
 
@@ -207,24 +206,140 @@
       <artifactId>spring-test</artifactId>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>com.mashape.unirest</groupId>
       <artifactId>unirest-java</artifactId>
       <version>1.4.9</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito2</artifactId>
+      <version>${powermock-version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock-version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-core</artifactId>
+      <version>${powermock-version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4-rule</artifactId>
+      <version>${powermock-version}</version>
+      <scope>test</scope>
+    </dependency>
+
+
   </dependencies>
 
   <build>
     <defaultGoal>clean install</defaultGoal>
 
     <plugins>
+      <plugin>
+        <groupId>com.dkanejs.maven.plugins</groupId>
+        <artifactId>docker-compose-maven-plugin</artifactId>
+        <version>1.0.3</version>
+        <executions>
+          <execution>
+            <id>pre-stop</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>down</goal>
+            </goals>
+            <configuration>
+              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
+              <skip>${skip.integration.tests}</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>up</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>up</goal>
+            </goals>
+            <configuration>
+              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
+              <detachedMode>true</detachedMode>
+              <skip>${skip.integration.tests}</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>down</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>down</goal>
+            </goals>
+            <configuration>
+              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
+              <skip>${skip.integration.tests}</skip>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+      <!--<plugin> -->
+      <!--<groupId>org.codehaus.mojo</groupId> -->
+      <!--<artifactId>buildnumber-maven-plugin</artifactId> -->
+      <!--</plugin> -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <executable>true</executable>
+          <mainClass>uk.gov.ons.ctp.integration.rhsvc.RHSvcApplication</mainClass>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.coveo</groupId>
+        <artifactId>fmt-maven-plugin</artifactId>
+      </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -292,7 +407,6 @@
         </executions>
       </plugin>
 
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -343,74 +457,36 @@
       </plugin>
 
       <plugin>
-        <groupId>com.dkanejs.maven.plugins</groupId>
-        <artifactId>docker-compose-maven-plugin</artifactId>
-        <version>1.0.3</version>
-        <executions>
-          <execution>
-            <id>pre-stop</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>down</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-          <execution>
-            <id>up</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>up</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <detachedMode>true</detachedMode>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-          <execution>
-            <id>down</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>down</goal>
-            </goals>
-            <configuration>
-              <composeFile>${project.basedir}/docker-compose.yml</composeFile>
-              <skip>${skip.integration.tests}</skip>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-      </plugin>
-
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
+        <groupId>com.spotify</groupId>
+        <artifactId>dockerfile-maven-plugin</artifactId>
+        <version>1.4.4</version>
         <configuration>
-          <executable>true</executable>
-          <mainClass>uk.gov.ons.ctp.integration.rhsvc.RHSvcApplication</mainClass>
+          <skip>${skip.dockerfile}</skip>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <goals>
-              <goal>repackage</goal>
+              <goal>build</goal>
             </goals>
+            <phase>package</phase>
+            <configuration>
+              <repository>sdcplatform/${project.artifactId}</repository>
+              <buildArgs>
+                <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+              </buildArgs>
+            </configuration>
           </execution>
         </executions>
       </plugin>
-
-      <plugin>
-        <groupId>com.coveo</groupId>
-        <artifactId>fmt-maven-plugin</artifactId>
-      </plugin>
-
     </plugins>
+
     <resources>
       <resource>
         <directory>src/main/resources</directory>

@@ -1,19 +1,17 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
-import org.springframework.stereotype.Service;
+import java.util.Optional;
+import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseContext;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.UACContext;
 
-/**
- * A RespondentDataService implementation which encapsulates all business logic operating on the
- * Core Respondent Details entity model.
- */
-@Service
-public class RespondentDataService {
-  private static final Logger log = LoggerFactory.getLogger(RespondentDataService.class);
+public interface RespondentDataService {
 
-  private static final int TRANSACTION_TIMEOUT = 30;
+  void writeUACContext(UACContext uacContext) throws CTPException;
 
-  /** Constructor for RespondentDataService */
-  public RespondentDataService() {}
+  void writeCaseContext(CaseContext caseContext) throws CTPException;
+
+  Optional<UACContext> readUACContext(String universalAccessCode) throws CTPException;
+
+  Optional<CaseContext> readCaseContext(String caseId) throws CTPException;
 }
