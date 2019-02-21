@@ -15,7 +15,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.ons.ctp.integration.rhsvc.domain.CaseEvent;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
 
 /** Spring Integration test of flow received from Response Management */

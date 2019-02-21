@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.message;
 
-import uk.gov.ons.ctp.integration.rhsvc.domain.CaseEvent;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
 
 /**
  * Interface for the receipt of Case Events. See Spring Integration flow for details of in bound
