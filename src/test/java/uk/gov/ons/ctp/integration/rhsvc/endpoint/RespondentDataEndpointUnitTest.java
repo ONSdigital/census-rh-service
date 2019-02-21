@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.getJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
