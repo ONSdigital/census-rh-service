@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ public class SmokeTest {
   @Autowired private RespondentDataEndpoint controller;
 
   @Test
+  @Ignore
   public void contexLoads() throws Exception {
     assertThat(controller).isNotNull();
   }
