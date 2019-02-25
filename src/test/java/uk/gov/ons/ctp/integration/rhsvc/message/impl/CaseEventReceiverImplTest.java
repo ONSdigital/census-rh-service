@@ -19,7 +19,7 @@ import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
 
 /** Spring Integration test of flow received from Response Management */
-@ContextConfiguration("/CaseEventReceiverImpl.xml")
+@ContextConfiguration("/caseEventReceiverImpl.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CaseEventReceiverImplTest {
 
