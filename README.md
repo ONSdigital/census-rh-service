@@ -7,7 +7,7 @@ This repository contains the Respondent Data service. This microservice is a RES
 ## Set Up
 
 Do the following steps to set up the code to run locally:
-* Install Java 11 locally
+* Install Java 11  locally
 * Make sure that you have a suitable settings.xml file in your local .m2 directory
 * Clone the census-rh-service locally
 
