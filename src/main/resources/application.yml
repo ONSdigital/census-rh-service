@@ -91,7 +91,7 @@ messaging:
   consumingThreads: 1
   pubMaxAttempts: 3
   conMaxAttempts: 3
-  prefetchCount: 10
+  prefetchCount: 1
   txSize: 1
 
 report-settings:
