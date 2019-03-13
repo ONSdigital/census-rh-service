@@ -1,14 +1,17 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
-import uk.gov.ons.ctp.integration.rhsvc.message.Event;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import uk.gov.ons.ctp.integration.rhsvc.message.GenericEvent;
+import uk.gov.ons.ctp.integration.rhsvc.message.Payload;
 
-public class CaseCreatedEvent extends Event {
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CaseCreatedEvent extends GenericEvent {
 
-    public String getPayload() {
-        return super.payload;
-    }
-
-    public void setPayload(String payload) {
-        super.payload = payload;
-    }
+  private Payload payload = new CaseCreatedPayload();
 }
