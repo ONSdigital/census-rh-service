@@ -15,7 +15,6 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
 
 /** Spring Integration test of flow received from Response Management */
@@ -32,7 +31,8 @@ public class CaseEventReceiverImplTest {
   public void CaseEventFlowTest() throws Exception {
 
     // Construct payload
-    CaseEvent payload = new CaseEvent();
+    CaseCreatedEvent payload = new CaseCreatedEvent();
+    //    CaseEvent payload = new CaseEvent();
     payload.add("uac", "lf5g7mbftjwn");
     payload.add("addressLine1", "Office for national Statistics");
     payload.add("addressLine2", "Segensworth Road");
@@ -49,7 +49,8 @@ public class CaseEventReceiverImplTest {
     listener.onMessage(amqpMessage, rabbitChannel);
 
     // Capture and check Service Activator argument
-    ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
+    ArgumentCaptor<CaseCreatedEvent> captur = ArgumentCaptor.forClass(CaseCreatedEvent.class);
+    //    ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
     verify(receiver).acceptCaseEvent(captur.capture());
     assertTrue(captur.getValue().getProperties().equals(payload.getProperties()));
   }
