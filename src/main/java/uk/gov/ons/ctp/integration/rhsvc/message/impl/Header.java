@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.rhsvc.message;
+package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
 import java.sql.Timestamp;
 import lombok.AllArgsConstructor;
