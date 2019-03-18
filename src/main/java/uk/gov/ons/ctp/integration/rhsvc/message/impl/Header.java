@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Header {
 
-  private String type;
-  private String source;
-  private String channel;
+  private String type = "myType";
+  private String source = "mySource";
+  private String channel = "theEnglishChannel";
   private Timestamp dateTime;
-  private String transactionId;
+  private String transactionId = "myTransId";
 }
