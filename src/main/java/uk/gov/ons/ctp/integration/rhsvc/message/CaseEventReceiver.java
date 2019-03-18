@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.message;
 
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseCreatedEvent;
+import uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseEvent;
 
 /**
  * Interface for the receipt of Case Events. See Spring Integration flow for details of in bound
@@ -13,7 +13,5 @@ public interface CaseEventReceiver {
    *
    * @param event CasesEvent object received
    */
-  void acceptCaseEvent(CaseCreatedEvent event);
-
-  //  void acceptCaseEvent(CaseEvent event);
+  void acceptCaseEvent(CaseEvent event);
 }

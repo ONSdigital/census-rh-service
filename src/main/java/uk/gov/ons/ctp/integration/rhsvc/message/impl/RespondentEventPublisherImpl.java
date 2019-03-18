@@ -19,7 +19,7 @@ public class RespondentEventPublisherImpl implements RespondentEventPublisher {
    *
    * @param event as place marker, just send out the incoming CaseEvent at the moment.
    */
-  public void sendEvent(CaseCreatedEvent event) {
+  public void sendEvent(CaseEvent event) {
     rabbitTemplate.convertAndSend(event);
   }
 

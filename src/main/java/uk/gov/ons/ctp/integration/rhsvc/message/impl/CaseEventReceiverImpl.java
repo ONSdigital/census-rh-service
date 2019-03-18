@@ -22,7 +22,7 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
    * @param event CaseEvent message from Response Management
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
-  public void acceptCaseEvent(CaseCreatedEvent event) {
+  public void acceptCaseEvent(CaseEvent event) {
     publisher.sendEvent(event);
   }
 

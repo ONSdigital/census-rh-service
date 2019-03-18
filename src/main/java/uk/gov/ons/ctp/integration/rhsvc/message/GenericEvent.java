@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 public abstract class GenericEvent {
 
   private Header header;
-  private Payload payload;
 
   private Map<String, String> properties = new HashMap<>();
 

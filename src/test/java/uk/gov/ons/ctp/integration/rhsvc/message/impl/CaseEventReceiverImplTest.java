@@ -31,7 +31,7 @@ public class CaseEventReceiverImplTest {
   public void CaseEventFlowTest() throws Exception {
 
     // Construct payload
-    CaseCreatedEvent payload = new CaseCreatedEvent();
+    CaseEvent payload = new CaseEvent();
     //    CaseEvent payload = new CaseEvent();
     payload.add("uac", "lf5g7mbftjwn");
     payload.add("addressLine1", "Office for national Statistics");
@@ -49,7 +49,7 @@ public class CaseEventReceiverImplTest {
     listener.onMessage(amqpMessage, rabbitChannel);
 
     // Capture and check Service Activator argument
-    ArgumentCaptor<CaseCreatedEvent> captur = ArgumentCaptor.forClass(CaseCreatedEvent.class);
+    ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
     //    ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
     verify(receiver).acceptCaseEvent(captur.capture());
     assertTrue(captur.getValue().getProperties().equals(payload.getProperties()));

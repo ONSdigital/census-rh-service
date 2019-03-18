@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.message;
 
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseCreatedEvent;
+import uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseEvent;
 
 /**
  * Service responsible for the publication of respondent events to the Response Management System.
@@ -12,7 +12,5 @@ public interface RespondentEventPublisher {
    *
    * @param event CaseEvent to publish.
    */
-  void sendEvent(CaseCreatedEvent event);
-
-  //  void sendEvent(CaseEvent event);
+  void sendEvent(CaseEvent event);
 }

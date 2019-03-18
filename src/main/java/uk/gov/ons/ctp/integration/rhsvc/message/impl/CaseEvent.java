@@ -11,7 +11,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.Payload;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CaseCreatedEvent extends GenericEvent {
+public class CaseEvent extends GenericEvent {
 
   private Payload payload = new CaseCreatedPayload();
 }
