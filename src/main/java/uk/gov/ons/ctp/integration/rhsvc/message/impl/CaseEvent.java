@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.ons.ctp.integration.rhsvc.message.GenericEvent;
-import uk.gov.ons.ctp.integration.rhsvc.message.Payload;
 
 @Data
 @Builder
@@ -13,5 +12,5 @@ import uk.gov.ons.ctp.integration.rhsvc.message.Payload;
 @AllArgsConstructor
 public class CaseEvent extends GenericEvent {
 
-  private Payload payload = new CaseCreatedPayload();
+  private CasePayload payload = new CasePayload();
 }

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class GenericEvent {
+public class GenericEvent {
 
   private Header header;
 
