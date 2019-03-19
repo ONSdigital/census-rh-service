@@ -3,7 +3,7 @@ package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
-import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
+import uk.gov.ons.ctp.integration.rhsvc.message.GenericEventReceiver;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 
 /**
@@ -11,7 +11,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
  * details of in bound queue.
  */
 @MessageEndpoint
-public class CaseEventReceiverImpl implements CaseEventReceiver {
+public class CaseEventReceiverImpl implements GenericEventReceiver {
 
   @Autowired private RespondentEventPublisher publisher;
 
@@ -22,7 +22,7 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
    * @param event CaseEvent message from Response Management
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
-  public void acceptCaseEvent(CaseEvent event) {
+  public void acceptCaseEvent(GenericEvent event) {
     publisher.sendEvent(event);
   }
 

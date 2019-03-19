@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CasePayload {
 
-  private CollectionCase collectCase;
+  private CollectionCase collectionCase;
 }

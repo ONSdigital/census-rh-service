@@ -38,20 +38,28 @@ public class GenericEvent {
     properties.put(key, value);
   }
 
-  /** Convert message to String */
-  public String toString() {
-    if (properties == null) {
-      return "";
-    }
-    StringBuilder sb = new StringBuilder();
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
-      if (sb.length() > 0) {
-        sb.append(", ");
-      }
-      String key = entry.getKey();
-      String value = entry.getValue();
-      sb.append(key + ": " + value);
-    }
-    return sb.toString();
-  }
+  //
+  //  public String toString() {
+  //    StringBuilder strBuilder = new StringBuilder();
+  //    strBuilder.append("Hello:There");
+  //    return strBuilder.toString();
+  //  }
+
+  //  /** Convert message to String */
+  //  public String toString() {
+  //    if (properties == null) {
+  //      return "";
+  //    }
+  //    StringBuilder sb = new StringBuilder();
+  //    for (Map.Entry<String, String> entry : properties.entrySet()) {
+  //      if (sb.length() > 0) {
+  //        sb.append(", ");
+  //      }
+  //      String key = entry.getKey();
+  //      String value = entry.getValue();
+  //      sb.append(key + ": " + value);
+  //    }
+  //    return sb.toString();
+  //  }
+
 }

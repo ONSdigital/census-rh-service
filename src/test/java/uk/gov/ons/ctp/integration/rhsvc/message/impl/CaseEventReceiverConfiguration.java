@@ -12,7 +12,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
+import uk.gov.ons.ctp.integration.rhsvc.message.GenericEventReceiver;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 
 @Configuration
@@ -38,7 +38,7 @@ public class CaseEventReceiverConfiguration {
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public CaseEventReceiver reciever() {
+  public GenericEventReceiver reciever() {
     return Mockito.spy(new CaseEventReceiverImpl());
   }
 }
