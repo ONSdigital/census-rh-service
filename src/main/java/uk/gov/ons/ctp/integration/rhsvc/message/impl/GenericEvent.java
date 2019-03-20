@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GenericEvent {
 
-  private Header header;
+  private Header event;
 
   private Map<String, String> properties = new HashMap<>();
 
