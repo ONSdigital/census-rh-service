@@ -18,7 +18,7 @@ public class CollectionCase {
   private String survey = "Census";
   private String collectionExerciseId = "n66de4dc-3c3b-11e9-b210-d663bd873d93";
   private String sampleUnitRef = "";
-  private CaseAddress address;
+  private String address;
   private String state = "actionable";
   private String actionableFrom = "2011-08-12T20:17:46.384Z";
 

@@ -16,11 +16,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Header {
 
-  private String type = "myType";
-  private String source = "mySource";
-  private String channel = "theEnglishChannel";
+  private String type;
+  private String source;
+  private String channel;
   private Timestamp dateTime;
-  private String transactionId = "myTransId";
+  private String transactionId;
 
   private Map<String, String> properties = new HashMap<>();
 
