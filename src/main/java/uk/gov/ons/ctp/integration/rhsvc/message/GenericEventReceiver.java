@@ -11,7 +11,7 @@ public interface GenericEventReceiver {
   /**
    * Method called with the deserialised message received from the Case service
    *
-   * @param event CasesEvent object received
+   * @param event GenericEvent object received
    */
-  void acceptCaseEvent(GenericEvent event);
+  void acceptGenericEvent(GenericEvent event);
 }

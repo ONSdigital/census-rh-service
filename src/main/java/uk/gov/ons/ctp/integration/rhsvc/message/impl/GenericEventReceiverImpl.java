@@ -13,10 +13,10 @@ import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
  * details of in bound queue.
  */
 @MessageEndpoint
-public class CaseEventReceiverImpl implements GenericEventReceiver {
+public class GenericEventReceiverImpl implements GenericEventReceiver {
 
   @Autowired private RespondentEventPublisher publisher;
-  private static final Logger log = LoggerFactory.getLogger(CaseEventReceiverImpl.class);
+  private static final Logger log = LoggerFactory.getLogger(GenericEventReceiverImpl.class);
 
   /**
    * Message end point for events from Response Management. At present sends straight to publisher
@@ -24,8 +24,8 @@ public class CaseEventReceiverImpl implements GenericEventReceiver {
    *
    * @param event CaseEvent message from Response Management
    */
-  @ServiceActivator(inputChannel = "acceptCaseEvent")
-  public void acceptCaseEvent(GenericEvent event) {
+  @ServiceActivator(inputChannel = "acceptGenericEvent")
+  public void acceptGenericEvent(GenericEvent event) {
 
     String eventType = "undefined";
 
