@@ -1,5 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -14,6 +16,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 public class CaseEventReceiverImpl implements GenericEventReceiver {
 
   @Autowired private RespondentEventPublisher publisher;
+  private static final Logger log = LoggerFactory.getLogger(CaseEventReceiverImpl.class);
 
   /**
    * Message end point for events from Response Management. At present sends straight to publisher
@@ -23,6 +26,11 @@ public class CaseEventReceiverImpl implements GenericEventReceiver {
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   public void acceptCaseEvent(GenericEvent event) {
+
+    log.info("Receiving a GenericEvent from the Case.Gateway queue...");
+
+    log.info("The event being received is: " + event.toString());
+
     publisher.sendEvent(event);
   }
 

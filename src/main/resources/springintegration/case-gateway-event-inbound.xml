@@ -30,6 +30,7 @@
     <int:json-to-object-transformer id="caseEventObject"
                                     input-channel="jsonCaseEventMessage"
                                     output-channel="acceptCaseEvent"
+
                                     type="uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericEvent" />
 
     <!-- Start of section to deal with retries and DLQ after max attempts -->

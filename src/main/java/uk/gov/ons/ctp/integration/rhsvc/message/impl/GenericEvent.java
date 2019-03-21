@@ -15,7 +15,9 @@ public class GenericEvent {
 
   private Header event;
 
-  private Map<String, String> properties = new HashMap<>();
+  private Map<String, String> properties =
+      new HashMap<>(); // this shows that a GenericEvent contains a Header and
+  // another Object, which will either by a CaseEvent or a UACEvent object
 
   /**
    * Getter for Map of message name value pairs
