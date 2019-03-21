@@ -1,9 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,30 +11,30 @@ public class GenericEvent {
 
   private Header event;
 
-  private Map<String, String> properties =
-      new HashMap<>(); // this shows that a GenericEvent contains a Header and
-  // another Object, which will either by a CaseEvent or a UACEvent object
-
-  /**
-   * Getter for Map of message name value pairs
-   *
-   * @return Map of message elements
-   */
-  @JsonAnyGetter
-  public Map<String, String> getProperties() {
-    return properties;
-  }
-
-  /**
-   * Setter for Map of message name value pairs
-   *
-   * @param key message attribute name
-   * @param value message attribute value
-   */
-  @JsonAnySetter
-  public void add(String key, String value) {
-    properties.put(key, value);
-  }
+  //  private Map<String, String> properties =
+  //      new HashMap<>(); // this shows that a GenericEvent contains a Header and
+  //  // another Object, which will either by a CaseEvent or a UACEvent object
+  //
+  //  /**
+  //   * Getter for Map of message name value pairs
+  //   *
+  //   * @return Map of message elements
+  //   */
+  //  @JsonAnyGetter
+  //  public Map<String, String> getProperties() {
+  //    return properties;
+  //  }
+  //
+  //  /**
+  //   * Setter for Map of message name value pairs
+  //   *
+  //   * @param key message attribute name
+  //   * @param value message attribute value
+  //   */
+  //  @JsonAnySetter
+  //  public void add(String key, String value) {
+  //    properties.put(key, value);
+  //  }
 
   //
   //  public String toString() {
