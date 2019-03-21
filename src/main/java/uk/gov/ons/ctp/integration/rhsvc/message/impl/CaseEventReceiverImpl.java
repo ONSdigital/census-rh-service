@@ -27,9 +27,15 @@ public class CaseEventReceiverImpl implements GenericEventReceiver {
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   public void acceptCaseEvent(GenericEvent event) {
 
+    String eventType = "undefined";
+
     log.info("Receiving a GenericEvent from the Case.Gateway queue...");
 
     log.info("The event being received is: " + event.toString());
+
+    eventType = event.getEvent().getType();
+
+    log.info("The type of event received is: " + eventType);
 
     publisher.sendEvent(event);
   }
