@@ -20,6 +20,13 @@
 	<rabbit:admin id="amqpAdmin" connection-factory="connectionFactory"/>
 
 	<!-- Start of Queues -->
+	<rabbit:queue name="Generic.Gateway" durable="true">
+		<rabbit:queue-arguments value-type="java.lang.String">
+			<entry key="x-dead-letter-exchange" value="case-deadletter-exchange" />
+			<entry key="x-dead-letter-routing-key" value="Case.Gateway.binding" />
+		</rabbit:queue-arguments>
+	</rabbit:queue>
+
 	<rabbit:queue name="Case.Gateway" durable="true">
 		<rabbit:queue-arguments value-type="java.lang.String">
 			<entry key="x-dead-letter-exchange" value="case-deadletter-exchange" />
@@ -42,6 +49,7 @@
 	<!-- Start of Exchanges -->
 	<rabbit:direct-exchange name="case-outbound-exchange">
 		<rabbit:bindings>
+			<rabbit:binding queue="Generic.Gateway" key="Case.Gateway.binding" />
 			<rabbit:binding queue="Case.Gateway" key="Case.Gateway.binding" />
 		</rabbit:bindings>
 	</rabbit:direct-exchange>
