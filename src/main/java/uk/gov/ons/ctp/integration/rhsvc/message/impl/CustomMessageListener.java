@@ -13,7 +13,14 @@ public class CustomMessageListener {
 
   @RabbitListener(queues = "Generic.Gateway")
   public void receiveMessage(final Message message) {
+
+    Object eventType = null;
+
     log.info("Received message as generic: {}", message.toString());
+
+    // eventType = message.getMessageProperties().getHeaders().get("type");
+
+    // log.info("The value of eventType is: " + eventType.toString());
   }
 
   // @RabbitListener(queues = MessagingApplication.QUEUE_SPECIFIC_NAME)

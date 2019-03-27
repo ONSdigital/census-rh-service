@@ -22,14 +22,36 @@ public class GenericEventReceiverImpl implements GenericEventReceiver {
    * Message end point for events from Response Management. At present sends straight to publisher
    * to prove messaging setup.
    *
-   * @param event CaseEvent message from Response Management
+   * @param event GenericEvent message from Response Management
    */
   @ServiceActivator(inputChannel = "acceptGenericEvent")
   public void acceptGenericEvent(GenericEvent event) {
 
+    //      String eventType = "undefined";
+
+    //      log.info("Receiving a GenericEvent from the Case.Gateway queue...");
+    //
+    //      log.info("The event being received is: " + event.toString());
+    //
+    //      eventType = event.getEvent().getType();
+    //
+    //      log.info("The type of event received is: " + eventType);
+    //
+    //      publisher.sendEvent(event);
+  }
+
+  /**
+   * Message end point for events from Response Management. At present sends straight to publisher
+   * to prove messaging setup.
+   *
+   * @param event CaseEvent message from Response Management
+   */
+  @ServiceActivator(inputChannel = "acceptCaseEvent")
+  public void acceptCaseEvent(CaseEvent event) {
+
     String eventType = "undefined";
 
-    log.info("Receiving a GenericEvent from the Case.Gateway queue...");
+    log.info("Receiving a CaseEvent from the Case.Gateway queue...");
 
     log.info("The event being received is: " + event.toString());
 
