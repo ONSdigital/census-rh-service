@@ -28,6 +28,8 @@ public class GCSDataStore implements CloudDataStore {
   @Override
   public void storeObject(final String bucket, final String key, final String value)
       throws StorageException {
+    log.info("Now in storeObject method in GCSDataStore class");
+
     Storage storage = StorageOptions.getDefaultInstance().getService();
     try {
       createBucket(bucket, storage);
@@ -36,8 +38,39 @@ public class GCSDataStore implements CloudDataStore {
       // This Storage Exception is the only one declared on this API.
       // If a bucket exists, this exception will be thrown
       log.with(bucket).error("Bucket exists in the cloud storage.");
+      log.info("The details of the error are: " + se.getMessage());
     }
+    log.info("Now saving the object to the cloud");
     saveObjectToCloud(bucket, key, value, storage);
+  }
+
+  //  public Object AuthImplicit() {
+  //    // If you don't specify credentials when constructing the client, the
+  //    // client library will look for credentials in the environment.
+  //    GoogleCredential credential = GoogleCredential.GetApplicationDefault();
+  //    Storage storage = StorageClient.Create(credential);
+  //
+  //    // List all your buckets
+  //    System.out.println("My buckets:");
+  //    for (Bucket currentBucket : storage.list().iterateAll()) {
+  //      System.out.println(currentBucket);
+  //    }
+  //
+  //    return null;
+  //  }
+
+  /**
+   * Write object in Cloud Storage for UAC details inside specified bucket
+   *
+   * @param bucket - represents the bucket where the object will be stored
+   * @param key - represents the unique object identifier in the bucket for the object stored
+   * @param value - represents the string value representation of the object to be stored
+   */
+  public void storeObjectToCaseBucket(final String key, final String value)
+      throws StorageException {
+    Storage storage = StorageOptions.getDefaultInstance().getService();
+
+    saveObjectToCloud("case_bucket", key, value, storage);
   }
 
   /**
