@@ -37,8 +37,8 @@ public class GCSDataStore implements CloudDataStore {
     } catch (StorageException se) {
       // This Storage Exception is the only one declared on this API.
       // If a bucket exists, this exception will be thrown
-      log.with(bucket).error("Bucket exists in the cloud storage.");
-      log.info("The details of the error are: " + se.getMessage());
+      // log.with(bucket).error("Bucket exists in the cloud storage.");
+      log.info("ERROR: " + se.getMessage());
     }
     log.info("Now saving the object to the cloud");
     saveObjectToCloud(bucket, key, value, storage);

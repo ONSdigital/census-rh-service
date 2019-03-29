@@ -12,4 +12,9 @@ import lombok.NoArgsConstructor;
 public class CaseEvent extends GenericEvent {
 
   private CasePayload payload = new CasePayload();
+
+  @Override
+  public String toString() {
+    return super.toString() + " " + payload.toString();
+  }
 }

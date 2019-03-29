@@ -82,8 +82,7 @@ public class GenericEventReceiverImpl implements GenericEventReceiver {
     CloudDataStore cloudDataStore = new GCSDataStore();
 
     // cloudDataStore.AuthImplicit();
-    // cloudDataStore.storeObjectToCaseBucket(caseId, caseContent);
-    // cloudDataStore.storeObject(caseBucket, caseId, caseContent);
+    cloudDataStore.storeObject(caseBucket, caseId, caseContent);
     // Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
 
     // log.info("The value retrieved from GCS is: " + value.get());
