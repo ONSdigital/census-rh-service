@@ -10,5 +10,7 @@
 
     <import resource="case-gateway-event-inbound.xml"/>
     <import resource="respondent-service-event-outbound.xml"/>
+    <import resource="uac-gateway-event-inbound.xml"/>
+
 
 </beans>

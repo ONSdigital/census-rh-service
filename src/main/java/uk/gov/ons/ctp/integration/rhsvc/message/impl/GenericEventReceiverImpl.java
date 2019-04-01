@@ -31,9 +31,9 @@ public class GenericEventReceiverImpl implements GenericEventReceiver {
 
     //      String eventType = "undefined";
 
-    //      log.info("Receiving a GenericEvent from the Case.Gateway queue...");
-    //
-    //      log.info("The event being received is: " + event.toString());
+    log.info("Receiving a GenericEvent from the Case.Gateway queue...");
+
+    log.info("The event being received is: " + event.toString());
     //
     //      eventType = event.getEvent().getType();
     //
@@ -82,7 +82,54 @@ public class GenericEventReceiverImpl implements GenericEventReceiver {
     CloudDataStore cloudDataStore = new GCSDataStore();
 
     // cloudDataStore.AuthImplicit();
-    cloudDataStore.storeObject(caseBucket, caseId, caseContent);
+    // cloudDataStore.storeObject(caseBucket, caseId, caseContent);
+    // Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
+
+    // log.info("The value retrieved from GCS is: " + value.get());
+  }
+
+  /**
+   * Message end point for events from Response Management. At present sends straight to publisher
+   * to prove messaging setup.
+   *
+   * @param event UACEvent message from Response Management
+   */
+  @ServiceActivator(inputChannel = "acceptUACEvent")
+  public void acceptUacEvent(UACEvent event) {
+
+    String eventType = "undefined";
+
+    log.info("Receiving a UACEvent from the UAC.Gateway queue...");
+
+    log.info("The event being received is: " + event.toString());
+    //
+    //    eventType = event.getEvent().getType();
+    //
+    //    log.info("The type of event received is: " + eventType);
+    //
+    //    log.info("Now store the event in Google Cloud..");
+    //    storeUacEvent(event);
+    //    log.info("The event has been stored successfully");
+    //
+    //    publisher.sendEvent(event);
+  }
+
+  public void storeUacEvent(UACEvent uacEvent) {
+
+    String uacBucket = "uac_bucket";
+    // String caseId = caseEvent.getPayload().getCollectionCase().getId();
+    String caseId = uacEvent.getUacPayload().getUac().getCaseId();
+
+    log.info("The value of caseId is: " + caseId);
+
+    String uacContent = uacEvent.toString();
+
+    log.info("The value of uacContent is: " + uacContent);
+
+    // CloudDataStore cloudDataStore = new GCSDataStore();
+
+    // cloudDataStore.AuthImplicit();
+    // cloudDataStore.storeObject(caseBucket, caseId, caseContent);
     // Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
 
     // log.info("The value retrieved from GCS is: " + value.get());
