@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -10,6 +11,7 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageClass;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
+import java.io.FileInputStream;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +30,35 @@ public class GCSDataStore implements CloudDataStore {
   @Override
   public void storeObject(final String bucket, final String key, final String value)
       throws StorageException {
+
     log.info("Now in storeObject method in GCSDataStore class");
 
-    Storage storage = StorageOptions.getDefaultInstance().getService();
+    //    Storage storage = StorageOptions.getDefaultInstance().getService();
+
+    Storage storage = null;
+    String jsonPath =
+        "/users/ellacook/Documents/census-int-code/census-rh-ellacook1-2449e59868e7.json";
+
+    try {
+      storage =
+          StorageOptions.newBuilder()
+              .setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(jsonPath)))
+              .build()
+              .getService();
+    } catch (java.io.FileNotFoundException e1) {
+      log.info("ERROR - FileNotFoundException: " + e1.getMessage());
+    } catch (java.io.IOException e2) {
+      log.info("ERROR - IOException: " + e2.getMessage());
+    } finally {
+      log.info("The credentials have not been set.");
+    }
+
+    //    Page<Bucket> buckets = storage.list();
+    //    for (Bucket bucket : buckets.iterateAll()) {
+    //      // do something with the info
+    //      log.info("The name of this bucket is: " + bucket.Name);
+    //    }
+
     try {
       createBucket(bucket, storage);
 
@@ -40,6 +68,7 @@ public class GCSDataStore implements CloudDataStore {
       // log.with(bucket).error("Bucket exists in the cloud storage.");
       log.info("ERROR: " + se.getMessage());
     }
+
     log.info("Now saving the object to the cloud");
     saveObjectToCloud(bucket, key, value, storage);
   }
