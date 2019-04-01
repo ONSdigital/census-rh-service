@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class GCSDataStore implements CloudDataStore {
   private static final Logger log = LoggerFactory.getLogger(GCSDataStore.class);
   private static final String EUROPE_WEST_2 = "europe-west2";
+  private Storage storage = null;
 
   /**
    * Write object in Cloud Storage for UAC details inside specified bucket
@@ -35,7 +36,6 @@ public class GCSDataStore implements CloudDataStore {
 
     //    Storage storage = StorageOptions.getDefaultInstance().getService();
 
-    Storage storage = null;
     String jsonPath =
         "/users/ellacook/Documents/census-int-code/census-rh-ellacook1-2449e59868e7.json";
 
@@ -49,8 +49,6 @@ public class GCSDataStore implements CloudDataStore {
       log.info("ERROR - FileNotFoundException: " + e1.getMessage());
     } catch (java.io.IOException e2) {
       log.info("ERROR - IOException: " + e2.getMessage());
-    } finally {
-      log.info("The credentials have not been set.");
     }
 
     //    Page<Bucket> buckets = storage.list();
@@ -60,7 +58,8 @@ public class GCSDataStore implements CloudDataStore {
     //    }
 
     try {
-      createBucket(bucket, storage);
+      log.info("Now attempting to create the bucket...");
+      //      createBucket(bucket, storage);
 
     } catch (StorageException se) {
       // This Storage Exception is the only one declared on this API.
@@ -112,7 +111,8 @@ public class GCSDataStore implements CloudDataStore {
   @Override
   public Optional<String> retrieveObject(final String bucket, final String key)
       throws StorageException {
-    Storage storage = StorageOptions.getDefaultInstance().getService();
+    //    Storage storage = StorageOptions.getDefaultInstance().getService();
+    log.info("Now in the retrieveObject method in class GCSDataStore.");
     if (null == bucket || bucket.length() == 0) {
       log.with(bucket).info("Bucket name was not set for object retrieval");
       return Optional.empty();

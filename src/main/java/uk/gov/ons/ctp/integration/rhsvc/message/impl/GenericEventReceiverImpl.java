@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -82,10 +83,10 @@ public class GenericEventReceiverImpl implements GenericEventReceiver {
     CloudDataStore cloudDataStore = new GCSDataStore();
 
     cloudDataStore.storeObject(caseBucket, caseId, caseContent);
-    log.info("Hello there");
-    // Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
 
-    // log.info("The value retrieved from GCS is: " + value.get());
+    Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
+    log.info("Hello there again");
+    log.info("The value retrieved from GCS is: " + value.get());
   }
 
   /**
