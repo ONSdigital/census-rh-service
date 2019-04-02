@@ -25,26 +25,12 @@
                                       message-converter="simpleMessageConverter" 
                                       channel="jsonCaseEventMessage" />
 
-    <!--<int:json-to-object-transformer id="genericEventObject"-->
-                                    <!--input-channel="jsonCaseEventMessage"-->
-                                    <!--output-channel="acceptGenericEvent"-->
-                                    <!--type="uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericEvent" />-->
-
     <int:json-to-object-transformer id="caseEventObject"
                                     input-channel="jsonCaseEventMessage"
                                     output-channel="acceptCaseEvent"
                                     type="uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseEvent" />
 
-    <!--<int:json-to-object-transformer id="uacEventObject"-->
-                                    <!--input-channel="jsonCaseEventMessage"-->
-                                    <!--output-channel="acceptUACEvent"-->
-                                    <!--type="uk.gov.ons.ctp.integration.rhsvc.message.impl.UACEvent" />-->
-
-    <!--<int:channel id="acceptGenericEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericEvent" />-->
-
     <int:channel id="acceptCaseEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseEvent" />
-
-    <!--<int:channel id="acceptUACEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.message.impl.UACEvent" />-->
 
     <!-- Start of section to deal with retries and DLQ after max attempts -->
     <int:channel id="caseEventDlqChannel" />

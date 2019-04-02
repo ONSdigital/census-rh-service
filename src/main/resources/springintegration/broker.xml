@@ -56,12 +56,6 @@
 	<!-- End of Queues -->
 
 	<!-- Start of Exchanges -->
-	<!--<rabbit:direct-exchange name="case-outbound-exchange">-->
-		<!--<rabbit:bindings>-->
-			<!--<rabbit:binding queue="Generic.Gateway" key="Case.Gateway.binding" />-->
-			<!--<rabbit:binding queue="Case.Gateway" key="Case.Gateway.binding" />-->
-		<!--</rabbit:bindings>-->
-	<!--</rabbit:direct-exchange>-->
 
 	<rabbit:direct-exchange name="case-outbound-exchange">
 		<rabbit:bindings>
