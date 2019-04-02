@@ -60,19 +60,19 @@ public class GCSDataStore implements CloudDataStore {
     saveObjectToCloud(bucket, key, value, storage);
   }
 
-  /**
-   * Write object in Cloud Storage for UAC details inside specified bucket
-   *
-   * @param bucket - represents the bucket where the object will be stored
-   * @param key - represents the unique object identifier in the bucket for the object stored
-   * @param value - represents the string value representation of the object to be stored
-   */
-  public void storeObjectToCaseBucket(final String key, final String value)
-      throws StorageException {
-    Storage storage = StorageOptions.getDefaultInstance().getService();
-
-    saveObjectToCloud("case_bucket", key, value, storage);
-  }
+  //  /**
+  //   * Write object in Cloud Storage for UAC details inside specified bucket
+  //   *
+  //   * @param bucket - represents the bucket where the object will be stored
+  //   * @param key - represents the unique object identifier in the bucket for the object stored
+  //   * @param value - represents the string value representation of the object to be stored
+  //   */
+  //  public void storeObjectToCaseBucket(final String key, final String value)
+  //      throws StorageException {
+  //    Storage storage = StorageOptions.getDefaultInstance().getService();
+  //
+  //    saveObjectToCloud("case_bucket", key, value, storage);
+  //  }
 
   /**
    * Read object in Cloud Storage for Case details inside specified bucket
