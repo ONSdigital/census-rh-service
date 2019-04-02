@@ -18,7 +18,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 public class CaseEventReceiver {
 
   @Autowired private RespondentEventPublisher publisher;
-  private static final Logger log = LoggerFactory.getLogger(GenericEventReceiverImpl.class);
+  private static final Logger log = LoggerFactory.getLogger(CaseEventReceiver.class);
 
   /**
    * Message end point for events from Response Management. At present sends straight to publisher

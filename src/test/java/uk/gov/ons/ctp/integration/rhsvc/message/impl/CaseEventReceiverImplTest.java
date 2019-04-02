@@ -6,7 +6,8 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.ons.ctp.integration.rhsvc.message.GenericEventReceiver;
+
+// import uk.gov.ons.ctp.integration.rhsvc.message.GenericEventReceiver;
 
 /** Spring Integration test of flow received from Response Management */
 @ContextConfiguration("/caseEventReceiverImpl.xml")
@@ -15,7 +16,8 @@ public class CaseEventReceiverImplTest {
 
   @Autowired private SimpleMessageListenerContainer container;
 
-  @Autowired private GenericEventReceiver receiver;
+  //  @Autowired private GenericEventReceiver receiver;
+  @Autowired private CaseEventReceiver receiver;
 
   /** Test the receiver flow */
   @Test
