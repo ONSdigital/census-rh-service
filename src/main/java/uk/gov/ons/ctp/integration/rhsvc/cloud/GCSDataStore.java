@@ -2,16 +2,15 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageClass;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
-import java.io.FileInputStream;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class GCSDataStore implements CloudDataStore {
   private static final Logger log = LoggerFactory.getLogger(GCSDataStore.class);
   private static final String EUROPE_WEST_2 = "europe-west2";
-  private Storage storage = null;
+  private Storage storage = StorageOptions.getDefaultInstance().getService();
 
   /**
    * Write object in Cloud Storage for UAC details inside specified bucket
@@ -34,58 +33,32 @@ public class GCSDataStore implements CloudDataStore {
 
     log.info("Now in storeObject method in GCSDataStore class");
 
-    //    Storage storage = StorageOptions.getDefaultInstance().getService();
+    boolean bucketFound = false;
 
-    String jsonPath =
-        "/users/ellacook/Documents/census-int-code/census-rh-ellacook1-2449e59868e7.json";
-
-    try {
-      storage =
-          StorageOptions.newBuilder()
-              .setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(jsonPath)))
-              .build()
-              .getService();
-    } catch (java.io.FileNotFoundException e1) {
-      log.info("ERROR - FileNotFoundException: " + e1.getMessage());
-    } catch (java.io.IOException e2) {
-      log.info("ERROR - IOException: " + e2.getMessage());
+    //     List all your buckets
+    log.info("My buckets:");
+    for (Bucket currentBucket : storage.list().iterateAll()) {
+      log.info(currentBucket.getName());
+      if (currentBucket.getName().equals(bucket)) {
+        bucketFound = true;
+      }
     }
-
-    //    Page<Bucket> buckets = storage.list();
-    //    for (Bucket bucket : buckets.iterateAll()) {
-    //      // do something with the info
-    //      log.info("The name of this bucket is: " + bucket.Name);
-    //    }
 
     try {
       log.info("Now attempting to create the bucket...");
-      //      createBucket(bucket, storage);
-
+      if (!bucketFound) {
+        createBucket(bucket, storage);
+        log.info("bucket created successfully.");
+      } else {
+        log.info("bucket already exists.");
+      }
     } catch (StorageException se) {
-      // This Storage Exception is the only one declared on this API.
-      // If a bucket exists, this exception will be thrown
-      // log.with(bucket).error("Bucket exists in the cloud storage.");
       log.info("ERROR: " + se.getMessage());
     }
 
     log.info("Now saving the object to the cloud");
     saveObjectToCloud(bucket, key, value, storage);
   }
-
-  //  public Object AuthImplicit() {
-  //    // If you don't specify credentials when constructing the client, the
-  //    // client library will look for credentials in the environment.
-  //    GoogleCredential credential = GoogleCredential.GetApplicationDefault();
-  //    Storage storage = StorageClient.Create(credential);
-  //
-  //    // List all your buckets
-  //    System.out.println("My buckets:");
-  //    for (Bucket currentBucket : storage.list().iterateAll()) {
-  //      System.out.println(currentBucket);
-  //    }
-  //
-  //    return null;
-  //  }
 
   /**
    * Write object in Cloud Storage for UAC details inside specified bucket

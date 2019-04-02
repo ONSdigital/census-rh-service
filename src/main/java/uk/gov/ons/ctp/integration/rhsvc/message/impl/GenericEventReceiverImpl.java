@@ -85,7 +85,7 @@ public class GenericEventReceiverImpl implements GenericEventReceiver {
     cloudDataStore.storeObject(caseBucket, caseId, caseContent);
 
     Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
-    log.info("Hello there again");
+
     log.info("The value retrieved from GCS is: " + value.get());
   }
 
@@ -129,7 +129,6 @@ public class GenericEventReceiverImpl implements GenericEventReceiver {
 
     // CloudDataStore cloudDataStore = new GCSDataStore();
 
-    // cloudDataStore.AuthImplicit();
     // cloudDataStore.storeObject(caseBucket, caseId, caseContent);
     // Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
 
