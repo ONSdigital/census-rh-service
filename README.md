@@ -32,7 +32,7 @@ NB. The instructions will lead to a .json file being downloaded, which can be us
 * export GOOGLE_APPLICATION_CREDENTIALS="/users/ellacook/Documents/census-int-code/<filename>.json"
 * Once that is done then you can use the following command to tell your applications to use those credentials as your application default credentials:
 * gcloud auth application-default login
-NB. Running the above command will first prompt you to hit 'Y' to continue and will then open up the Google Login page, where you need to select your login account and then click 'Allow'.
+*NB. Running the above command will first prompt you to hit 'Y' to continue and will then open up the Google Login page, where you need to select your login account and then click 'Allow'.
 * It should then open Google Cloud with the following message displayed: You are now authenticated with the Google Cloud SDK!
 
 NB. For more detailed information about setting up the Application Default Credential please see the following confluence article:
