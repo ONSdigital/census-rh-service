@@ -11,29 +11,29 @@ Do the following steps to set up the code to run locally:
 * Install Docker: Sign in to docker hub and then install docker by downloading it from https://hub.docker.com/editions/community/docker-ce-desktop-mac
 * Install maven
 * Clone the following repository git repositories:
-  https://github.com/ONSdigital/census-int-common-config
-  https://github.com/ONSdigital/census-int-common-service
-  https://github.com/ONSdigital/census-int-common-test-framework
-  https://github.com/ONSdigital/census-rh-service
+* https://github.com/ONSdigital/census-int-common-config
+* https://github.com/ONSdigital/census-int-common-service
+* https://github.com/ONSdigital/census-int-common-test-framework
+* https://github.com/ONSdigital/census-rh-service
 * Make sure that you have a suitable settings.xml file in your local .m2 directory
 * Run a mvn clean install for each of the cloned repos in turn. This will install each of them into your local maven repository.
 
 NB. For more detailed information about any of the above steps please see the following confluence article:
 https://collaborate2.ons.gov.uk/confluence/display/SDC/How+to+Set+Up+a+Mac+for+Census+Integration+Development+Work
 
-Do the following steps to set up the Application Default Credential (see the next section to explain what this is used for):
-* Create a Google Cloud Platform project
+Do the following steps to set up the Application Default Credential (see the next section to understand what this is used for):
 * Install the Google SDK locally
+* Create a Google Cloud Platform project
 * Open the Google Cloud Platform console, which can be found at the following location: https://console.cloud.google.com/getting-started?pli=1
 * In the left hand panel choose 'APIs & Services' > 'Credentials'
 * Use the following instructions to set up a service account and create an environment variable: https://cloud.google.com/docs/authentication/getting-started
 NB. The instructions will lead to a .json file being downloaded, which can be used for setting up credentials. You should move this to a suitable location for pointing your code at.
-To set up the GOOGLE_APPLICATION_CREDENTIALS environment variable you will need to point to the .json file using a command similar to this:
-export GOOGLE_APPLICATION_CREDENTIALS="/users/ellacook/Documents/census-int-code/<filename>.json"
+* To set up the GOOGLE_APPLICATION_CREDENTIALS environment variable you will need to point to the .json file using a command similar to this:
+* export GOOGLE_APPLICATION_CREDENTIALS="/users/ellacook/Documents/census-int-code/<filename>.json"
 * Once that is done then you can use the following command to tell your applications to use those credentials as your application default credentials:
-gcloud auth application-default login
+* gcloud auth application-default login
 NB. Running the above command will first prompt you to hit 'Y' to continue and will then open up the Google Login page, where you need to select your login account and then click 'Allow'.
-It should then open Google Cloud with the following message displayed: You are now authenticated with the Google Cloud SDK!
+* It should then open Google Cloud with the following message displayed: You are now authenticated with the Google Cloud SDK!
 
 NB. For more detailed information about setting up the Application Default Credential please see the following confluence article:
 https://collaborate2.ons.gov.uk/confluence/display/SDC/How+to+Set+Up+Google+Cloud+Platform+Locally
