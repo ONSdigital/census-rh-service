@@ -41,9 +41,9 @@ public class UACEventReceiver {
 
     log.info("Now store the event in Google Cloud..");
     storeUACEvent(event);
-    log.info("The event has been stored successfully");
+    log.info("The event has been stored and retrieved successfully");
 
-    publisher.sendEvent(event);
+    //    publisher.sendEvent(event);
   }
 
   public void storeUACEvent(UACEvent uacEvent) {
