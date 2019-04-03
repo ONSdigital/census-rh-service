@@ -22,7 +22,7 @@
     <bean id="simpleUacMessageConverter" class="org.springframework.amqp.support.converter.SimpleMessageConverter" />
     <int-amqp:inbound-channel-adapter id="uacEventInboundAmqp"
                                       listener-container="uacEventListenerContainer"
-                                      message-converter="simpleMessageConverter" 
+                                      message-converter="simpleUacMessageConverter"
                                       channel="jsonUacEventMessage" />
 
     <int:json-to-object-transformer id="uacEventObject"

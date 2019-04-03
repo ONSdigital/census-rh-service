@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UACEvent extends GenericEvent {
 
-  private UACPayload uacPayload;
+  private UACPayload payload;
 
   @Override
   public String toString() {
-    return super.toString() + " " + uacPayload.toString();
+    return super.toString() + " " + payload.toString();
   }
 }
