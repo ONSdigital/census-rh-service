@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CasePayload {
 
-  private CollectionCase collectionCase;
+  private CollectionCase collectionCase = new CollectionCase();
 
   private Map<String, String> properties = new HashMap<>();
 

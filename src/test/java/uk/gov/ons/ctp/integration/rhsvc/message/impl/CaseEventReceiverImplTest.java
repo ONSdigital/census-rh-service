@@ -24,7 +24,11 @@ public class CaseEventReceiverImplTest {
   public void CaseEventFlowTest() throws Exception {
 
     // Construct payload
-    CaseEvent payload = new CaseEvent();
+    CaseEvent caseEvent = new CaseEvent();
+    CasePayload casePayload = caseEvent.getPayload();
+    CollectionCase collectionCase = casePayload.getCollectionCase();
+    collectionCase.setId("bbd55984-0dbf-4499-bfa7-0aa4228700e9");
+
     //    //    CaseEvent payload = new CaseEvent();
     //    payload.add("uac", "lf5g7mbftjwn");
     //    payload.add("addressLine1", "Office for national Statistics");
