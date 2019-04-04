@@ -81,7 +81,7 @@ rabbitmq:
   username: guest
   password: guest
   host: localhost
-  port: 6672
+  port: 35672
   virtualhost: /
 
 messaging:

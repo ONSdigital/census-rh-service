@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
+import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /** The REST endpoint controller for RHSvc Core Respondent Details */
@@ -23,6 +25,8 @@ public final class RespondentDataEndpoint implements CTPEndpoint {
 
   private RespondentDataServiceImpl respondentDataService;
   private MapperFacade mapperFacade;
+
+  @Autowired private RespondentEventPublisher publisher;
 
   /** Contructor for RespondentDataEndpoint */
   @Autowired
@@ -42,6 +46,10 @@ public final class RespondentDataEndpoint implements CTPEndpoint {
   @RequestMapping(value = "/data", method = RequestMethod.GET)
   public String getRespondentData() {
     String helloTeam = "Hello Census Integration!";
+
+    CaseEvent event = new CaseEvent();
+    event.add("Starter", "Onion soup");
+    publisher.sendEvent(event);
 
     return helloTeam;
   }
