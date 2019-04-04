@@ -36,20 +36,8 @@ public class CaseEventReceiverConfiguration {
   }
 
   /** Spy on Service Activator Message End point */
-  //  @Bean
-  //  public GenericEventReceiver reciever() {
-  //    return Mockito.spy(new GenericEventReceiverImpl());
-  //  }
-
-  /** Spy on Service Activator Message End point */
   @Bean
   public CaseEventReceiver receiver() {
     return Mockito.spy(new CaseEventReceiver());
   }
-
-  //  /** Spy on Service Activator Message End point */
-  //  @Bean
-  //  public UACEventReceiver receiver() {
-  //    return Mockito.spy(new UACEventReceiver());
-  //  }
 }
