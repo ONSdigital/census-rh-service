@@ -15,33 +15,32 @@ logging:
   profile: DEV
   useJson: false
 
-  #security:
-  # basic:
-  #   enabled: false
-  #   realm: sdc
-  # user:
-  #   name: admin
-  #   password: secret
-
 management:
-  security:
-    roles: SUPERUSER
-    enabled: true
   health:
     rabbit:
-      enabled: false
+      enabled: true 
+  endpoints:
+    enabled-by-default: true
+    web:
+      base-path: /
+  info:
+    env:
+      enabled: true 
+    build:
+      enabled: true 
+    git:
+      mode: SIMPLE 
+      enabled: true 
+    defaults:
+      enabled: true
 
 server:
   port: 8171
-  servlet-path: /
-
-endpoints:
-  enabled: true
-  info:
-    enabled: true
-    sensitive: false
 
 spring:
+  mvc:
+    servlet:
+      path: /
   security:
     user:
       name: admin
@@ -51,28 +50,7 @@ spring:
       enabled: never
   application:
     name: ONS RespondentHomeService
-    #  datasource:
-    # url: jdbc:postgresql://localhost:6432/postgres
-    # username: postgres
-    # password: postgres
-    # driverClassName: org.postgresql.Driver
-    # continue-on-error: true
-    tomcat:
-      initial-size: 5
-      max-active: 10
-      max-idle: 5
-      min-idle: 3
-  zipkin:
-    baseUrl: http://localhost:9411
-    enabled: false
 
-    #data-grid:
-    #address: localhost:7379
-    #list-time-to-live-seconds: 60
-    #list-time-to-wait-seconds: 60
-    #report-lock-time-to-live-seconds: 300
-
-redelivery-policy:
   maxRedeliveries: 10
   initialRedeliveryDelay: 1000
   redeliveryDelay: 1000
@@ -104,6 +82,3 @@ swagger-settings:
   description: API for ${project.artifactId}
   version: ${project.version}
 
-retries:
-  maxAttempts: 3
-  backoff: 5000
