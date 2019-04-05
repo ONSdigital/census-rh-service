@@ -25,21 +25,22 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration("/caseEventReceiverImpl.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CaseEventReceiverImplTest {
+  @Autowired private SimpleMessageListenerContainer container;
 
-  //  @Autowired private SimpleMessageListenerContainer container;
-
-  SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+  //  SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
 
   @Autowired private CaseEventReceiver receiver;
 
   /** Test the receiver flow */
   @Test
-  public void CaseEventFlowTest() throws Exception {
+  public void caseEventFlowTest() throws Exception {
 
     //    //    CaseEvent payload = new CaseEvent();
     //    payload.add("uac", "lf5g7mbftjwn");
     //    payload.add("addressLine1", "Office for national Statistics");
     //    payload.add("addressLine2", "Segensworth Road");
+
+    // System.out.Println("Can I see this message?");
 
     // Construct CaseEvent
     CaseEvent caseEvent = new CaseEvent();
