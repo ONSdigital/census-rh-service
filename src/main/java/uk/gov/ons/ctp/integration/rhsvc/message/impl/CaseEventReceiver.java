@@ -35,9 +35,9 @@ public class CaseEventReceiver {
 
     log.info("The event being received is: " + event.toString());
 
-    eventType = event.getEvent().getType();
-
-    log.info("The type of event received is: " + eventType);
+    //    eventType = event.getEvent().getType();
+    //
+    //    log.info("The type of event received is: " + eventType);
 
     log.info("Now store the event in Google Cloud..");
     storeCaseEvent(event);

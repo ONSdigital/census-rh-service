@@ -11,9 +11,9 @@
 
     <int:annotation-config/>
 
+    <bean id="caseEventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseEventReceiverConfiguration" />
+
     <context:property-placeholder location="classpath:caseEventReceiverImpl.properties" />
     <import resource="/springintegration/case-gateway-event-inbound.xml"/>
-    
-    <bean id="caseEventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseEventReceiverConfiguration" /> 
 
 </beans>
