@@ -6,9 +6,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
+import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /**
  * Service implementation responsible for receipt of UAC Events. See Spring Integration flow for
@@ -18,6 +18,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 public class UACEventReceiver {
 
   @Autowired private RespondentEventPublisher publisher;
+  @Autowired private RespondentDataServiceImpl cloud;
   private static final Logger log = LoggerFactory.getLogger(UACEventReceiver.class);
 
   /**
@@ -35,10 +36,6 @@ public class UACEventReceiver {
 
     log.info("The event being received is: " + event.toString());
 
-    eventType = event.getEvent().getType();
-
-    log.info("The type of event received is: " + eventType);
-
     log.info("Now store the event in Google Cloud..");
     storeUACEvent(event);
     log.info("The event has been stored and retrieved successfully");
@@ -49,19 +46,28 @@ public class UACEventReceiver {
   public void storeUACEvent(UACEvent uacEvent) {
 
     String uacBucket = "uac_bucket";
-    String caseId = uacEvent.getPayload().getUac().getCaseId();
+    UAC uac = uacEvent.getPayload().getUac();
 
-    log.info("The value of caseId is: " + caseId);
+    String uacHash = uac.getUacHash();
+
+    log.info("The hash code for the uac is: " + uacHash);
 
     String uacContent = uacEvent.toString();
 
     log.info("The value of uacContent is: " + uacContent);
 
-    CloudDataStore cloudDataStore = new GCSDataStore();
+    try {
+      cloud.writeUAC(uac); // need to catch uk.gov.ons.ctp.common.error.CTPException
+      Optional<UAC> uacOpt = cloud.readUAC(uacHash);
+    } catch (CTPException ctpEx) {
+      log.info("ERROR: " + ctpEx.getMessage());
+    }
 
-    cloudDataStore.storeObject(uacBucket, caseId, uacContent);
-
-    Optional<String> value = cloudDataStore.retrieveObject(uacBucket, caseId);
+    //    CloudDataStore cloudDataStore = new GCSDataStore();
+    //
+    //    cloudDataStore.storeObject(uacBucket, caseId, uacContent);
+    //
+    //    Optional<String> value = cloudDataStore.retrieveObject(uacBucket, caseId);
 
     log.info("The blob has been retrieved from the bucket");
     // log.info("The value retrieved from GCS is: " + value.get());
