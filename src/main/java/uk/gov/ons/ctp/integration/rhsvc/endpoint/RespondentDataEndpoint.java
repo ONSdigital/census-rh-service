@@ -47,10 +47,6 @@ public final class RespondentDataEndpoint implements CTPEndpoint {
   public String getRespondentData() {
     String helloTeam = "Hello Census Integration!";
 
-    CaseEvent event = new CaseEvent();
-    event.add("Starter", "Onion soup");
-    publisher.sendEvent(event);
-
     return helloTeam;
   }
 
