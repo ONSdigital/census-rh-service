@@ -38,8 +38,8 @@
     <!-- Not expected to store to a transactional resource such as a database, if need rollback on a transactional
          datastore for instance look into using StatefulRetryOperationsInterceptorFactoryBean  -->
     <bean id="uacEventRetryAdvice" class="org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptorFactoryBean" >
-        <property name="messageRecoverer" ref="rejectAndDontRequeueRecoverer" />
-        <property name="retryOperations" ref="retryTemplate" /> 
+        <property name="messageRecoverer" ref="rejectUacAndDontRequeueRecoverer" />
+        <property name="retryOperations" ref="uacRetryTemplate" />
     </bean>
     
     <bean id="rejectUacAndDontRequeueRecoverer" class="org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer"/>

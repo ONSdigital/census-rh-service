@@ -66,13 +66,6 @@ public class CaseEventReceiver {
       log.info("ERROR: " + ctpEx.getMessage());
     }
 
-    //    CloudDataStore cloudDataStore = new GCSDataStore();
-    //
-    //    cloudDataStore.storeObject(caseBucket, caseId, caseContent);
-    //
-    //    Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
-
     log.info("The JSON blob has been retrieved from the bucket");
-    // log.info("The value retrieved from GCS is: " + value.get());
   }
 }

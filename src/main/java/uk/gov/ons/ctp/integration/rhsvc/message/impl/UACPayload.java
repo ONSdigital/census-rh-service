@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UACPayload {
 
-  private UAC uac;
+  private UAC uac = new UAC();
 }

@@ -1,9 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.rabbitmq.client.Channel;
 import org.mockito.Mockito;
@@ -15,7 +13,7 @@ import org.springframework.context.annotation.Primary;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 
 @Configuration
-public class CaseEventReceiverConfiguration {
+public class UacEventReceiverConfiguration {
 
   /** Setup mock ConnectionFactory for SimpleMessageContainerListener */
   @Bean
@@ -37,7 +35,7 @@ public class CaseEventReceiverConfiguration {
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public CaseEventReceiver receiver() {
-    return Mockito.spy(new CaseEventReceiver());
+  public UACEventReceiver receiver() {
+    return Mockito.spy(new UACEventReceiver());
   }
 }

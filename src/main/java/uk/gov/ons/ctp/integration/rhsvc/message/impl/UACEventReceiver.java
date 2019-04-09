@@ -63,13 +63,6 @@ public class UACEventReceiver {
       log.info("ERROR: " + ctpEx.getMessage());
     }
 
-    //    CloudDataStore cloudDataStore = new GCSDataStore();
-    //
-    //    cloudDataStore.storeObject(uacBucket, caseId, uacContent);
-    //
-    //    Optional<String> value = cloudDataStore.retrieveObject(uacBucket, caseId);
-
     log.info("The blob has been retrieved from the bucket");
-    // log.info("The value retrieved from GCS is: " + value.get());
   }
 }

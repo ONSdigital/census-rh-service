@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UACEvent extends GenericEvent {
 
-  private UACPayload payload;
+  private UACPayload payload = new UACPayload();
 
   @Override
   public String toString() {
