@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 
+// import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
+
 @Configuration
 public class CaseEventReceiverConfiguration {
 
@@ -34,6 +36,11 @@ public class CaseEventReceiverConfiguration {
   public RespondentEventPublisher publisher() {
     return mock(RespondentEventPublisher.class);
   }
+
+  //  @Bean
+  //  public RespondentDataServiceImpl cloud() {
+  //    return mock(RespondentDataServiceImpl.class);
+  //  }
 
   /** Spy on Service Activator Message End point */
   @Bean

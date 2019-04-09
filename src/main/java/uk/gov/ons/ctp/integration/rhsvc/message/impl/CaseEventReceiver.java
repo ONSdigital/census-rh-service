@@ -6,9 +6,13 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
+import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
+
+// import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
+// import uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore;
+// import java.util.Optional;
 
 /**
  * Service implementation responsible for receipt of Case Events. See Spring Integration flow for
@@ -18,6 +22,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 public class CaseEventReceiver {
 
   @Autowired private RespondentEventPublisher publisher;
+  @Autowired private RespondentDataServiceImpl cloud;
   private static final Logger log = LoggerFactory.getLogger(CaseEventReceiver.class);
 
   /**
@@ -29,15 +34,9 @@ public class CaseEventReceiver {
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   public void acceptCaseEvent(CaseEvent event) {
 
-    String eventType = "undefined";
-
     log.info("Receiving a CaseEvent from the Case.Gateway queue...");
 
     log.info("The event being received is: " + event.toString());
-
-    //    eventType = event.getEvent().getType();
-    //
-    //    log.info("The type of event received is: " + eventType);
 
     log.info("Now store the event in Google Cloud..");
     storeCaseEvent(event);
@@ -49,7 +48,9 @@ public class CaseEventReceiver {
   public void storeCaseEvent(CaseEvent caseEvent) {
 
     String caseBucket = "case_bucket";
-    String caseId = caseEvent.getPayload().getCollectionCase().getId();
+    CollectionCase collectionCase = caseEvent.getPayload().getCollectionCase();
+    //    String caseId = caseEvent.getPayload().getCollectionCase().getId();
+    String caseId = collectionCase.getId();
 
     log.info("The value of caseId is: " + caseId);
 
@@ -57,13 +58,21 @@ public class CaseEventReceiver {
 
     log.info("The value of caseContent is: " + caseContent);
 
-    CloudDataStore cloudDataStore = new GCSDataStore();
+    try {
+      cloud.writeCollectionCase(
+          collectionCase); // need to catch uk.gov.ons.ctp.common.error.CTPException
+      Optional<CollectionCase> collectionCaseOpt = cloud.readCollectionCase(caseId);
+    } catch (CTPException ctpEx) {
+      log.info("ERROR: " + ctpEx.getMessage());
+    }
 
-    cloudDataStore.storeObject(caseBucket, caseId, caseContent);
+    //    CloudDataStore cloudDataStore = new GCSDataStore();
+    //
+    //    cloudDataStore.storeObject(caseBucket, caseId, caseContent);
+    //
+    //    Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
 
-    Optional<String> value = cloudDataStore.retrieveObject(caseBucket, caseId);
-
-    log.info("The blob has been retrieved from the bucket");
+    log.info("The JSON blob has been retrieved from the bucket");
     // log.info("The value retrieved from GCS is: " + value.get());
   }
 }

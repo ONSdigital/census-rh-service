@@ -11,6 +11,10 @@
 
     <int:annotation-config/>
 
+    <bean id="cloud" class="uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl"/>
+
+    <bean id="cloudDataStore" class="uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore"/>
+
     <bean id="caseEventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseEventReceiverConfiguration" />
 
     <context:property-placeholder location="classpath:caseEventReceiverImpl.properties" />
