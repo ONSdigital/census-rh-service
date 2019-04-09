@@ -75,7 +75,7 @@ The Rabbitmq management console should be found at the following endpoint:
 
 http://localhost:46672/#/queues
 
-CaseCreated and CaseUpdated events can be manually published to the case-outbound-exchange, using the binding key Case.Gateway.binding. They should have the following format:
+CaseCreated and CaseUpdated events can be manually published to the case-outbound-exchange, using the binding key event.case.lifecycle. They should have the following format:
 
 {
   "event" : {
@@ -99,7 +99,7 @@ CaseCreated and CaseUpdated events can be manually published to the case-outboun
   }
 }
 
-UACUpdated events use the UAC.Gateway.binding and have the following format:
+UACUpdated events use the binding key event.uac.updates and have the following format:
 
 {
   "event" : {

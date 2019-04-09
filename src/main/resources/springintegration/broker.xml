@@ -24,7 +24,7 @@
 	<rabbit:queue name="Case.Gateway" durable="true">
 		<rabbit:queue-arguments value-type="java.lang.String">
 			<entry key="x-dead-letter-exchange" value="case-deadletter-exchange" />
-			<entry key="x-dead-letter-routing-key" value="Case.Gateway.binding" />
+			<entry key="x-dead-letter-routing-key" value="event.case.lifecycle" />
 		</rabbit:queue-arguments>
 	</rabbit:queue>
 
@@ -33,7 +33,7 @@
 	<rabbit:queue name="UAC.Gateway" durable="true">
 		<rabbit:queue-arguments value-type="java.lang.String">
 			<entry key="x-dead-letter-exchange" value="uac-deadletter-exchange" />
-			<entry key="x-dead-letter-routing-key" value="UAC.Gateway.binding" />
+			<entry key="x-dead-letter-routing-key" value="event.uac.updates" />
 		</rabbit:queue-arguments>
 	</rabbit:queue>
 
@@ -53,20 +53,20 @@
 
 	<rabbit:direct-exchange name="case-outbound-exchange">
 		<rabbit:bindings>
-			<rabbit:binding queue="Case.Gateway" key="Case.Gateway.binding" />
-			<rabbit:binding queue="UAC.Gateway" key="UAC.Gateway.binding" />
+			<rabbit:binding queue="Case.Gateway" key="event.case.lifecycle" />
+			<rabbit:binding queue="UAC.Gateway" key="event.uac.updates" />
 		</rabbit:bindings>
 	</rabbit:direct-exchange>
 
 	<rabbit:direct-exchange name="case-deadletter-exchange">
 		<rabbit:bindings>
-			<rabbit:binding queue="Case.GatewayDLQ" key="Case.Gateway.binding" />
+			<rabbit:binding queue="Case.GatewayDLQ" key="event.case.lifecycle" />
 		</rabbit:bindings>
 	</rabbit:direct-exchange>
 
 	<rabbit:direct-exchange name="uac-deadletter-exchange">
 		<rabbit:bindings>
-			<rabbit:binding queue="UAC.GatewayDLQ" key="UAC.Gateway.binding" />
+			<rabbit:binding queue="UAC.GatewayDLQ" key="event.uac.updates" />
 		</rabbit:bindings>
 	</rabbit:direct-exchange>
 
