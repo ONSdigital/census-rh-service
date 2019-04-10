@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CaseEventReceiverImplTest {
 
-  @Autowired private CaseEventReceiver receiver;
+  @Autowired private CaseEventReceiverImpl receiver;
   @Autowired private SimpleMessageListenerContainer caseEventListenerContainer;
 
   /** Test the receiver flow */

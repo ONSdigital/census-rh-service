@@ -22,8 +22,4 @@ public class RespondentEventPublisherImpl implements RespondentEventPublisher {
   public void sendEvent(GenericEvent event) {
     rabbitTemplate.convertAndSend(event);
   }
-
-  //  public void sendEvent(CaseEvent event) {
-  //    rabbitTemplate.convertAndSend(event);
-  //  }
 }

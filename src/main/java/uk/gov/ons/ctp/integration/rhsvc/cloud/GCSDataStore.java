@@ -5,7 +5,6 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageClass;
@@ -33,46 +32,17 @@ public class GCSDataStore implements CloudDataStore {
 
     log.info("Now in storeObject method in GCSDataStore class");
 
-    boolean bucketFound = false;
-
-    //     List all your buckets
-    log.info("My buckets:");
-    for (Bucket currentBucket : storage.list().iterateAll()) {
-      log.info(currentBucket.getName());
-      if (currentBucket.getName().equals(bucket)) {
-        bucketFound = true;
-      }
-    }
-
     try {
-      log.info("Now attempting to create the bucket...");
-      if (!bucketFound) {
-        createBucket(bucket, storage);
-        log.info("bucket created successfully.");
-      } else {
-        log.info("bucket already exists.");
-      }
+      log.with(bucket).info("Now attempting to create the bucket");
+      createBucket(bucket, storage);
+      log.with(bucket).info("Bucket created successfully");
     } catch (StorageException se) {
-      log.info("ERROR: " + se.getMessage());
+      log.with(se.getMessage()).info("ERROR");
     }
 
     log.info("Now saving the object to the cloud");
     saveObjectToCloud(bucket, key, value, storage);
   }
-
-  //  /**
-  //   * Write object in Cloud Storage for UAC details inside specified bucket
-  //   *
-  //   * @param bucket - represents the bucket where the object will be stored
-  //   * @param key - represents the unique object identifier in the bucket for the object stored
-  //   * @param value - represents the string value representation of the object to be stored
-  //   */
-  //  public void storeObjectToCaseBucket(final String key, final String value)
-  //      throws StorageException {
-  //    Storage storage = StorageOptions.getDefaultInstance().getService();
-  //
-  //    saveObjectToCloud("case_bucket", key, value, storage);
-  //  }
 
   /**
    * Read object in Cloud Storage for Case details inside specified bucket
@@ -84,7 +54,6 @@ public class GCSDataStore implements CloudDataStore {
   @Override
   public Optional<String> retrieveObject(final String bucket, final String key)
       throws StorageException {
-    //    Storage storage = StorageOptions.getDefaultInstance().getService();
     log.info("Now in the retrieveObject method in class GCSDataStore.");
     if (null == bucket || bucket.length() == 0) {
       log.with(bucket).info("Bucket name was not set for object retrieval");

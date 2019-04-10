@@ -37,7 +37,7 @@ public class CaseEventReceiverConfiguration {
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public CaseEventReceiver receiver() {
-    return Mockito.spy(new CaseEventReceiver());
+  public CaseEventReceiverImpl receiver() {
+    return Mockito.spy(new CaseEventReceiverImpl());
   }
 }
