@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 
 /**

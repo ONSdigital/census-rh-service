@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
-import uk.gov.ons.ctp.integration.rhsvc.endpoint.SurveyLaunchedDTO;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
 
 public interface RespondentHomeService {
 

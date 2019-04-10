@@ -8,7 +8,7 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
-import uk.gov.ons.ctp.integration.rhsvc.endpoint.SurveyLaunchedDTO;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 import uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericCaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.impl.Header;

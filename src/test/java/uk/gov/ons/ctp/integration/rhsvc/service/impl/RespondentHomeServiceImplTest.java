@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import uk.gov.ons.ctp.common.TestHelper;
-import uk.gov.ons.ctp.integration.rhsvc.endpoint.SurveyLaunchedDTO;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 import uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericCaseEvent;
 
@@ -52,7 +52,7 @@ public class RespondentHomeServiceImplTest {
     // Verify contents of payload object
     Map<String, String> responseProperties = genericCaseEvent.getPayload().getResponse().getProperties();
     assertEquals(surveyLaunchedDTO.getQuestionnaireId(), responseProperties.get("questionnaireId"));
-    assertEquals(surveyLaunchedDTO.getCaseId(), responseProperties.get("caseId"));
+    assertEquals(surveyLaunchedDTO.getCaseId().toString(), responseProperties.get("caseId"));
     assertEquals(null, responseProperties.get("agentId"));
     assertEquals(3, responseProperties.size());
   }
