@@ -27,23 +27,26 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
   
   @Override
   public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) {
-
+    UUID transactionId = UUID.randomUUID();  // PMB. Check that this should be based on a new UUID
+    log.debug("Generating SurveyLaunched event with transactionId: " + transactionId.toString());
+    
     Header eventData =
        Header.builder()
            .type("SurveyLaunched")
            .source("ContactCentreAPI")
            .channel("cc")
            .dateTime(DateTimeUtil.getCurrentDateTimeInJsonFormat())
-           .transactionId("c45de4dc-3c3b-11e9-b210-d663bd873pmb")  // PMB what to set this to?
+           .transactionId(transactionId.toString())
            .build();
 
     CaseEvent response = new CaseEvent();
-   response.add("questionnaireId", surveyLaunchedDTO.getQuestionnaireId());
-   response.add("caseId", surveyLaunchedDTO.getCaseId().toString());
-   response.add("agentId", null);
+    response.add("questionnaireId", surveyLaunchedDTO.getQuestionnaireId());
+    response.add("caseId", surveyLaunchedDTO.getCaseId().toString());
+    response.add("agentId", null);
 
     GenericCaseEvent caseEvent = new GenericCaseEvent(eventData, new Payload(response));
-
     publisher.sendEvent(caseEvent);
+    
+    log.debug("SurveyLaunch event published");
   }
 }

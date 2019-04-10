@@ -33,24 +33,26 @@ public class RespondentHomeServiceImplTest {
   @Test
   public void testAddressQueryProcessing() throws Exception {
     // Ask the service layer to send the surveyLaunched event
-    String questionnaireId = "1234";
-    String caseId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
     SurveyLaunchedDTO surveyLaunchedDTO = new SurveyLaunchedDTO();
-    surveyLaunchedDTO.setQuestionnaireId(questionnaireId);
-    surveyLaunchedDTO.setCaseId(UUID.fromString(caseId));
+    surveyLaunchedDTO.setQuestionnaireId("1234");
+    surveyLaunchedDTO.setCaseId(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"));
     respondentHomeService.surveyLaunched(surveyLaunchedDTO);
 
-    // Verify the contents of the generated survey launched event
+    // Get hold of the event that respondentHomeService created
     Mockito.verify(publisher).sendEvent(sendEventCaptor.capture());
     GenericCaseEvent genericCaseEvent = sendEventCaptor.getValue();
+
+    // Verify the contents of the top level event data
     assertEquals("SurveyLaunched", genericCaseEvent.getEvent().getType());
     assertEquals("ContactCentreAPI", genericCaseEvent.getEvent().getSource());
     assertEquals("cc", genericCaseEvent.getEvent().getChannel());
     TestHelper.validateAsDateTime(genericCaseEvent.getEvent().getDateTime());
-    assertEquals("123", genericCaseEvent.getEvent().getTransactionId());
+    TestHelper.validateAsUUID(genericCaseEvent.getEvent().getTransactionId());
+    
+    // Verify contents of payload object
     Map<String, String> responseProperties = genericCaseEvent.getPayload().getResponse().getProperties();
-    assertEquals(questionnaireId, responseProperties.get("questionnaireId"));
-    assertEquals(caseId, responseProperties.get("caseId"));
+    assertEquals(surveyLaunchedDTO.getQuestionnaireId(), responseProperties.get("questionnaireId"));
+    assertEquals(surveyLaunchedDTO.getCaseId(), responseProperties.get("caseId"));
     assertEquals(null, responseProperties.get("agentId"));
     assertEquals(3, responseProperties.size());
   }

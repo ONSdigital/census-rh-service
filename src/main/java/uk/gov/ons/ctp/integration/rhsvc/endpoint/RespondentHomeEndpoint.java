@@ -6,16 +6,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 
-/** The REST endpoint controller for the Response Handler service */
+/**
+ * The REST endpoint controller for the Respondent Home service.
+ * This class covers top level endpoints.
+ */
 @RestController
 @RequestMapping(value = "/", produces = "application/json")
 public final class RespondentHomeEndpoint implements CTPEndpoint {
-  private static final Logger log = LoggerFactory.getLogger(RespondentHomeEndpoint.class);
 
   private RespondentHomeService respondentHomeService;
 
@@ -30,7 +30,6 @@ public final class RespondentHomeEndpoint implements CTPEndpoint {
    */
   @RequestMapping(value = "/surveyLaunched", method = RequestMethod.POST)
   public void surveyLaunched(@Valid @RequestBody SurveyLaunchedDTO surveyLaunchedDTO) {
-    String helloTeam = "Hello Census Integration!";
 
     respondentHomeService.surveyLaunched(surveyLaunchedDTO); 
   }
