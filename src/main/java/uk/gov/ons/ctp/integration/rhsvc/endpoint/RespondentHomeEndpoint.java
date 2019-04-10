@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
-import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentHomeServiceImpl;
+import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 
 /** The REST endpoint controller for the Response Handler service */
 @RestController
@@ -17,10 +17,10 @@ import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentHomeServiceImpl;
 public final class RespondentHomeEndpoint implements CTPEndpoint {
   private static final Logger log = LoggerFactory.getLogger(RespondentHomeEndpoint.class);
 
-  private RespondentHomeServiceImpl respondentHomeService;
+  private RespondentHomeService respondentHomeService;
 
   @Autowired
-  public RespondentHomeEndpoint(final RespondentHomeServiceImpl respondentHomeService) {
+  public RespondentHomeEndpoint(final RespondentHomeService respondentHomeService) {
     this.respondentHomeService = respondentHomeService;
   }
 
