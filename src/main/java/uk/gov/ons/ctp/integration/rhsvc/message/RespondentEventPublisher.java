@@ -1,7 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.message;
 
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericEvent;
-
 /**
  * Service responsible for the publication of respondent events to the Response Management System.
  */

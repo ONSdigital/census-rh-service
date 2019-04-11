@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.message;
 
 import org.springframework.integration.annotation.MessageEndpoint;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.UACEvent;
 
 /**
  * Service implementation responsible for receipt of UAC Events. See Spring Integration flow for

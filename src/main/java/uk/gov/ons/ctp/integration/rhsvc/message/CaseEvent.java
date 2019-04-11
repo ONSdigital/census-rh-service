@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.rhsvc.message.impl;
+package uk.gov.ons.ctp.integration.rhsvc.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

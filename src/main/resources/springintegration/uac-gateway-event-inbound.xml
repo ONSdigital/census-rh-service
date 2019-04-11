@@ -28,9 +28,9 @@
     <int:json-to-object-transformer id="uacEventObject"
                                     input-channel="jsonUacEventMessage"
                                     output-channel="acceptUACEvent"
-                                    type="uk.gov.ons.ctp.integration.rhsvc.message.impl.UACEvent" />
+                                    type="uk.gov.ons.ctp.integration.rhsvc.message.UACEvent" />
 
-    <int:channel id="acceptUACEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.message.impl.UACEvent" />
+    <int:channel id="acceptUACEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.message.UACEvent" />
 
     <!-- Start of section to deal with retries and DLQ after max attempts -->
     <int:channel id="uacEventDlqChannel" />

@@ -2,8 +2,8 @@ package uk.gov.ons.ctp.integration.rhsvc.service;
 
 import java.util.Optional;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.CollectionCase;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 
 public interface RespondentDataService {
 

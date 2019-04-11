@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.message.UACEvent;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /**

@@ -4,6 +4,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.integration.annotation.MessageEndpoint;
+import uk.gov.ons.ctp.integration.rhsvc.message.GenericEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 
 /** Service implementation responsible for publishing an event from the Respondent service. */

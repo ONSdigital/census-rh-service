@@ -13,8 +13,8 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.CollectionCase;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 /**
