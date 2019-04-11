@@ -119,16 +119,15 @@ public class RespondentDataServiceImpl implements RespondentDataService {
     }
   }
 
-  private void writeJsonToCloud(
-      String jsonInString, String universalAccessCode, String uacBucket, String s)
+  private void writeJsonToCloud(String jsonInString, String key, String bucket, String debugMessage)
       throws CTPException {
     try {
-      cloudDataStore.storeObject(uacBucket, universalAccessCode, jsonInString);
+      cloudDataStore.storeObject(bucket, key, jsonInString);
     } catch (StorageException e) {
-      log.with(universalAccessCode).error("Could not store UAC object into cloud", e);
+      log.with(key).error("Could not store json object in cloud", e);
       throw new CTPException(Fault.SYSTEM_ERROR);
     }
-    log.with(universalAccessCode).debug(s);
+    log.with(key).debug(debugMessage);
   }
 
   private Optional<UAC> deserialiseUAC(String universalAccessCode, String uacStrOpt)
