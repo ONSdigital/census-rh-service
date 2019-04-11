@@ -18,24 +18,28 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.message.UACEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.UACPayload;
+import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /** Spring Integration test of flow received from Response Management */
 @ContextConfiguration("/uacEventReceiverImpl.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class UacEventReceiverImplTest {
+public class UacEventReceiverImplIT_Test {
 
   @Autowired private UACEventReceiverImpl receiver;
   @Autowired private SimpleMessageListenerContainer uacEventListenerContainer;
+  @Autowired private RespondentDataServiceImpl respondentDataServiceImpl;
 
   /** Test the receiver flow */
   @Test
   public void uacEventFlowTest() throws Exception {
 
+    String bucket = "uac_bucket";
+
     // Construct UACEvent
     UACEvent uacEvent = new UACEvent();
     UACPayload uacPayload = uacEvent.getPayload();
     UAC uac = uacPayload.getUac();
-    uac.setUacHash("72C84BA99D77EE766E9468A0DE36433A44888E5DEC4AFB84F8019777800B7364");
+    uac.setUacHash("999999999");
     uac.setActive("true");
     uac.setQuestionnaireId("1110000009");
     uac.setCaseType("H");
@@ -58,5 +62,8 @@ public class UacEventReceiverImplTest {
     ArgumentCaptor<UACEvent> captur = ArgumentCaptor.forClass(UACEvent.class);
     verify(receiver).acceptUACEvent(captur.capture());
     assertTrue(captur.getValue().getPayload().equals(uacEvent.getPayload()));
+
+    // Tidy up by deleting the CaseEvent message from the case_bucket
+    respondentDataServiceImpl.deleteJsonFromCloud("999999999", bucket);
   }
 }

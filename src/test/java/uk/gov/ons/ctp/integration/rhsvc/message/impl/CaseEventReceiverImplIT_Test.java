@@ -18,24 +18,28 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CasePayload;
+import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /** Spring Integration test of flow received from Response Management */
 @ContextConfiguration("/caseEventReceiverImpl.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class CaseEventReceiverImplTest {
+public class CaseEventReceiverImplIT_Test {
 
   @Autowired private CaseEventReceiverImpl receiver;
   @Autowired private SimpleMessageListenerContainer caseEventListenerContainer;
+  @Autowired private RespondentDataServiceImpl respondentDataServiceImpl;
 
   /** Test the receiver flow */
   @Test
   public void caseEventFlowTest() throws Exception {
 
+    String bucket = "case_bucket";
+
     // Construct CaseEvent
     CaseEvent caseEvent = new CaseEvent();
     CasePayload casePayload = caseEvent.getPayload();
     CollectionCase collectionCase = casePayload.getCollectionCase();
-    collectionCase.setId("bbd55984-0dbf-4499-bfa7-0aa4228700e9");
+    collectionCase.setId("900000000");
     collectionCase.setCaseRef("10000000010");
     collectionCase.setSurvey("Census");
     collectionCase.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
@@ -59,5 +63,8 @@ public class CaseEventReceiverImplTest {
     ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
     verify(receiver).acceptCaseEvent(captur.capture());
     assertTrue(captur.getValue().getPayload().equals(caseEvent.getPayload()));
+
+    // Tidy up by deleting the CaseEvent message from the case_bucket
+    respondentDataServiceImpl.deleteJsonFromCloud("900000000", bucket);
   }
 }

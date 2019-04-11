@@ -175,4 +175,13 @@ public class RespondentDataServiceImpl implements RespondentDataService {
     }
     return collectionCaseStrOpt;
   }
+
+  public void deleteJsonFromCloud(String key, String bucket) throws CTPException {
+    try {
+      cloudDataStore.deleteObject(key, bucket);
+    } catch (StorageException e) {
+      log.with(key).error(e.getMessage());
+      throw new CTPException(Fault.SYSTEM_ERROR, e);
+    }
+  }
 }

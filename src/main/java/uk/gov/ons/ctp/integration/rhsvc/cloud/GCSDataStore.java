@@ -74,6 +74,22 @@ public class GCSDataStore implements CloudDataStore {
     return Optional.of(value);
   }
 
+  @Override
+  public void deleteObject(final String key, final String bucket) {
+    log.info("Now in the deleteObject method in class GCSDataStore.");
+    if (null == bucket || bucket.length() == 0) {
+      log.with(bucket).info("Bucket name was not set for object retrieval");
+      return;
+    }
+    if (null == key || key.length() == 0) {
+      log.with(key).info("Key was not set for object retrieval");
+      return;
+    }
+    BlobId blobId = BlobId.of(bucket, key);
+    storage.delete(blobId);
+    log.with(blobId).info("Deleted item from bucket");
+  }
+
   private void saveObjectToCloud(String bucket, String key, String value, Storage storage)
       throws StorageException {
     BlobId blobId = BlobId.of(bucket, key);
