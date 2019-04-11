@@ -14,6 +14,6 @@ public interface RespondentEventPublisher {
    * @param event CaseEvent to publish.
    */
   void sendEvent(CaseEvent event);
-  
-  void sendEvent(GenericCaseEvent event);
+
+  void sendSurveyLaunchedEvent(GenericCaseEvent event);
 }

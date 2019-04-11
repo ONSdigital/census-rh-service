@@ -27,8 +27,8 @@ public class RespondentEventPublisherImpl implements RespondentEventPublisher {
   public void sendEvent(CaseEvent event) {
     rabbitTemplate.convertAndSend(event);
   }
-  
-  public void sendEvent(GenericCaseEvent event) {
+
+  public void sendSurveyLaunchedEvent(GenericCaseEvent event) {
     surveyLaunchedRabbitTemplate.convertAndSend(event);
   }
 }

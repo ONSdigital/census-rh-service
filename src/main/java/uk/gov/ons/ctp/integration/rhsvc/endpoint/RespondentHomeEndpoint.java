@@ -11,8 +11,8 @@ import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 
 /**
- * The REST endpoint controller for the Respondent Home service.
- * This class covers top level endpoints.
+ * The REST endpoint controller for the Respondent Home service. This class covers top level
+ * endpoints.
  */
 @RestController
 @RequestMapping(value = "/", produces = "application/json")
@@ -26,12 +26,12 @@ public final class RespondentHomeEndpoint implements CTPEndpoint {
   }
 
   /**
-   * This is a POST endpoint which will be invoked when a survey is launched.
-   * It sends a survey launched event using RabbitMQ.
+   * This is a POST endpoint which will be invoked when a survey is launched. It sends a survey
+   * launched event using RabbitMQ.
    */
   @RequestMapping(value = "/surveyLaunched", method = RequestMethod.POST)
   public void surveyLaunched(@Valid @RequestBody SurveyLaunchedDTO surveyLaunchedDTO) {
 
-    respondentHomeService.surveyLaunched(surveyLaunchedDTO); 
+    respondentHomeService.surveyLaunched(surveyLaunchedDTO);
   }
 }

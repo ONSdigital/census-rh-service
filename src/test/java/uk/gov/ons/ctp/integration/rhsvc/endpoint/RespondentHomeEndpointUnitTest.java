@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -12,7 +13,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
@@ -42,34 +42,39 @@ public final class RespondentHomeEndpointUnitTest {
             .build();
   }
 
-
   @Test
   public void surveyLaunched() throws Exception {
     Mockito.doNothing().when(respondentHomeService).surveyLaunched(any());
-    
-    String surveyLaunchedRequestBody = "{ \"questionnaireId\": \"23434234234\",   \"caseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\" }";
-    mockMvc.perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
+
+    String surveyLaunchedRequestBody =
+        "{ \"questionnaireId\": \"23434234234\",   \"caseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\" }";
+    mockMvc
+        .perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
         .andExpect(status().isOk());
   }
 
   @Test
   public void surveyLaunchedWithMissingQuestionnaireId() throws Exception {
     String surveyLaunchedRequestBody = "{ \"caseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\" }";
-    mockMvc.perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
+    mockMvc
+        .perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   public void surveyLaunchedWithInvalidCaseId() throws Exception {
-    String surveyLaunchedRequestBody = "{ \"questionnaireId\": \"23434234234\",   \"caseId\": \"euieuieu@#$@#$\" }";
-    mockMvc.perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
+    String surveyLaunchedRequestBody =
+        "{ \"questionnaireId\": \"23434234234\",   \"caseId\": \"euieuieu@#$@#$\" }";
+    mockMvc
+        .perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   public void surveyLaunchedWithInvalidRequest() throws Exception {
     String surveyLaunchedRequestBody = "uoeuoeu 45345345 euieuiaooo";
-    mockMvc.perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
+    mockMvc
+        .perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
         .andExpect(status().isBadRequest());
   }
 }

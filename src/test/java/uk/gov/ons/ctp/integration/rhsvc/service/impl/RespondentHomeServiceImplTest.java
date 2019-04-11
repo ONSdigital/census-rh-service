@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
+
 import java.util.Map;
 import java.util.UUID;
 import org.junit.Before;
@@ -20,8 +21,7 @@ public class RespondentHomeServiceImplTest {
 
   @Mock RespondentEventPublisher publisher;
 
-  @InjectMocks
-  RespondentHomeServiceImpl respondentHomeService;
+  @InjectMocks RespondentHomeServiceImpl respondentHomeService;
 
   @Captor ArgumentCaptor<GenericCaseEvent> sendEventCaptor;
 
@@ -39,7 +39,7 @@ public class RespondentHomeServiceImplTest {
     respondentHomeService.surveyLaunched(surveyLaunchedDTO);
 
     // Get hold of the event that respondentHomeService created
-    Mockito.verify(publisher).sendEvent(sendEventCaptor.capture());
+    Mockito.verify(publisher).sendSurveyLaunchedEvent(sendEventCaptor.capture());
     GenericCaseEvent genericCaseEvent = sendEventCaptor.getValue();
 
     // Verify the contents of the top level event data
@@ -48,9 +48,10 @@ public class RespondentHomeServiceImplTest {
     assertEquals("cc", genericCaseEvent.getEvent().getChannel());
     TestHelper.validateAsDateTime(genericCaseEvent.getEvent().getDateTime());
     TestHelper.validateAsUUID(genericCaseEvent.getEvent().getTransactionId());
-    
+
     // Verify contents of payload object
-    Map<String, String> responseProperties = genericCaseEvent.getPayload().getResponse().getProperties();
+    Map<String, String> responseProperties =
+        genericCaseEvent.getPayload().getResponse().getProperties();
     assertEquals(surveyLaunchedDTO.getQuestionnaireId(), responseProperties.get("questionnaireId"));
     assertEquals(surveyLaunchedDTO.getCaseId().toString(), responseProperties.get("caseId"));
     assertEquals(null, responseProperties.get("agentId"));
