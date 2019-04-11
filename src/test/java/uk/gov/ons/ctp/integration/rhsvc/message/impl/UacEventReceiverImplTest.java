@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class UacEventReceiverImplTest {
 
-  @Autowired private UACEventReceiver receiver;
+  @Autowired private UACEventReceiverImpl receiver;
   @Autowired private SimpleMessageListenerContainer uacEventListenerContainer;
 
   /** Test the receiver flow */

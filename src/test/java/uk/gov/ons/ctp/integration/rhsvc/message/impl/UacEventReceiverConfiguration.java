@@ -35,7 +35,7 @@ public class UacEventReceiverConfiguration {
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public UACEventReceiver receiver() {
-    return Mockito.spy(new UACEventReceiver());
+  public UACEventReceiverImpl receiver() {
+    return Mockito.spy(new UACEventReceiverImpl());
   }
 }
