@@ -9,7 +9,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
-import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
+import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 /**
  * Service implementation responsible for receipt of Case Events. See Spring Integration flow for
@@ -18,7 +18,7 @@ import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 @MessageEndpoint
 public class CaseEventReceiverImpl implements CaseEventReceiver {
 
-  @Autowired private RespondentDataServiceImpl respondentDataServiceImpl;
+  @Autowired private RespondentDataService respondentDataService;
   private static final Logger log = LoggerFactory.getLogger(CaseEventReceiverImpl.class);
 
   /**
@@ -36,7 +36,7 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
     collectionCase = caseEvent.getPayload().getCollectionCase();
 
     try {
-      respondentDataServiceImpl.writeCollectionCase(
+      respondentDataService.writeCollectionCase(
           collectionCase); // need to catch uk.gov.ons.ctp.common.error.CTPException
     } catch (CTPException ctpEx) {
       log.with(ctpEx.getMessage()).info("ERROR");
