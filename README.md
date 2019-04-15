@@ -57,7 +57,7 @@ In order to run the Rabbitmq service, so that you can publish CaseCreated, CaseU
     ```bash
     docker-compose up -d
     ```
-Messages that are published to the case-outbound-exchange will be routed to either the Case.Gateway or UAC.Gateway queue (depending on their binding).
+Messages that are published to the events exchange will be routed to either the Case.Gateway or UAC.Gateway queue (depending on their binding).
 They will then be received by census-rh-service and stored in either the case_bucket or the uac_bucket (as appropriate) of the relevant Google Cloud Platform project.
 The project to use is given by the Application Default Credentials (These are the credential associated with the service account that your app engine app runs as - to set these up please follow the steps given in the previous section).
 
@@ -75,7 +75,7 @@ The Rabbitmq management console should be found at the following endpoint:
 
 http://localhost:46672/#/queues
 
-CaseCreated and CaseUpdated events can be manually published to the case-outbound-exchange, using the binding key event.case.lifecycle. They should have the following format:
+CaseCreated and CaseUpdated events can be manually published to the events exchange, using the binding key event.case.lifecycle. They should have the following format:
 
 {
   "event" : {

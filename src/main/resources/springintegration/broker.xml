@@ -51,7 +51,7 @@
 
 	<!-- Start of Exchanges -->
 
-	<rabbit:direct-exchange name="case-outbound-exchange">
+	<rabbit:direct-exchange name="events">
 		<rabbit:bindings>
 			<rabbit:binding queue="Case.Gateway" key="event.case.lifecycle" />
 			<rabbit:binding queue="UAC.Gateway" key="event.uac.updates" />
