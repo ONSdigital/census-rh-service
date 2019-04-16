@@ -1,52 +1,31 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CasePayload;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
-//import org.junit.runner.RunWith;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.test.context.ContextConfiguration;
-//import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-// import org.junit.Ignore;
-// import org.junit.runner.RunWith;
- import org.mockito.Mock;
- import org.mockito.Mockito;
- import org.mockito.MockitoAnnotations;
-// import org.powermock.api.mockito.PowerMockito;
-// import org.powermock.core.classloader.annotations.PowerMockIgnore;
-// import org.powermock.core.classloader.annotations.PrepareForTest;
-// import org.powermock.modules.junit4.PowerMockRunner;
-
 
 public class CaseEventReceiverImplUnit_Test {
 
-  //  @Mock private RespondentDataService mockRespondentDataService;
-  //
-//  @Autowired private CaseEventReceiverImpl receiver;
-//  @Autowired private RespondentDataServiceImpl respondentDataServiceImpl;
-  //  @Before
-  //  public void setUp() {
-  //
-  ////    target = new CaseEventReceiverImpl();
-  //    //    mockRespondentDataService = PowerMockito.mock(RespondentDataService.class);
-  //    //    MockitoAnnotations.initMocks(this);
-  //
-  //  }
+  private RespondentDataService mockRespondentDataService;
+  private CaseEventReceiverImpl target;
 
-  //  @PrepareForTest(CaseEventReceiverImpl.class)
+  @Before
+  public void setUp() {
+
+    target = new CaseEventReceiverImpl();
+
+    mockRespondentDataService = Mockito.mock(RespondentDataServiceImpl.class);
+    target.setRespondentDataService(mockRespondentDataService);
+  }
+
   @Test
   public void test_acceptCaseEvent_success() throws CTPException {
-
-    //setup
-    CaseEventReceiverImpl target = new CaseEventReceiverImpl();
-
-    RespondentDataService mockRespondentDataService = Mockito.mock(RespondentDataServiceImpl.class);
-    target.setRespondentDataService(mockRespondentDataService);
 
     // Construct CaseEvent
     CaseEvent caseEventFixture = new CaseEvent();
@@ -61,11 +40,10 @@ public class CaseEventReceiverImplUnit_Test {
     collectionCaseFixture.setState("actionable");
     collectionCaseFixture.setActionableFrom("2011-08-12T20:17:46.384Z");
 
-    //execution
+    // execution
     target.acceptCaseEvent(caseEventFixture);
 
-    //verification
+    // verification
     Mockito.verify(mockRespondentDataService).writeCollectionCase(collectionCaseFixture);
-
   }
 }

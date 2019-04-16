@@ -2,6 +2,9 @@ package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -10,12 +13,13 @@ import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.message.UACEvent;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
-// import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
-
 /**
  * Service implementation responsible for receipt of UAC Events. See Spring Integration flow for
  * details of in bound queue.
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @MessageEndpoint
 public class UACEventReceiverImpl {
 
