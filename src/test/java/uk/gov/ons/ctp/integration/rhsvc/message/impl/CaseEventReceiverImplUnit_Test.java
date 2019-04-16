@@ -1,36 +1,34 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CasePayload;
+import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
+//import org.junit.runner.RunWith;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.test.context.ContextConfiguration;
+//import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 // import org.junit.Ignore;
 // import org.junit.runner.RunWith;
-// import org.mockito.Mock;
-// import org.mockito.MockitoAnnotations;
+ import org.mockito.Mock;
+ import org.mockito.Mockito;
+ import org.mockito.MockitoAnnotations;
 // import org.powermock.api.mockito.PowerMockito;
 // import org.powermock.core.classloader.annotations.PowerMockIgnore;
 // import org.powermock.core.classloader.annotations.PrepareForTest;
 // import org.powermock.modules.junit4.PowerMockRunner;
-// import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
-// @RunWith(PowerMockRunner.class)
-// @PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
-// @PrepareForTest(fullyQualifiedNames = "uk.gov.ons.ctp.integration.rhsvc.message.*")
-@ContextConfiguration("/caseEventReceiverImplUnit.xml")
-@RunWith(SpringJUnit4ClassRunner.class)
-public class CaseEventReceiverImplUnitTest {
+
+public class CaseEventReceiverImplUnit_Test {
 
   //  @Mock private RespondentDataService mockRespondentDataService;
   //
-  @Autowired private CaseEventReceiverImpl receiver;
-  @Autowired private RespondentDataServiceImpl respondentDataServiceImpl;
+//  @Autowired private CaseEventReceiverImpl receiver;
+//  @Autowired private RespondentDataServiceImpl respondentDataServiceImpl;
   //  @Before
   //  public void setUp() {
   //
@@ -42,16 +40,13 @@ public class CaseEventReceiverImplUnitTest {
 
   //  @PrepareForTest(CaseEventReceiverImpl.class)
   @Test
-  public void test_acceptCaseEvent_success() {
+  public void test_acceptCaseEvent_success() throws CTPException {
 
-    //    CaseEvent caseEventMock = PowerMockito.mock(CaseEvent.class);
-    //    CasePayload casePayloadMock = PowerMockito.mock(CasePayload.class);
-    //    CollectionCase collectionCaseMock = PowerMockito.mock(CollectionCase.class);
-    //
-    //    PowerMockito.when(caseEventMock.getPayload()).thenReturn(casePayloadMock);
-    //    PowerMockito.when(caseEventMock.getPayload().getCollectionCase())
-    //        .thenReturn(collectionCaseMock);
-    //
+    //setup
+    CaseEventReceiverImpl target = new CaseEventReceiverImpl();
+
+    RespondentDataService mockRespondentDataService = Mockito.mock(RespondentDataServiceImpl.class);
+    target.setRespondentDataService(mockRespondentDataService);
 
     // Construct CaseEvent
     CaseEvent caseEventFixture = new CaseEvent();
@@ -66,6 +61,11 @@ public class CaseEventReceiverImplUnitTest {
     collectionCaseFixture.setState("actionable");
     collectionCaseFixture.setActionableFrom("2011-08-12T20:17:46.384Z");
 
-    receiver.acceptCaseEvent(caseEventFixture);
+    //execution
+    target.acceptCaseEvent(caseEventFixture);
+
+    //verification
+    Mockito.verify(mockRespondentDataService).writeCollectionCase(collectionCaseFixture);
+
   }
 }

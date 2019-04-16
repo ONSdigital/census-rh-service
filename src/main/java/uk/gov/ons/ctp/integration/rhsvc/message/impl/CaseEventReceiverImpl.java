@@ -2,6 +2,9 @@ package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -15,10 +18,13 @@ import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
  * Service implementation responsible for receipt of Case Events. See Spring Integration flow for
  * details of in bound queue.
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @MessageEndpoint
 public class CaseEventReceiverImpl implements CaseEventReceiver {
 
-  @Autowired public RespondentDataService respondentDataService;
+  @Autowired private RespondentDataService respondentDataService;
   private static final Logger log = LoggerFactory.getLogger(CaseEventReceiverImpl.class);
 
   /**
