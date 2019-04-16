@@ -19,22 +19,22 @@ import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 public class CaseEventReceiverConfiguration {
 
   /** Setup mock ConnectionFactory for SimpleMessageContainerListener */
-  @Bean
-  @Primary
-  public ConnectionFactory connectionFactory() {
+//  @Bean
+//  @Primary
+//  public ConnectionFactory connectionFactory() {
+//
+//    Connection connection = mock(Connection.class);
+//    doAnswer(invocation -> mock(Channel.class)).when(connection).createChannel(anyBoolean());
+//    ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
+//    when(connectionFactory.createConnection()).thenReturn(connection);
+//    return connectionFactory;
+//  }
 
-    Connection connection = mock(Connection.class);
-    doAnswer(invocation -> mock(Channel.class)).when(connection).createChannel(anyBoolean());
-    ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
-    when(connectionFactory.createConnection()).thenReturn(connection);
-    return connectionFactory;
-  }
-
-  /** Mock injected by CaseEventReceiver */
-  @Bean
-  public RespondentEventPublisher publisher() {
-    return mock(RespondentEventPublisher.class);
-  }
+//  /** Mock injected by CaseEventReceiver */
+//  @Bean
+//  public RespondentEventPublisher publisher() {
+//    return mock(RespondentEventPublisher.class);
+//  }
 
   /** Spy on Service Activator Message End point */
   @Bean
