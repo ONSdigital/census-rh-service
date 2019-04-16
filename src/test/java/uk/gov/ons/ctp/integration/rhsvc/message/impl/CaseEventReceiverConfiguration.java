@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
+import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 @Configuration
 public class CaseEventReceiverConfiguration {
@@ -39,5 +40,11 @@ public class CaseEventReceiverConfiguration {
   @Bean
   public CaseEventReceiverImpl receiver() {
     return Mockito.spy(new CaseEventReceiverImpl());
+  }
+
+  /** Mock injected by CaseEventReceiver */
+  @Bean
+  public RespondentDataService respondentDataService() {
+    return mock(RespondentDataService.class);
   }
 }

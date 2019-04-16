@@ -18,7 +18,7 @@ import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 @MessageEndpoint
 public class CaseEventReceiverImpl implements CaseEventReceiver {
 
-  @Autowired private RespondentDataService respondentDataService;
+  @Autowired public RespondentDataService respondentDataService;
   private static final Logger log = LoggerFactory.getLogger(CaseEventReceiverImpl.class);
 
   /**
