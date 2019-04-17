@@ -36,16 +36,17 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
   public void acceptCaseEvent(CaseEvent caseEvent) {
 
     CollectionCase collectionCase;
-
-    log.info("The event being received is: " + caseEvent.toString());
-
     collectionCase = caseEvent.getPayload().getCollectionCase();
+
+    log.with(caseEvent.getEvent().getType())
+        .with(caseEvent.getEvent().getTransactionId())
+        .info("Now receiving case event with transactionId and type as shown here");
 
     try {
       respondentDataService.writeCollectionCase(
           collectionCase); // need to catch uk.gov.ons.ctp.common.error.CTPException
     } catch (CTPException ctpEx) {
-      log.with(ctpEx.getMessage()).info("ERROR");
+      log.with(ctpEx.getMessage()).debug("ERROR");
     }
   }
 }

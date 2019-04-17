@@ -7,6 +7,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CasePayload;
+import uk.gov.ons.ctp.integration.rhsvc.message.Header;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
@@ -39,6 +40,10 @@ public class CaseEventReceiverImplUnit_Test {
     collectionCaseFixture.setAddress("");
     collectionCaseFixture.setState("actionable");
     collectionCaseFixture.setActionableFrom("2011-08-12T20:17:46.384Z");
+    Header headerFixture = new Header();
+    headerFixture.setType("CASE_UPDATED");
+    headerFixture.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
+    caseEventFixture.setEvent(headerFixture);
 
     // execution
     target.acceptCaseEvent(caseEventFixture);

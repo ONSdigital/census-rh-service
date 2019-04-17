@@ -18,6 +18,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CasePayload;
+import uk.gov.ons.ctp.integration.rhsvc.message.Header;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /** Spring Integration test of flow received from Response Management */
@@ -47,6 +48,10 @@ public class CaseEventReceiverImplIT_Test {
     collectionCase.setAddress("");
     collectionCase.setState("actionable");
     collectionCase.setActionableFrom("2011-08-12T20:17:46.384Z");
+    Header header = new Header();
+    header.setType("CASE_UPDATED");
+    header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
+    caseEvent.setEvent(header);
 
     // Construct message
     MessageProperties amqpMessageProperties = new MessageProperties();

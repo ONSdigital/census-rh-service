@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.message.Header;
 import uk.gov.ons.ctp.integration.rhsvc.message.UACEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.UACPayload;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
@@ -38,6 +39,10 @@ public class UacEventReceiverImplUnit_Test {
     uacFixture.setRegion("E");
     uacFixture.setCaseId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     uacFixture.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
+    Header headerFixture = new Header();
+    headerFixture.setType("UAC_UPDATED");
+    headerFixture.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
+    uacEventFixture.setEvent(headerFixture);
 
     // execution
     target.acceptUACEvent(uacEventFixture);

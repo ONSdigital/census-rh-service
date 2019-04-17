@@ -37,7 +37,9 @@ public class UACEventReceiverImpl {
 
     UAC uac;
 
-    log.info("The event being received is: " + uacEvent.toString());
+    log.with(uacEvent.getEvent().getType())
+        .with(uacEvent.getEvent().getTransactionId())
+        .info("Now receiving uac event with transactionId and type as shown here");
 
     uac = uacEvent.getPayload().getUac();
 

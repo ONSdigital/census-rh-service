@@ -51,8 +51,7 @@ public class GCSDataStore implements CloudDataStore {
    * @return - JSON string representation of the object retrieved
    */
   @Override
-  public Optional<String> retrieveObject(final String bucket, final String key)
-      throws StorageException {
+  public Optional<String> retrieveObject(final String bucket, final String key) {
     log.info("Now in the retrieveObject method in class GCSDataStore.");
     if (null == bucket || bucket.length() == 0) {
       log.with(bucket).info("Bucket name was not set for object retrieval");

@@ -10,9 +10,4 @@ import lombok.NoArgsConstructor;
 public class UACEvent extends GenericEvent {
 
   private UACPayload payload = new UACPayload();
-
-  @Override
-  public String toString() {
-    return super.toString() + " " + payload.toString();
-  }
 }

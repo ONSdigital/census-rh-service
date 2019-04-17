@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.message.Header;
 import uk.gov.ons.ctp.integration.rhsvc.message.UACEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.UACPayload;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
@@ -46,6 +47,10 @@ public class UacEventReceiverImplIT_Test {
     uac.setRegion("E");
     uac.setCaseId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     uac.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
+    Header header = new Header();
+    header.setType("UAC_UPDATED");
+    header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
+    uacEvent.setEvent(header);
 
     // Construct message
     MessageProperties amqpMessageProperties = new MessageProperties();
