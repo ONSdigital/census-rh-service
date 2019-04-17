@@ -33,20 +33,25 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
    * @param caseEvent CaseEvent message from Response Management
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
-  public void acceptCaseEvent(CaseEvent caseEvent) {
+  public void acceptCaseEvent(CaseEvent caseEvent) throws CTPException {
 
     CollectionCase collectionCase;
-    collectionCase = caseEvent.getPayload().getCollectionCase();
+    String caseType = caseEvent.getEvent().getType();
+    String caseTransactionId = caseEvent.getEvent().getTransactionId();
 
-    log.with(caseEvent.getEvent().getType())
-        .with(caseEvent.getEvent().getTransactionId())
+    log.with(caseType)
+        .with(caseTransactionId)
         .info("Now receiving case event with transactionId and type as shown here");
 
+    collectionCase = caseEvent.getPayload().getCollectionCase();
+
     try {
-      respondentDataService.writeCollectionCase(
-          collectionCase); // need to catch uk.gov.ons.ctp.common.error.CTPException
+      respondentDataService.writeCollectionCase(collectionCase);
     } catch (CTPException ctpEx) {
-      log.with(ctpEx.getMessage()).debug("ERROR");
+      log.with(caseTransactionId)
+          .with(ctpEx.getMessage())
+          .error("ERROR: The event processing, for this transactionId, has failed");
+      throw new CTPException(ctpEx.getFault());
     }
   }
 }

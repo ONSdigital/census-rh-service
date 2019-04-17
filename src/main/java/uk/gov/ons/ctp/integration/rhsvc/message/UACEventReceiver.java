@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.message;
 
 import org.springframework.integration.annotation.MessageEndpoint;
+import uk.gov.ons.ctp.common.error.CTPException;
 
 /**
  * Service implementation responsible for receipt of UAC Events. See Spring Integration flow for
@@ -14,5 +15,5 @@ public interface UACEventReceiver {
    *
    * @param event UACEvent message from Response Management
    */
-  public void acceptUACEvent(UACEvent event);
+  public void acceptUACEvent(UACEvent event) throws CTPException;
 }

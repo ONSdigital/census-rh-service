@@ -33,20 +33,25 @@ public class UACEventReceiverImpl {
    * @param uacEvent UACEvent message from Response Management
    */
   @ServiceActivator(inputChannel = "acceptUACEvent")
-  public void acceptUACEvent(UACEvent uacEvent) {
+  public void acceptUACEvent(UACEvent uacEvent) throws CTPException {
 
     UAC uac;
+    String uacType = uacEvent.getEvent().getType();
+    String uacTransactionId = uacEvent.getEvent().getTransactionId();
 
-    log.with(uacEvent.getEvent().getType())
-        .with(uacEvent.getEvent().getTransactionId())
+    log.with(uacType)
+        .with(uacTransactionId)
         .info("Now receiving uac event with transactionId and type as shown here");
 
     uac = uacEvent.getPayload().getUac();
 
     try {
-      respondentDataService.writeUAC(uac); // need to catch uk.gov.ons.ctp.common.error.CTPException
+      respondentDataService.writeUAC(uac);
     } catch (CTPException ctpEx) {
-      log.with(ctpEx.getMessage()).info("ERROR");
+      log.with(uacTransactionId)
+          .with(ctpEx.getMessage())
+          .error("ERROR: The event processing, for this transactionId, has failed");
+      throw new CTPException(ctpEx.getFault());
     }
   }
 }
