@@ -40,7 +40,6 @@ public class GCSDataStore implements CloudDataStore {
       log.with(se.getMessage()).info("ERROR");
     }
 
-    log.info("Now saving the object to the cloud");
     saveObjectToCloud(bucket, key, value, storage);
   }
 
@@ -92,6 +91,7 @@ public class GCSDataStore implements CloudDataStore {
 
   private void saveObjectToCloud(String bucket, String key, String value, Storage storage)
       throws StorageException {
+    log.with(bucket).with(key).info("Now saving the object to the cloud");
     BlobId blobId = BlobId.of(bucket, key);
     BlobInfo.Builder builder = BlobInfo.newBuilder(blobId);
     BlobInfo blobInfo = builder.setContentType("text/plain").build();
