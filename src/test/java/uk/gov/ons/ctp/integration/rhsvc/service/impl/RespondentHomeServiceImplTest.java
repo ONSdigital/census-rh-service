@@ -43,9 +43,9 @@ public class RespondentHomeServiceImplTest {
     GenericCaseEvent genericCaseEvent = sendEventCaptor.getValue();
 
     // Verify the contents of the top level event data
-    assertEquals("SurveyLaunched", genericCaseEvent.getEvent().getType());
-    assertEquals("ContactCentreAPI", genericCaseEvent.getEvent().getSource());
-    assertEquals("cc", genericCaseEvent.getEvent().getChannel());
+    assertEquals("SURVEY_LAUNCHED", genericCaseEvent.getEvent().getType());
+    assertEquals("CONTACT_CENTRE_API", genericCaseEvent.getEvent().getSource());
+    assertEquals("CC", genericCaseEvent.getEvent().getChannel());
     TestHelper.validateAsDateTime(genericCaseEvent.getEvent().getDateTime());
     TestHelper.validateAsUUID(genericCaseEvent.getEvent().getTransactionId());
 

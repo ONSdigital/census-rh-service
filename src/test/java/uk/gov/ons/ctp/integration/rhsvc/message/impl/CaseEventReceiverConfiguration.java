@@ -12,33 +12,35 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 
+@Profile("mocked-connection-factory")
 @Configuration
 public class CaseEventReceiverConfiguration {
 
   /** Setup mock ConnectionFactory for SimpleMessageContainerListener */
-//  @Bean
-//  @Primary
-//  public ConnectionFactory connectionFactory() {
-//
-//    Connection connection = mock(Connection.class);
-//    doAnswer(invocation -> mock(Channel.class)).when(connection).createChannel(anyBoolean());
-//    ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
-//    when(connectionFactory.createConnection()).thenReturn(connection);
-//    return connectionFactory;
-//  }
+  @Bean
+  @Primary
+  public ConnectionFactory connectionFactory() {
 
-//  /** Mock injected by CaseEventReceiver */
-//  @Bean
-//  public RespondentEventPublisher publisher() {
-//    return mock(RespondentEventPublisher.class);
-//  }
+    Connection connection = mock(Connection.class);
+    doAnswer(invocation -> mock(Channel.class)).when(connection).createChannel(anyBoolean());
+    ConnectionFactory connectionFactory = mock(ConnectionFactory.class);
+    when(connectionFactory.createConnection()).thenReturn(connection);
+    return connectionFactory;
+  }
+
+  /** Mock injected by CaseEventReceiver */
+  @Bean
+  public RespondentEventPublisher publisher() {
+    return mock(RespondentEventPublisher.class);
+  }
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public CaseEventReceiver reciever() {
+  public CaseEventReceiver receiver() {
     return Mockito.spy(new CaseEventReceiverImpl());
   }
 }

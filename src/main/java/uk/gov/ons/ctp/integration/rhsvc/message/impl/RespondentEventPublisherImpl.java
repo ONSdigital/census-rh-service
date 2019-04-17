@@ -19,10 +19,6 @@ public class RespondentEventPublisherImpl implements RespondentEventPublisher {
   @Autowired
   private RabbitTemplate surveyLaunchedRabbitTemplate;
 
-  public RespondentEventPublisherImpl() {
-    System.out.println("PMB in constructor");
-  }
-  
   /**
    * To publish an Respondent Event message
    *

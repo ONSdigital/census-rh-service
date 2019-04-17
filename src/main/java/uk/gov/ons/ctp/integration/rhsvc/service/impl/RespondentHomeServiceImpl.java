@@ -28,9 +28,9 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
 
     Header eventData =
         Header.builder()
-            .type("SurveyLaunched")
-            .source("ContactCentreAPI")
-            .channel("cc")
+            .type("SURVEY_LAUNCHED")
+            .source("CONTACT_CENTRE_API")
+            .channel("CC")
             .dateTime(DateTimeUtil.getCurrentDateTimeInJsonFormat())
             .transactionId(transactionId.toString())
             .build();
