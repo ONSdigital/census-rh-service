@@ -27,9 +27,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.TestHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.endpoint.RespondentHomeEndpoint;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericCaseEvent;
+import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.impl.Header;
 
 /**
@@ -46,7 +46,7 @@ public class SurveyLaunchedIT {
 
   private MockMvc mockMvc;
 
-  @Captor private ArgumentCaptor<GenericCaseEvent> publishCaptor;
+  @Captor private ArgumentCaptor<SurveyLaunchedEvent> publishCaptor;
 
   @Before
   public void setUp() throws Exception {
@@ -76,7 +76,7 @@ public class SurveyLaunchedIT {
 
     // Get ready to capture the survey details published to the exchange
     Mockito.verify(rabbitTemplate).convertAndSend(publishCaptor.capture());
-    GenericCaseEvent publishedEvent = publishCaptor.getValue();
+    SurveyLaunchedEvent publishedEvent = publishCaptor.getValue();
 
     // Validate contents of the published event
     Header event = publishedEvent.getEvent();
@@ -86,10 +86,10 @@ public class SurveyLaunchedIT {
     TestHelper.validateAsDateTime(event.getDateTime());
     TestHelper.validateAsUUID(event.getTransactionId());
     // Verify content of 'payload' part
-    CaseEvent response = publishedEvent.getPayload().getResponse();
-    assertEquals(questionnaireId, response.getProperties().get("questionnaireId"));
-    assertEquals(caseId, response.getProperties().get("caseId"));
-    assertNull(response.getProperties().get("agentId"));
+    SurveyLaunchedResponse response = publishedEvent.getPayload().getResponse();
+    assertEquals(questionnaireId, response.getQuestionnaireId());
+    assertEquals(caseId, response.getCaseId());
+    assertNull(response.getAgentId());
   }
 
   /**

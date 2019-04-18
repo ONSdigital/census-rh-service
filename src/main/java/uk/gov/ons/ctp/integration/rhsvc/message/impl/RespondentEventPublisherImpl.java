@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.integration.annotation.MessageEndpoint;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
+import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
 
 /** Service implementation responsible for publishing an event from the Respondent service. */
 @MessageEndpoint
@@ -28,7 +29,7 @@ public class RespondentEventPublisherImpl implements RespondentEventPublisher {
     rabbitTemplate.convertAndSend(event);
   }
 
-  public void sendSurveyLaunchedEvent(GenericCaseEvent event) {
+  public void sendSurveyLaunchedEvent(SurveyLaunchedEvent event) {
     surveyLaunchedRabbitTemplate.convertAndSend(event);
   }
 }

@@ -6,12 +6,11 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericCaseEvent;
+import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.impl.Header;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.Payload;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 
 /** This is a service layer class, which performs RH business level logic for the endpoints. */
@@ -23,8 +22,15 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
 
   @Override
   public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) {
-    UUID transactionId = UUID.randomUUID(); // PMB. Check that this should be based on a new UUID
-    log.debug("Generating SurveyLaunched event with transactionId: " + transactionId.toString());
+    UUID transactionId = UUID.randomUUID();
+    log.debug(
+        "Generating SurveyLaunched event"
+            + " for questionnaireId: "
+            + surveyLaunchedDTO.getQuestionnaireId()
+            + ", caseId: "
+            + surveyLaunchedDTO.getCaseId()
+            + ". Using transactionId: "
+            + transactionId);
 
     Header eventData =
         Header.builder()
@@ -35,14 +41,21 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
             .transactionId(transactionId.toString())
             .build();
 
-    CaseEvent response = new CaseEvent();
-    response.add("questionnaireId", surveyLaunchedDTO.getQuestionnaireId());
-    response.add("caseId", surveyLaunchedDTO.getCaseId().toString());
-    response.add("agentId", null);
+    SurveyLaunchedResponse response =
+        SurveyLaunchedResponse.builder()
+            .questionnaireId(surveyLaunchedDTO.getQuestionnaireId())
+            .caseId(surveyLaunchedDTO.getCaseId().toString())
+            .agentId(null)
+            .build();
 
-    GenericCaseEvent caseEvent = new GenericCaseEvent(eventData, new Payload(response));
-    publisher.sendSurveyLaunchedEvent(caseEvent);
+    // Concatenate parts to create Survey Launched event
+    SurveyLaunchedEvent surveyLaunchedEvent = new SurveyLaunchedEvent();
+    surveyLaunchedEvent.setEvent(eventData);
+    surveyLaunchedEvent.getPayload().setResponse(response);
 
-    log.debug("SurveyLaunch event published");
+    // Publish to Rabbit exchange
+    publisher.sendSurveyLaunchedEvent(surveyLaunchedEvent);
+
+    log.debug("SurveyLaunch event published for transactionId: " + transactionId);
   }
 }

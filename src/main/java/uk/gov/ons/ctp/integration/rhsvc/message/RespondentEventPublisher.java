@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.message;
 
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CaseEvent;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericCaseEvent;
 
 /**
  * Service responsible for the publication of respondent events to the Response Management System.
@@ -15,5 +14,5 @@ public interface RespondentEventPublisher {
    */
   void sendEvent(CaseEvent event);
 
-  void sendSurveyLaunchedEvent(GenericCaseEvent event);
+  void sendSurveyLaunchedEvent(SurveyLaunchedEvent surveyLaunchedEvent);
 }

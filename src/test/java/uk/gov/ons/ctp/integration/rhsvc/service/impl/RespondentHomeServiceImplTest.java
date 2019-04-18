@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-import java.util.Map;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,8 +14,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import uk.gov.ons.ctp.common.TestHelper;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericCaseEvent;
+import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
 
 public class RespondentHomeServiceImplTest {
 
@@ -23,7 +24,7 @@ public class RespondentHomeServiceImplTest {
 
   @InjectMocks RespondentHomeServiceImpl respondentHomeService;
 
-  @Captor ArgumentCaptor<GenericCaseEvent> sendEventCaptor;
+  @Captor ArgumentCaptor<SurveyLaunchedEvent> sendEventCaptor;
 
   @Before
   public void initMocks() {
@@ -40,21 +41,19 @@ public class RespondentHomeServiceImplTest {
 
     // Get hold of the event that respondentHomeService created
     Mockito.verify(publisher).sendSurveyLaunchedEvent(sendEventCaptor.capture());
-    GenericCaseEvent genericCaseEvent = sendEventCaptor.getValue();
+    SurveyLaunchedEvent surveyLaunchedEvent = sendEventCaptor.getValue();
 
     // Verify the contents of the top level event data
-    assertEquals("SURVEY_LAUNCHED", genericCaseEvent.getEvent().getType());
-    assertEquals("CONTACT_CENTRE_API", genericCaseEvent.getEvent().getSource());
-    assertEquals("CC", genericCaseEvent.getEvent().getChannel());
-    TestHelper.validateAsDateTime(genericCaseEvent.getEvent().getDateTime());
-    TestHelper.validateAsUUID(genericCaseEvent.getEvent().getTransactionId());
+    assertEquals("SURVEY_LAUNCHED", surveyLaunchedEvent.getEvent().getType());
+    assertEquals("CONTACT_CENTRE_API", surveyLaunchedEvent.getEvent().getSource());
+    assertEquals("CC", surveyLaunchedEvent.getEvent().getChannel());
+    TestHelper.validateAsDateTime(surveyLaunchedEvent.getEvent().getDateTime());
+    TestHelper.validateAsUUID(surveyLaunchedEvent.getEvent().getTransactionId());
 
     // Verify contents of payload object
-    Map<String, String> responseProperties =
-        genericCaseEvent.getPayload().getResponse().getProperties();
-    assertEquals(surveyLaunchedDTO.getQuestionnaireId(), responseProperties.get("questionnaireId"));
-    assertEquals(surveyLaunchedDTO.getCaseId().toString(), responseProperties.get("caseId"));
-    assertEquals(null, responseProperties.get("agentId"));
-    assertEquals(3, responseProperties.size());
+    SurveyLaunchedResponse response = surveyLaunchedEvent.getPayload().getResponse();
+    assertEquals(surveyLaunchedDTO.getQuestionnaireId(), response.getQuestionnaireId());
+    assertEquals(surveyLaunchedDTO.getCaseId().toString(), response.getCaseId());
+    assertNull(response.getAgentId());
   }
 }
