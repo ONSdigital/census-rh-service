@@ -1,9 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.rabbitmq.client.Channel;
 import org.mockito.Mockito;
@@ -12,11 +10,9 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 @Configuration
-public class CaseEventReceiverConfiguration {
+public class EventReceiverConfiguration {
 
   /** Setup mock ConnectionFactory for SimpleMessageContainerListener */
   @Bean
@@ -30,21 +26,15 @@ public class CaseEventReceiverConfiguration {
     return connectionFactory;
   }
 
-  /** Mock injected by CaseEventReceiver */
+  /** Spy on Service Activator Message End point */
   @Bean
-  public RespondentEventPublisher publisher() {
-    return mock(RespondentEventPublisher.class);
+  public CaseEventReceiverImpl caseEventReceiver() {
+    return Mockito.spy(new CaseEventReceiverImpl());
   }
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public CaseEventReceiverImpl receiver() {
-    return Mockito.spy(new CaseEventReceiverImpl());
-  }
-
-  /** Mock injected by CaseEventReceiver */
-  @Bean
-  public RespondentDataService respondentDataService() {
-    return mock(RespondentDataService.class);
+  public UACEventReceiverImpl uacEventReceiver() {
+    return Mockito.spy(new UACEventReceiverImpl());
   }
 }

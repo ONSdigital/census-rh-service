@@ -15,7 +15,7 @@
 
     <bean id="cloudDataStore" class="uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore"/>
 
-    <bean id="caseEventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.CaseEventReceiverConfiguration" />
+    <bean id="eventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.EventReceiverConfiguration" />
 
     <context:property-placeholder location="classpath:caseEventReceiverImpl.properties" />
     <import resource="/springintegration/case-gateway-event-inbound.xml"/>

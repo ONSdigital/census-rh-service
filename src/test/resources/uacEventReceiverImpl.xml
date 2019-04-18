@@ -15,7 +15,7 @@
 
     <bean id="cloudDataStore" class="uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore"/>
 
-    <bean id="uacEventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.UacEventReceiverConfiguration" />
+    <bean id="eventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.EventReceiverConfiguration" />
 
     <context:property-placeholder location="classpath:uacEventReceiverImpl.properties" />
     <import resource="/springintegration/uac-gateway-event-inbound.xml"/>
