@@ -14,7 +14,9 @@ import uk.gov.ons.ctp.integration.rhsvc.message.impl.Header;
 import uk.gov.ons.ctp.integration.rhsvc.message.impl.Payload;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 
-/** This is a service layer class, which performs RH business level logic for the endpoints. */
+/** 
+ * This is a service layer class, which performs RH business level logic for the endpoints. 
+ */
 @Service
 public class RespondentHomeServiceImpl implements RespondentHomeService {
   private static final Logger log = LoggerFactory.getLogger(RespondentHomeServiceImpl.class);
