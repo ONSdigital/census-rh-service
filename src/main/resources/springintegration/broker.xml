@@ -20,15 +20,6 @@
 	<rabbit:admin id="amqpAdmin" connection-factory="connectionFactory"/>
 
 	<!-- Start of Queues -->
-	<rabbit:queue name="Case.SurveyLaunched" durable="true">
-		<rabbit:queue-arguments value-type="java.lang.String">
-			<entry key="x-dead-letter-exchange" value="case-deadletter-exchange" />
-			<entry key="x-dead-letter-routing-key" value="Case.Gateway.binding" />
-		</rabbit:queue-arguments>
-	</rabbit:queue>
-
-	<rabbit:queue name="Case.SurveyLaunchedDLQ" durable="true" />
-
 	<rabbit:queue name="Case.Gateway" durable="true">
 		<rabbit:queue-arguments value-type="java.lang.String">
 			<entry key="x-dead-letter-exchange" value="case-deadletter-exchange" />
@@ -52,7 +43,6 @@
 	<rabbit:direct-exchange name="events">
 		<rabbit:bindings>
 			<rabbit:binding queue="Case.Gateway" key="Case.Gateway.binding" />
-			<rabbit:binding queue="Case.SurveyLaunched" key="event.response.authentication" />
 		</rabbit:bindings>
 	</rabbit:direct-exchange>
 
