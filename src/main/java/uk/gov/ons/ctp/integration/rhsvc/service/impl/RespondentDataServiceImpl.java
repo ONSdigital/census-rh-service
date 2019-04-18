@@ -42,9 +42,6 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    */
   @Override
   public void writeUAC(final UAC uac) throws CTPException {
-    if (uac == null) {
-      throw new CTPException(Fault.BAD_REQUEST);
-    }
     ObjectMapper mapper = new ObjectMapper();
     String jsonInString;
     String universalAccessCode = uac.getUacHash();
@@ -84,9 +81,6 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    */
   @Override
   public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
-    if (collectionCase == null) {
-      throw new CTPException(Fault.BAD_REQUEST);
-    }
     ObjectMapper mapper = new ObjectMapper();
     String jsonInString;
     String caseId = collectionCase.getId();

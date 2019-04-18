@@ -33,14 +33,10 @@ public class RespondentDataServiceIT_Test {
     String addressLines = "Address lines";
     String state = "actionable";
     String actionableFrom = "2011-08-12T20:17:46.384Z";
-    //    String timestamp = "2019-02-01T08:15:30+00:00";
     String active = "true";
     String questionnaireId = "1110000009";
     String caseType = "H";
     String region = "E";
-
-    //    Address address = new Address();
-    //    address.setAddressLine1(addressLines);
 
     collectionCase = new CollectionCase();
     collectionCase.setId(caseId);
@@ -51,7 +47,6 @@ public class RespondentDataServiceIT_Test {
     collectionCase.setAddress(addressLines);
     collectionCase.setState(state);
     collectionCase.setActionableFrom(actionableFrom);
-    //    collectionCase.setTimestamp(timestamp);
 
     uac = new UAC();
     uac.setUacHash(uacHash);
