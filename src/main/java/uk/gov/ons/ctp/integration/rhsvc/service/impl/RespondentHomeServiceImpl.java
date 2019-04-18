@@ -24,8 +24,7 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
   public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) {
     UUID transactionId = UUID.randomUUID();
     log.debug(
-        "Generating SurveyLaunched event"
-            + " for questionnaireId: "
+        "Generating SurveyLaunched event for questionnaireId: "
             + surveyLaunchedDTO.getQuestionnaireId()
             + ", caseId: "
             + surveyLaunchedDTO.getCaseId()
@@ -44,7 +43,7 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
     SurveyLaunchedResponse response =
         SurveyLaunchedResponse.builder()
             .questionnaireId(surveyLaunchedDTO.getQuestionnaireId())
-            .caseId(surveyLaunchedDTO.getCaseId().toString())
+            .caseId(surveyLaunchedDTO.getCaseId())
             .agentId(null)
             .build();
 

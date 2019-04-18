@@ -32,8 +32,8 @@ public class RespondentHomeServiceImplTest {
   }
 
   @Test
-  public void testAddressQueryProcessing() throws Exception {
-    // Ask the service layer to send the surveyLaunched event
+  public void testSurveyLaunchedAddressQueryProcessing() throws Exception {
+    // Give a survey launched request to the service layer
     SurveyLaunchedDTO surveyLaunchedDTO = new SurveyLaunchedDTO();
     surveyLaunchedDTO.setQuestionnaireId("1234");
     surveyLaunchedDTO.setCaseId(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"));
@@ -53,7 +53,7 @@ public class RespondentHomeServiceImplTest {
     // Verify contents of payload object
     SurveyLaunchedResponse response = surveyLaunchedEvent.getPayload().getResponse();
     assertEquals(surveyLaunchedDTO.getQuestionnaireId(), response.getQuestionnaireId());
-    assertEquals(surveyLaunchedDTO.getCaseId().toString(), response.getCaseId());
+    assertEquals(surveyLaunchedDTO.getCaseId(), response.getCaseId());
     assertNull(response.getAgentId());
   }
 }

@@ -8,6 +8,7 @@ import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +68,7 @@ public class SurveyLaunchedIT {
     // Read request body from resource file
     ObjectNode surveyLaunchedRequestBody = FixtureHelper.loadClassObjectNode();
     String questionnaireId = surveyLaunchedRequestBody.get("questionnaireId").asText();
-    String caseId = surveyLaunchedRequestBody.get("caseId").asText();
+    String caseIdString = surveyLaunchedRequestBody.get("caseId").asText();
 
     // Send a Post request to the /surveyLaunched endpoint
     mockMvc
@@ -88,7 +89,7 @@ public class SurveyLaunchedIT {
     // Verify content of 'payload' part
     SurveyLaunchedResponse response = publishedEvent.getPayload().getResponse();
     assertEquals(questionnaireId, response.getQuestionnaireId());
-    assertEquals(caseId, response.getCaseId());
+    assertEquals(UUID.fromString(caseIdString), response.getCaseId());
     assertNull(response.getAgentId());
   }
 
