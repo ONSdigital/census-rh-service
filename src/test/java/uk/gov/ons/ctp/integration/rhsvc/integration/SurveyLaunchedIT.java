@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +24,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.TestHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
@@ -32,8 +33,8 @@ import uk.gov.ons.ctp.integration.rhsvc.message.impl.GenericCaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.impl.Header;
 
 /**
- * This is a component test which submits a Post saying that a survey has been launched
- * and uses a mock to confirm that RH publishes a survey launched event.
+ * This is a component test which submits a Post saying that a survey has been launched and uses a
+ * mock to confirm that RH publishes a survey launched event.
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -51,14 +52,15 @@ public class SurveyLaunchedIT {
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
 
-    this.mockMvc = MockMvcBuilders.standaloneSetup(respondentHomeEndpoint)
-        .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
-        .build();
-    }
+    this.mockMvc =
+        MockMvcBuilders.standaloneSetup(respondentHomeEndpoint)
+            .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
+            .build();
+  }
 
   /**
-   * This test Posts a survey launched event and uses a mock rabbit template to confirm 
-   * that a survey launched event is published.
+   * This test Posts a survey launched event and uses a mock rabbit template to confirm that a
+   * survey launched event is published.
    */
   @Test
   public void surveyLaunched_success() throws Exception {
@@ -91,8 +93,8 @@ public class SurveyLaunchedIT {
   }
 
   /**
-   * This simulates a Rabbit failure during event posting, which should result in 
-   * a 500 (internal server) error.
+   * This simulates a Rabbit failure during event posting, which should result in a 500 (internal
+   * server) error.
    */
   @Test
   public void surveyLaunched_failsOnSend() throws Exception {
