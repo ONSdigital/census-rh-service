@@ -29,7 +29,7 @@ public class RespondentEventPublisherImpl implements RespondentEventPublisher {
     rabbitTemplate.convertAndSend(event);
   }
 
-  public void sendSurveyLaunchedEvent(SurveyLaunchedEvent event) {
+  public void sendEvent(SurveyLaunchedEvent event) {
     surveyLaunchedRabbitTemplate.convertAndSend(event);
   }
 }

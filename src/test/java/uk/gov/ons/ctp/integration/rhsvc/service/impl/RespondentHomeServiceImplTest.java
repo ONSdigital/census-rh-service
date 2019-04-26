@@ -40,7 +40,7 @@ public class RespondentHomeServiceImplTest {
     respondentHomeService.surveyLaunched(surveyLaunchedDTO);
 
     // Get hold of the event that respondentHomeService created
-    Mockito.verify(publisher).sendSurveyLaunchedEvent(sendEventCaptor.capture());
+    Mockito.verify(publisher).sendEvent(sendEventCaptor.capture());
     SurveyLaunchedEvent surveyLaunchedEvent = sendEventCaptor.getValue();
 
     // Verify the contents of the top level event data

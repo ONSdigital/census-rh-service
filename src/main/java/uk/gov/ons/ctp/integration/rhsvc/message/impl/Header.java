@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,6 @@ public class Header {
   private String type;
   private String source;
   private String channel;
-  private String dateTime;
+  private Date dateTime;
   private String transactionId;
 }

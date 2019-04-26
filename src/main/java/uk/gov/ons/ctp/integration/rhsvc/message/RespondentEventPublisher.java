@@ -14,5 +14,10 @@ public interface RespondentEventPublisher {
    */
   void sendEvent(CaseEvent event);
 
-  void sendSurveyLaunchedEvent(SurveyLaunchedEvent surveyLaunchedEvent);
+  /**
+   * Method to publish a SurveyLauched Event.
+   *
+   * @param surveyLaunchedEvent is the event to publish.
+   */
+  void sendEvent(SurveyLaunchedEvent surveyLaunchedEvent);
 }

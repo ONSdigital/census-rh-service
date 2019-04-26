@@ -53,7 +53,7 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
     surveyLaunchedEvent.getPayload().setResponse(response);
 
     // Publish to Rabbit exchange
-    publisher.sendSurveyLaunchedEvent(surveyLaunchedEvent);
+    publisher.sendEvent(surveyLaunchedEvent);
 
     log.debug("SurveyLaunch event published for transactionId: " + transactionId);
   }
