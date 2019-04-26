@@ -2,10 +2,10 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.Date;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
@@ -36,7 +36,7 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
             .type("SURVEY_LAUNCHED")
             .source("CONTACT_CENTRE_API")
             .channel("CC")
-            .dateTime(DateTimeUtil.getCurrentDateTimeInJsonFormat())
+            .dateTime(new Date())
             .transactionId(transactionId.toString())
             .build();
 

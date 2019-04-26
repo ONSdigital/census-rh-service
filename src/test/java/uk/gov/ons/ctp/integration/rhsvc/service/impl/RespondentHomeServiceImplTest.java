@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class RespondentHomeServiceImplTest {
     assertEquals("SURVEY_LAUNCHED", surveyLaunchedEvent.getEvent().getType());
     assertEquals("CONTACT_CENTRE_API", surveyLaunchedEvent.getEvent().getSource());
     assertEquals("CC", surveyLaunchedEvent.getEvent().getChannel());
-    TestHelper.validateAsDateTime(surveyLaunchedEvent.getEvent().getDateTime());
+    assertNotNull(surveyLaunchedEvent.getEvent().getDateTime());
     TestHelper.validateAsUUID(surveyLaunchedEvent.getEvent().getTransactionId());
 
     // Verify contents of payload object

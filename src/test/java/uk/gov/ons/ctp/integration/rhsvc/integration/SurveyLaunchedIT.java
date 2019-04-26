@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -84,7 +85,7 @@ public class SurveyLaunchedIT {
     assertEquals("SURVEY_LAUNCHED", event.getType());
     assertEquals("CONTACT_CENTRE_API", event.getSource());
     assertEquals("CC", event.getChannel());
-    TestHelper.validateAsDateTime(event.getDateTime());
+    assertNotNull(event.getDateTime());
     TestHelper.validateAsUUID(event.getTransactionId());
     // Verify content of 'payload' part
     SurveyLaunchedResponse response = publishedEvent.getPayload().getResponse();
