@@ -36,7 +36,6 @@ public class CaseEventReceiverImplUnit_Test {
     collectionCaseFixture.setCaseRef("10000000010");
     collectionCaseFixture.setSurvey("Census");
     collectionCaseFixture.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
-    collectionCaseFixture.setSampleUnitRef("");
     collectionCaseFixture.setAddress("");
     collectionCaseFixture.setState("actionable");
     collectionCaseFixture.setActionableFrom("2011-08-12T20:17:46.384Z");
