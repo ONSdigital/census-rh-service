@@ -8,6 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.Contact;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
@@ -50,6 +51,12 @@ public class RespondentDataServiceIT_Test {
     address.setArid("XXXXX");
     address.setAddressType("CE");
     address.setEstabType("XXX");
+    Contact contact = new Contact();
+    contact.setTitle("Ms");
+    contact.setForename("jo");
+    contact.setSurname("smith");
+    contact.setEmail("me@example.com");
+    contact.setTelNo("+447890000000");
 
     collectionCase = new CollectionCase();
     collectionCase.setId(caseId);
@@ -57,6 +64,7 @@ public class RespondentDataServiceIT_Test {
     collectionCase.setSurvey(survey);
     collectionCase.setCollectionExerciseId(collectionExerciseId);
     collectionCase.setAddress(address);
+    collectionCase.setContact(contact);
     collectionCase.setState(state);
     collectionCase.setActionableFrom(actionableFrom);
 
@@ -97,6 +105,7 @@ public class RespondentDataServiceIT_Test {
     assertEquals(
         collectionCase.getCollectionExerciseId(), collectionCase2.getCollectionExerciseId());
     assertEquals(collectionCase.getAddress(), collectionCase2.getAddress());
+    assertEquals(collectionCase.getContact(), collectionCase2.getContact());
     assertEquals(collectionCase.getState(), collectionCase2.getState());
     assertEquals(collectionCase.getActionableFrom(), collectionCase2.getActionableFrom());
   }

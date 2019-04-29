@@ -14,6 +14,7 @@ public class CollectionCase {
   private String survey;
   private String collectionExerciseId;
   private Address address = new Address();
+  private Contact contact = new Contact();
   private String state;
   private String actionableFrom;
 }

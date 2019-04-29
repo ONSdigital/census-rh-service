@@ -17,6 +17,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.Contact;
 import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.message.CasePayload;
 import uk.gov.ons.ctp.integration.rhsvc.message.Header;
@@ -42,6 +43,7 @@ public class CaseEventReceiverImplIT_Test {
     CasePayload casePayload = caseEvent.getPayload();
     CollectionCase collectionCase = casePayload.getCollectionCase();
     Address address = collectionCase.getAddress();
+    Contact contact = collectionCase.getContact();
     collectionCase.setId("900000000");
     collectionCase.setCaseRef("10000000010");
     collectionCase.setSurvey("Census");
@@ -60,6 +62,11 @@ public class CaseEventReceiverImplIT_Test {
     address.setArid("XXXXX");
     address.setAddressType("CE");
     address.setEstabType("XXX");
+    contact.setTitle("Ms");
+    contact.setForename("jo");
+    contact.setSurname("smith");
+    contact.setEmail("me@example.com");
+    contact.setTelNo("+447890000000");
     Header header = new Header();
     header.setType("CASE_UPDATED");
     header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
