@@ -13,7 +13,7 @@ public class CollectionCase {
   private String caseRef;
   private String survey;
   private String collectionExerciseId;
-  private String address;
+  private Address address = new Address();
   private String state;
   private String actionableFrom;
 }

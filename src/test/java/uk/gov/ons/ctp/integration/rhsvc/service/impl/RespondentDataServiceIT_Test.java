@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
@@ -36,13 +37,26 @@ public class RespondentDataServiceIT_Test {
     String questionnaireId = "1110000009";
     String caseType = "H";
     String region = "E";
+    Address address = new Address();
+    address.setAddressLine1("1 main street");
+    address.setAddressLine2("upper upperingham");
+    address.setAddressLine3("");
+    address.setTownName("upton");
+    address.setPostcode("UP103UP");
+    address.setRegion("E");
+    address.setLatitude("50.863849");
+    address.setLongitude("-1.229710");
+    address.setUprn("XXXXXXXXXXXXX");
+    address.setArid("XXXXX");
+    address.setAddressType("CE");
+    address.setEstabType("XXX");
 
     collectionCase = new CollectionCase();
     collectionCase.setId(caseId);
     collectionCase.setCaseRef(caseRef);
     collectionCase.setSurvey(survey);
     collectionCase.setCollectionExerciseId(collectionExerciseId);
-    collectionCase.setAddress(addressLines);
+    collectionCase.setAddress(address);
     collectionCase.setState(state);
     collectionCase.setActionableFrom(actionableFrom);
 
