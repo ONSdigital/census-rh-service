@@ -79,9 +79,9 @@ CaseCreated and CaseUpdated events can be manually published to the events excha
 
 {
   "event" : {
-    "type" : "CaseUpdated",
-    "source" : "CaseService",
-    "channel" : "rm",
+    "type" : "CASE_UPDATED",
+    "source" : "CASE_SERVICE",
+    "channel" : "RM",
     "dateTime" : "2011-08-12T20:17:46.384Z",
     "transactionId" : "c45de4dc-3c3b-11e9-b210-d663bd873d93"
   },
@@ -89,30 +89,50 @@ CaseCreated and CaseUpdated events can be manually published to the events excha
     "collectionCase" : {
         "id":"bbd55984-0dbf-4499-bfa7-0aa4228700e9",
         "caseRef":"10000000010",
-        "survey":"Census",
+        "survey":"CENSUS",
         "collectionExerciseId":"n66de4dc-3c3b-11e9-b210-d663bd873d93",
-        "sampleUnitRef":"",
-        "address": "somewhere-out-there",
-        "state":"actionable",
+        "address": {
+		"addressLine1":"1 main street",
+  		"addressLine2":"upper upperingham",
+  		"addressLine3":"",
+  		"townName":"upton",
+  		"postcode":"UP103UP",
+  		"region":"E",
+  		"latitude":"50.863849",
+  		"longitude":"-1.229710",
+  		"uprn":"XXXXXXXXXXXXX",
+  		"arid":"XXXXX",
+  		"addressType":"CE",
+  		"estabType":"XXX"
+	},
+	"contact": {
+	"title":"Ms",
+  	"forename":"jo",
+  	"surname":"smith",
+  	"email":"me@example.com",
+  	"telNo":"+447890000000"
+	},
+        "state":"ACTIONABLE",
         "actionableFrom":"2011-08-12T20:17:46.384Z"
-    }
+}
   }
 }
+
 
 UACUpdated events use the binding key event.uac.updates and have the following format:
 
 {
   "event" : {
-    "type" : "UACUpdated",
-    "source" : "CaseService",
-    "channel" : "rm",
+    "type" : "UAC_UPDATED",
+    "source" : "CASE_SERVICE",
+    "channel" : "RM",
     "dateTime" : "2011-08-12T20:17:46.384Z",
     "transactionId" : "c45de4dc-3c3b-11e9-b210-d663bd873d93"
   },
   "payload" : {
     "uac" : {
-        "uacHash":"72C84BA99D77EE766E9468A0DE36433A44888E5DEC4AFB84F8019777800B7364",
-        "active":"true",
+        "uacHash":  "72C84BA99D77EE766E9468A0DE36433A44888E5DEC4AFB84F8019777800B7364",
+        "active" : true,
         "questionnaireId":"1110000009",
         "caseType":"H",
         "region":"E",
