@@ -41,7 +41,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
 
   @Autowired private CloudDataStore cloudDataStore;
 
-  RespondentDataServiceImpl() {
+  public RespondentDataServiceImpl() {
     this.cloudDataStore = new GCSDataStore();
   }
 

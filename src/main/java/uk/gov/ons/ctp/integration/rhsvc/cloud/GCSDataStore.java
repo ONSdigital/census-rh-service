@@ -2,8 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.auth.oauth2.ComputeEngineCredentials;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -20,9 +18,10 @@ public class GCSDataStore implements CloudDataStore {
   private static final Logger log = LoggerFactory.getLogger(GCSDataStore.class);
   private static final String EUROPE_WEST_2 = "europe-west2";
   private Storage storage = StorageOptions.getDefaultInstance().getService();
-//  private GoogleCredentials credentials = ComputeEngineCredentials.create();
-//  private Storage storage =
-//      StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+  //  private GoogleCredentials credentials = ComputeEngineCredentials.create();
+  //  private Storage storage =
+  //      StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+
   /**
    * Write object in Cloud Storage for UAC details inside specified bucket
    *

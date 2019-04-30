@@ -13,6 +13,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
@@ -22,6 +23,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.UACPayload;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /** Spring Integration test of flow received from Response Management */
+@SpringBootTest
 @ContextConfiguration("/uacEventReceiverImpl.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class UacEventReceiverImplIT_Test {
