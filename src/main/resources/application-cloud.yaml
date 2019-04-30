@@ -102,3 +102,8 @@ swagger-settings:
 retries:
   maxAttempts: 3
   backoff: 5000
+
+googleStorage:
+  class: StorageClass.COLDLINE
+  caseBucketName: case
+  uacBucketName: uac

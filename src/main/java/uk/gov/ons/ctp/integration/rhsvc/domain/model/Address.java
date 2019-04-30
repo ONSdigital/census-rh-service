@@ -1,17 +1,24 @@
 package uk.gov.ons.ctp.integration.rhsvc.domain.model;
 
-import java.io.Serializable;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address implements Serializable {
+public class Address {
+
   private String addressLine1;
   private String addressLine2;
-  private String city;
+  private String addressLine3;
+  private String townName;
+  private String postcode;
+  private String region; // E, W or N
+  private String latitude;
+  private String longitude;
+  private String uprn;
+  private String arid;
+  private String addressType;
+  private String estabType;
 }

@@ -4,7 +4,7 @@
        xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
   http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
   http://www.springframework.org/schema/context
   http://www.springframework.org/schema/context/spring-context.xsd">
@@ -17,7 +17,7 @@
 
     <bean id="eventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.EventReceiverConfiguration" />
 
-    <context:property-placeholder location="classpath:caseEventReceiverImpl.properties" />
-    <import resource="/springintegration/case-gateway-event-inbound.xml"/>
+    <context:property-placeholder location="classpath:uacEventReceiverImpl.properties" />
+    <import resource="/springintegration/uac-gateway-event-inbound.xml"/>
 
 </beans>

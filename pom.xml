@@ -9,7 +9,7 @@
   <parent>
     <groupId>uk.gov.ons.ctp.integration</groupId>
     <artifactId>census-int-common-config</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.7</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -196,7 +196,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-storage</artifactId>
-      <version>1.59.0</version>
+      <version>1.66.0</version>
     </dependency>
 
     <!-- Testing -->
