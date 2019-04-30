@@ -29,6 +29,7 @@ public class GCSDataStore implements CloudDataStore {
   public void foo() {
     log.info("Now in storeObject method in GCSDataStore class");
   }
+
   /**
    * Write object in Cloud Storage for UAC details inside specified bucket
    *
