@@ -1,7 +1,12 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
+import java.util.Optional;
+import javax.annotation.PostConstruct;
+import org.springframework.stereotype.Service;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.auth.oauth2.ComputeEngineCredentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -10,18 +15,20 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageClass;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
-import java.util.Optional;
-import org.springframework.stereotype.Service;
 
 @Service
 public class GCSDataStore implements CloudDataStore {
   private static final Logger log = LoggerFactory.getLogger(GCSDataStore.class);
   private static final String EUROPE_WEST_2 = "europe-west2";
-  private Storage storage = StorageOptions.getDefaultInstance().getService();
-  //  private GoogleCredentials credentials = ComputeEngineCredentials.create();
-  //  private Storage storage =
-  //      StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+  // private Storage storage = StorageOptions.getDefaultInstance().getService();
+  private GoogleCredentials credentials = ComputeEngineCredentials.create();
+  private Storage storage =
+      StorageOptions.newBuilder().setCredentials(credentials).build().getService();
 
+  @PostConstruct
+  public void foo() {
+    log.info("Now in storeObject method in GCSDataStore class");
+  }
   /**
    * Write object in Cloud Storage for UAC details inside specified bucket
    *
@@ -94,15 +101,13 @@ public class GCSDataStore implements CloudDataStore {
   }
 
   private void createBucket(String bucket, Storage storage) {
-    storage.create(
-        BucketInfo.newBuilder(bucket)
-            // This is the cheapest option
-            // See here for possible values: http://g.co/cloud/storage/docs/storage-classes
-            .setStorageClass(StorageClass.COLDLINE)
-            // As John mentioned, I used Europe west 2 - location where data will be held
-            // Possible values: http://g.co/cloud/storage/docs/bucket-locations#location-mr
-            .setLocation(EUROPE_WEST_2)
-            .build());
+    storage.create(BucketInfo.newBuilder(bucket)
+        // This is the cheapest option
+        // See here for possible values: http://g.co/cloud/storage/docs/storage-classes
+        .setStorageClass(StorageClass.COLDLINE)
+        // As John mentioned, I used Europe west 2 - location where data will be held
+        // Possible values: http://g.co/cloud/storage/docs/bucket-locations#location-mr
+        .setLocation(EUROPE_WEST_2).build());
   }
 
   private boolean getObjectFromCloud(String bucket, String key, Blob blob) {
