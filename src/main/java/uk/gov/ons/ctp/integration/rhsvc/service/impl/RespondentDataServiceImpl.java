@@ -7,7 +7,9 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.cloud.storage.StorageException;
 import java.io.IOException;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -25,13 +27,28 @@ import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 public class RespondentDataServiceImpl implements RespondentDataService {
   private static final Logger log = LoggerFactory.getLogger(RespondentDataServiceImpl.class);
 
-  private static final String UAC_BUCKET = "uac_bucket";
-  private static final String CASE_BUCKET = "case_bucket";
+  @Value("${GOOGLE_CLOUD_PROJECT}")
+  String gcpProject;
+
+  @Value("${googleStorage.caseBucketName}")
+  String caseBucketName;
+
+  @Value("${googleStorage.uacBucketName}")
+  String uacBucketName;
+
+  String caseBucket;
+  String uacBucket;
 
   @Autowired private CloudDataStore cloudDataStore;
 
   RespondentDataServiceImpl() {
     this.cloudDataStore = new GCSDataStore();
+  }
+
+  @PostConstruct
+  public void init() {
+    caseBucket = gcpProject + "-" + caseBucketName.toLowerCase();
+    uacBucket = gcpProject + "-" + uacBucketName.toLowerCase();
   }
 
   /**
@@ -51,7 +68,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
       log.with(universalAccessCode).error("Could not serialize UAC object to JSON", e);
       throw new CTPException(Fault.SYSTEM_ERROR, e);
     }
-    writeJsonToCloud(jsonInString, universalAccessCode, UAC_BUCKET, "UAC object stored in cloud");
+    writeJsonToCloud(jsonInString, universalAccessCode, uacBucket, "UAC object stored in cloud");
   }
 
   /**
@@ -65,7 +82,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   public Optional<UAC> readUAC(final String universalAccessCode) throws CTPException {
     Optional<String> uacStrOpt =
         getJsonFromCloud(
-            universalAccessCode, UAC_BUCKET, "Could not retrieve the UAC object from cloud");
+            universalAccessCode, uacBucket, "Could not retrieve the UAC object from cloud");
     if (uacStrOpt.isPresent()) {
       return deserialiseUAC(universalAccessCode, uacStrOpt.get());
     } else {
@@ -90,7 +107,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
       log.with(caseId).error("Could not serialize CollectionCase object to JSON", e);
       throw new CTPException(Fault.SYSTEM_ERROR, e);
     }
-    writeJsonToCloud(jsonInString, caseId, CASE_BUCKET, "CollectionCase object stored in cloud");
+    writeJsonToCloud(jsonInString, caseId, caseBucket, "CollectionCase object stored in cloud");
   }
 
   /**
@@ -104,8 +121,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   public Optional<CollectionCase> readCollectionCase(final String caseId) throws CTPException {
     Optional<String> collectionCaseStrOpt;
     collectionCaseStrOpt =
-        getJsonFromCloud(
-            caseId, CASE_BUCKET, "Could not retrieve CollectionCase object from cloud");
+        getJsonFromCloud(caseId, caseBucket, "Could not retrieve CollectionCase object from cloud");
     if (collectionCaseStrOpt.isPresent()) {
       return deserialiseCollectionCase(caseId, collectionCaseStrOpt.get());
     } else {
