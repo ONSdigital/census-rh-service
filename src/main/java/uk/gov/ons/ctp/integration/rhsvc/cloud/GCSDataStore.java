@@ -2,9 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.auth.oauth2.ComputeEngineCredentials;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -100,13 +97,15 @@ public class GCSDataStore implements CloudDataStore {
   }
 
   private void createBucket(String bucket, Storage storage) {
-    storage.create(BucketInfo.newBuilder(bucket)
-        // This is the cheapest option
-        // See here for possible values: http://g.co/cloud/storage/docs/storage-classes
-        .setStorageClass(StorageClass.COLDLINE)
-        // As John mentioned, I used Europe west 2 - location where data will be held
-        // Possible values: http://g.co/cloud/storage/docs/bucket-locations#location-mr
-        .setLocation(EUROPE_WEST_2).build());
+    storage.create(
+        BucketInfo.newBuilder(bucket)
+            // This is the cheapest option
+            // See here for possible values: http://g.co/cloud/storage/docs/storage-classes
+            .setStorageClass(StorageClass.COLDLINE)
+            // As John mentioned, I used Europe west 2 - location where data will be held
+            // Possible values: http://g.co/cloud/storage/docs/bucket-locations#location-mr
+            .setLocation(EUROPE_WEST_2)
+            .build());
   }
 
   private boolean getObjectFromCloud(String bucket, String key, Blob blob) {
