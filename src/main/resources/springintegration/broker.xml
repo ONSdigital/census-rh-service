@@ -51,36 +51,36 @@
 
 	<!-- Start of Exchanges -->
 
-	<rabbit:direct-exchange name="events">
+	<rabbit:topic-exchange name="events">
 		<rabbit:bindings>
-			<rabbit:binding queue="Case.Gateway" key="event.case.lifecycle" />
-			<rabbit:binding queue="UAC.Gateway" key="event.uac.updates" />
+			<rabbit:binding queue="Case.Gateway" pattern="event.case.lifecycle" />
+			<rabbit:binding queue="UAC.Gateway" pattern="event.uac.updates" />
 		</rabbit:bindings>
-	</rabbit:direct-exchange>
+	</rabbit:topic-exchange>
 
-	<rabbit:direct-exchange name="case-deadletter-exchange">
+	<rabbit:topic-exchange name="case-deadletter-exchange">
 		<rabbit:bindings>
-			<rabbit:binding queue="Case.GatewayDLQ" key="event.case.lifecycle" />
+			<rabbit:binding queue="Case.GatewayDLQ" pattern="event.case.lifecycle" />
 		</rabbit:bindings>
-	</rabbit:direct-exchange>
+	</rabbit:topic-exchange>
 
-	<rabbit:direct-exchange name="uac-deadletter-exchange">
+	<rabbit:topic-exchange name="uac-deadletter-exchange">
 		<rabbit:bindings>
-			<rabbit:binding queue="UAC.GatewayDLQ" key="event.uac.updates" />
+			<rabbit:binding queue="UAC.GatewayDLQ" pattern="event.uac.updates" />
 		</rabbit:bindings>
-	</rabbit:direct-exchange>
+	</rabbit:topic-exchange>
 
-	<rabbit:direct-exchange name="respondent-outbound-exchange">
+	<rabbit:topic-exchange name="respondent-outbound-exchange">
 		<rabbit:bindings>
-			<rabbit:binding queue="Respondent.Event" key="Respondent.Event.binding" />
+			<rabbit:binding queue="Respondent.Event" pattern="Respondent.Event.binding" />
 		</rabbit:bindings>
-	</rabbit:direct-exchange>
+	</rabbit:topic-exchange>
 
-	<rabbit:direct-exchange name="respondent-deadletter-exchange">
+	<rabbit:topic-exchange name="respondent-deadletter-exchange">
 		<rabbit:bindings>
-			<rabbit:binding queue="Respondent.EventDLQ" key="Respondent.Event.binding" />
+			<rabbit:binding queue="Respondent.EventDLQ" pattern="Respondent.Event.binding" />
 		</rabbit:bindings>
-	</rabbit:direct-exchange>
+	</rabbit:topic-exchange>
 
 	<!-- End of Exchanges -->
 
