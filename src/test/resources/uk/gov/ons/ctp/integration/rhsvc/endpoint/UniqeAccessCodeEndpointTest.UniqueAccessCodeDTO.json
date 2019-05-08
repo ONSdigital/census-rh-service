@@ -1,0 +1,17 @@
+{
+	"uac": "w4nwwpphjjpt",
+	"active": true,
+	"questionnaireId": 1110000009,
+	"caseType": "H",
+	"region": "E",
+	"caseId": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
+	"collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
+	"address": {
+		"addressLine1": "1 main street",
+		"addressLine2": "upper upperingham",
+		"addressLine3": "",
+		"townName": "upton",
+		"postcode": "UP103UP",
+		"uprn": "123456"
+	}
+}

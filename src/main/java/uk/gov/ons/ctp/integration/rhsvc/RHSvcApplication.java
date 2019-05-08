@@ -10,6 +10,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.integration.annotation.IntegrationComponentScan;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
@@ -41,5 +45,23 @@ public class RHSvcApplication {
   @Bean
   public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
     return new Jackson2JsonMessageConverter();
+  }
+
+  @EnableWebSecurity
+  public static class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+      http.csrf().disable();
+    }
+  }
+
+  /**
+   * Bean used to map exceptions for endpoints
+   *
+   * @return the service client
+   */
+  @Bean
+  public RestExceptionHandler restExceptionHandler() {
+    return new RestExceptionHandler();
   }
 }
