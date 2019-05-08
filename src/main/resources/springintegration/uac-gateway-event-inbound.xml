@@ -44,6 +44,7 @@
     
     <bean id="rejectUacAndDontRequeueRecoverer" class="org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer"/>
 
+    <!-- The following template needs to be kept with the same settings as the retry Template in the case-gateway-event-inbound xml -->
     <bean id="uacRetryTemplate" class="org.springframework.retry.support.RetryTemplate">
         <property name="backOffPolicy">
             <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
@@ -60,6 +61,7 @@
             </bean>
         </property>
     </bean>
+
     <!-- End of section to deal with retries and DLQ after max attempts -->
 
 </beans>
