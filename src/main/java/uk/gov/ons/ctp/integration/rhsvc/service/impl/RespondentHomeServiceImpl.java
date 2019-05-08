@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedResponse;
+import uk.gov.ons.ctp.integration.rhsvc.message.Header;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.Header;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 
 /** This is a service layer class, which performs RH business level logic for the endpoints. */

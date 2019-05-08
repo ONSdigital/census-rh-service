@@ -4,16 +4,16 @@ import org.springframework.integration.annotation.MessageEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 
 /**
- * Service implementation responsible for receipt of Case Events. See Spring Integration flow for
+ * Service implementation responsible for receipt of UAC Events. See Spring Integration flow for
  * details of in bound queue.
  */
 @MessageEndpoint
-public interface CaseEventReceiver {
+public interface UACEventReceiver {
 
   /**
    * Message end point for events from Response Management.
    *
-   * @param event CaseEvent message from Response Management
+   * @param event UACEvent message from Response Management
    */
-  public void acceptCaseEvent(CaseEvent event) throws CTPException;
+  public void acceptUACEvent(UACEvent event) throws CTPException;
 }

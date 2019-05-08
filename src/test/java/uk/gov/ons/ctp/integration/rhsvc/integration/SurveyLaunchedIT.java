@@ -31,8 +31,8 @@ import uk.gov.ons.ctp.common.TestHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.endpoint.RespondentHomeEndpoint;
+import uk.gov.ons.ctp.integration.rhsvc.message.Header;
 import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
-import uk.gov.ons.ctp.integration.rhsvc.message.impl.Header;
 
 /**
  * This is a component test which submits a Post saying that a survey has been launched and uses a

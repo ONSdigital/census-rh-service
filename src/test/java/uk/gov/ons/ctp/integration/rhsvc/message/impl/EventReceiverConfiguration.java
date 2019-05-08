@@ -13,12 +13,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
-import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 
 @Profile("mocked-connection-factory")
 @Configuration
-public class CaseEventReceiverConfiguration {
+public class EventReceiverConfiguration {
 
   /** Setup mock ConnectionFactory for SimpleMessageContainerListener */
   @Bean
@@ -32,15 +30,15 @@ public class CaseEventReceiverConfiguration {
     return connectionFactory;
   }
 
-  /** Mock injected by CaseEventReceiver */
+  /** Spy on Service Activator Message End point */
   @Bean
-  public RespondentEventPublisher publisher() {
-    return mock(RespondentEventPublisher.class);
+  public CaseEventReceiverImpl caseEventReceiver() {
+    return Mockito.spy(new CaseEventReceiverImpl());
   }
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public CaseEventReceiver receiver() {
-    return Mockito.spy(new CaseEventReceiverImpl());
+  public UACEventReceiverImpl uacEventReceiver() {
+    return Mockito.spy(new UACEventReceiverImpl());
   }
 }

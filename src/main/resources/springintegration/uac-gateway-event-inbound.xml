@@ -5,46 +5,46 @@
        xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
        xmlns:int-xml="http://www.springframework.org/schema/integration/xml"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
   http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
   http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
   http://www.springframework.org/schema/integration/xml http://www.springframework.org/schema/integration/xml/spring-integration-xml.xsd">
     
-    <bean id="caseEventListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
+    <bean id="uacEventListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
         <property name="connectionFactory" ref="connectionFactory" />
-        <property name="queueNames" value="Case.Gateway" />
-        <property name="adviceChain" ref="caseEventRetryAdvice" />
+        <property name="queueNames" value="UAC.Gateway" />
+        <property name="adviceChain" ref="uacEventRetryAdvice" />
         <property name="concurrentConsumers" value="${messaging.consumingThreads}" />
         <property name="prefetchCount" value="${messaging.prefetchCount}" />
     </bean>
 
-    <int:channel id="jsonCaseEventMessage" />
-    <bean id="simpleMessageConverter" class="org.springframework.amqp.support.converter.SimpleMessageConverter" />
-    <int-amqp:inbound-channel-adapter id="caseEventInboundAmqp" 
-                                      listener-container="caseEventListenerContainer"
-                                      message-converter="simpleMessageConverter" 
-                                      channel="jsonCaseEventMessage" />
+    <int:channel id="jsonUacEventMessage" />
+    <bean id="simpleUacMessageConverter" class="org.springframework.amqp.support.converter.SimpleMessageConverter" />
+    <int-amqp:inbound-channel-adapter id="uacEventInboundAmqp"
+                                      listener-container="uacEventListenerContainer"
+                                      message-converter="simpleUacMessageConverter"
+                                      channel="jsonUacEventMessage" />
 
-    <int:json-to-object-transformer id="caseEventObject"
-                                    input-channel="jsonCaseEventMessage"
-                                    output-channel="acceptCaseEvent"
-                                    type="uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent" />
+    <int:json-to-object-transformer id="uacEventObject"
+                                    input-channel="jsonUacEventMessage"
+                                    output-channel="acceptUACEvent"
+                                    type="uk.gov.ons.ctp.integration.rhsvc.message.UACEvent" />
 
-    <int:channel id="acceptCaseEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent" />
+    <int:channel id="acceptUACEvent" datatype="uk.gov.ons.ctp.integration.rhsvc.message.UACEvent" />
 
     <!-- Start of section to deal with retries and DLQ after max attempts -->
-    <int:channel id="caseEventDlqChannel" />
+    <int:channel id="uacEventDlqChannel" />
 
     <!-- Not expected to store to a transactional resource such as a database, if need rollback on a transactional
          datastore for instance look into using StatefulRetryOperationsInterceptorFactoryBean  -->
-    <bean id="caseEventRetryAdvice" class="org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptorFactoryBean" >
-        <property name="messageRecoverer" ref="rejectAndDontRequeueRecoverer" />
-        <property name="retryOperations" ref="retryTemplate" /> 
+    <bean id="uacEventRetryAdvice" class="org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptorFactoryBean" >
+        <property name="messageRecoverer" ref="rejectUacAndDontRequeueRecoverer" />
+        <property name="retryOperations" ref="uacRetryTemplate" />
     </bean>
     
-    <bean id="rejectAndDontRequeueRecoverer" class="org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer"/>
+    <bean id="rejectUacAndDontRequeueRecoverer" class="org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer"/>
 
-    <bean id="retryTemplate" class="org.springframework.retry.support.RetryTemplate">
+    <bean id="uacRetryTemplate" class="org.springframework.retry.support.RetryTemplate">
         <property name="backOffPolicy">
             <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
                 <property name="initialInterval" value="${messaging.backoffInitial}" />
