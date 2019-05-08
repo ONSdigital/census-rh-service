@@ -43,7 +43,7 @@ public final class RespondentHomeEndpointUnitTest {
   }
 
   @Test
-  public void surveyLaunched() throws Exception {
+  public void surveyLaunchedSuccessCase() throws Exception {
     Mockito.doNothing().when(respondentHomeService).surveyLaunched(any());
 
     String surveyLaunchedRequestBody =

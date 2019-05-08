@@ -31,6 +31,7 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
             + ". Using transactionId: "
             + transactionId);
 
+    // Build key parts of Survey Launched event
     Header eventData =
         Header.builder()
             .type("SURVEY_LAUNCHED")
