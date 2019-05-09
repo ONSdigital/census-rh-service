@@ -7,8 +7,8 @@
   http://www.springframework.org/schema/rabbit
   http://www.springframework.org/schema/rabbit/spring-rabbit-1.6.xsd">
   
-    <bean id="respondentEventJsonMessageConverter" class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter"/>
+    <bean id="surveyLaunchedJsonMessageConverter" class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter"/>
 
     <rabbit:template id="surveyLaunchedRabbitTemplate" connection-factory="connectionFactory" exchange="events" routing-key="event.response.authentication"
-                     message-converter="respondentEventJsonMessageConverter" channel-transacted="true"/>
+                     message-converter="surveyLaunchedJsonMessageConverter" channel-transacted="true"/>
 </beans>
