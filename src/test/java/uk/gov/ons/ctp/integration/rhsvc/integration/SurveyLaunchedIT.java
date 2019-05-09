@@ -83,8 +83,8 @@ public class SurveyLaunchedIT {
     // Validate contents of the published event
     Header event = publishedEvent.getEvent();
     assertEquals("SURVEY_LAUNCHED", event.getType());
-    assertEquals("CONTACT_CENTRE_API", event.getSource());
-    assertEquals("CC", event.getChannel());
+    assertEquals("RESPONDENT_HOME", event.getSource());
+    assertEquals("RH", event.getChannel());
     assertNotNull(event.getDateTime());
     TestHelper.validateAsUUID(event.getTransactionId());
     // Verify content of 'payload' part

@@ -46,8 +46,8 @@ public class RespondentHomeServiceImplTest {
 
     // Verify the contents of the top level event data
     assertEquals("SURVEY_LAUNCHED", surveyLaunchedEvent.getEvent().getType());
-    assertEquals("CONTACT_CENTRE_API", surveyLaunchedEvent.getEvent().getSource());
-    assertEquals("CC", surveyLaunchedEvent.getEvent().getChannel());
+    assertEquals("RESPONDENT_HOME", surveyLaunchedEvent.getEvent().getSource());
+    assertEquals("RH", surveyLaunchedEvent.getEvent().getChannel());
     assertNotNull(surveyLaunchedEvent.getEvent().getDateTime());
     TestHelper.validateAsUUID(surveyLaunchedEvent.getEvent().getTransactionId());
 

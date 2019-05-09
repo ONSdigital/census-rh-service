@@ -12,6 +12,7 @@ import uk.gov.ons.ctp.integration.rhsvc.message.Header;
 import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
 import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
+import uk.gov.ons.ctp.integration.rhsvc.utility.Constants;
 
 /** This is a service layer class, which performs RH business level logic for the endpoints. */
 @Service
@@ -34,9 +35,9 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
     // Build key parts of Survey Launched event
     Header eventData =
         Header.builder()
-            .type("SURVEY_LAUNCHED")
-            .source("CONTACT_CENTRE_API")
-            .channel("CC")
+            .type(Constants.MESSAGE_NAME_SURVEY_LAUNCHED)
+            .source(Constants.RH_SERVICE_NAME)
+            .channel(Constants.RH_CHANNEL_NAME)
             .dateTime(new Date())
             .transactionId(transactionId.toString())
             .build();
