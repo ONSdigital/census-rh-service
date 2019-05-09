@@ -14,6 +14,5 @@ schedules:
   distribution-schedule-delay-milli-seconds: 1000
 
 googleStorage:
-  class: StorageClass.COLDLINE
   caseBucketName: case
   uacBucketName: uac
