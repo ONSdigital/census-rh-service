@@ -1,18 +1,18 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
