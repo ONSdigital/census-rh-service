@@ -35,6 +35,15 @@ public class RHSvcApplication {
     SpringApplication.run(RHSvcApplication.class, args);
   }
 
+  @EnableWebSecurity
+  public static class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+      // Post requests to the service only work with csrf disabled!
+      http.csrf().disable();
+    }
+  }
+
   @Bean
   public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
     final var rabbitTemplate = new RabbitTemplate(connectionFactory);
@@ -45,14 +54,6 @@ public class RHSvcApplication {
   @Bean
   public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
     return new Jackson2JsonMessageConverter();
-  }
-
-  @EnableWebSecurity
-  public static class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-      http.csrf().disable();
-    }
   }
 
   /**

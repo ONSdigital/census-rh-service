@@ -18,6 +18,6 @@
     <bean id="eventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.EventReceiverConfiguration" />
 
     <context:property-placeholder location="classpath:uacEventReceiverImpl.properties" />
-    <import resource="/springintegration/uac-gateway-event-inbound.xml"/>
+    <import resource="/springintegration/uac-event-inbound.xml"/>
 
 </beans>

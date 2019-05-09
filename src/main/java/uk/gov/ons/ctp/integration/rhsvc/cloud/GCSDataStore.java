@@ -99,9 +99,8 @@ public class GCSDataStore implements CloudDataStore {
   private void createBucket(String bucket, Storage storage) {
     storage.create(
         BucketInfo.newBuilder(bucket)
-            // This is the cheapest option
             // See here for possible values: http://g.co/cloud/storage/docs/storage-classes
-            .setStorageClass(StorageClass.COLDLINE)
+            .setStorageClass(StorageClass.REGIONAL)
             // As John mentioned, I used Europe west 2 - location where data will be held
             // Possible values: http://g.co/cloud/storage/docs/bucket-locations#location-mr
             .setLocation(EUROPE_WEST_2)

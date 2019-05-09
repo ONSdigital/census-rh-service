@@ -1,7 +1,9 @@
 package uk.gov.ons.ctp.integration.rhsvc.message.impl;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.rabbitmq.client.Channel;
 import org.mockito.Mockito;
@@ -10,7 +12,9 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 
+@Profile("mocked-connection-factory")
 @Configuration
 public class EventReceiverConfiguration {
 
