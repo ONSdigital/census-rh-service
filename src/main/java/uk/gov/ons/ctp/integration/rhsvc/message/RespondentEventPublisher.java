@@ -6,11 +6,10 @@ import uk.gov.ons.ctp.common.message.GenericEvent;
  * Service responsible for the publication of respondent events to the Response Management System.
  */
 public interface RespondentEventPublisher {
-
   /**
-   * Method to send event to Response Management
+   * Method to publish a SurveyLauched Event.
    *
-   * @param event CaseEvent to publish.
+   * @param surveyLaunchedEvent is the event to publish.
    */
-  void sendEvent(GenericEvent event);
+  void sendEvent(SurveyLaunchedEvent surveyLaunchedEvent);
 }

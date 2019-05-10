@@ -8,9 +8,9 @@
 
     <int:annotation-config/>
 
-    <import resource="case-gateway-event-inbound.xml"/>
-    <import resource="respondent-service-event-outbound.xml"/>
-    <import resource="uac-gateway-event-inbound.xml"/>
+    <import resource="case-event-inbound.xml"/>
+    <import resource="response-authentication-outbound.xml"/>
+    <import resource="uac-event-inbound.xml"/>
 
 
 </beans>
