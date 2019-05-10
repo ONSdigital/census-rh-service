@@ -38,6 +38,9 @@ NB. The instructions will lead to a .json file being downloaded, which can be us
 NB. For more detailed information about setting up the Application Default Credential please see the following confluence article:
 https://collaborate2.ons.gov.uk/confluence/display/SDC/How+to+Set+Up+Google+Cloud+Platform+Locally
 
+Finally, create an environment variable to hold the name of your Google Cloud Platform project, using the export command at the terminal (in your census-rh-service repo):
+export GOOGLE_CLOUD_PROJECT="<name of your project>" e.g. export GOOGLE_CLOUD_PROJECT="census-rh-ellacook1"
+
 ## Running
 
 There are two ways of running this service
