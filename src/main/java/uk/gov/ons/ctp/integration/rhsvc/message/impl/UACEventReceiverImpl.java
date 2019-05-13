@@ -31,6 +31,7 @@ public class UACEventReceiverImpl {
    * to prove messaging setup.
    *
    * @param uacEvent UACEvent message from Response Management
+   * @throws CTPException something went wrong
    */
   @ServiceActivator(inputChannel = "acceptUACEvent")
   public void acceptUACEvent(UACEvent uacEvent) throws CTPException {

@@ -14,6 +14,7 @@ public interface CaseEventReceiver {
    * Message end point for events from Response Management.
    *
    * @param event CaseEvent message from Response Management
+   * @throws CTPException something went wrong
    */
   public void acceptCaseEvent(CaseEvent event) throws CTPException;
 }

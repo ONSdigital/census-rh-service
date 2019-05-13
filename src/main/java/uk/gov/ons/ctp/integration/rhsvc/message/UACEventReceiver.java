@@ -14,6 +14,7 @@ public interface UACEventReceiver {
    * Message end point for events from Response Management.
    *
    * @param event UACEvent message from Response Management
+   * @throws CTPException something went wrong
    */
   public void acceptUACEvent(UACEvent event) throws CTPException;
 }
