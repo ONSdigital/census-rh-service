@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class SmokeTest {
 
-  @Autowired private RespondentDataEndpoint controller;
+  @Autowired private RespondentHomeEndpoint controller;
 
   @Test
   @Ignore

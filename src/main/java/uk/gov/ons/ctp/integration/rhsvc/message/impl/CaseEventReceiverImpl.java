@@ -31,6 +31,7 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
    * Message end point for events from Response Management.
    *
    * @param caseEvent CaseEvent message from Response Management
+   * @throws CTPException something went wrong
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   public void acceptCaseEvent(CaseEvent caseEvent) throws CTPException {

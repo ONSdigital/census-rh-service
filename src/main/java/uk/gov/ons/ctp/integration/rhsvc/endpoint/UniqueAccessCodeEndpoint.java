@@ -22,8 +22,9 @@ public class UniqueAccessCodeEndpoint {
   @Autowired private UniqueAccessCodeService uacService;
 
   /**
-   * the GET endpoint to get RH details for a claim
+   * the GET end-point to get RH details for a claim
    *
+   * @param uac the UAC
    * @return the claim details
    * @throws CTPException something went wrong
    */

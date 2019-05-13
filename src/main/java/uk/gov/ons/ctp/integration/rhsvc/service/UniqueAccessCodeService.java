@@ -11,7 +11,7 @@ public interface UniqueAccessCodeService {
    *
    * @param uac unique access code for which to retrieve data
    * @return UniqueAccessCodeDTO representing data for UAC
-   * @throws CTPException
+   * @throws CTPException something wernt wrong
    */
   UniqueAccessCodeDTO getUniqueAccessCodeData(String uac) throws CTPException;
 }
