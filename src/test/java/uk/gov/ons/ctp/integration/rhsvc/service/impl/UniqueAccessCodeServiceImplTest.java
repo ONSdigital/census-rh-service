@@ -19,6 +19,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 /** Unit tests of the Unique Access Code Service */
@@ -59,6 +60,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
+    assertEquals(CaseStatus.OK, uacDTO.getCaseStatus());
     assertEquals(UUID.fromString(uacTest.getCaseId()), uacDTO.getCaseId());
     assertEquals(
         UUID.fromString(uacTest.getCollectionExerciseId()), uacDTO.getCollectionExerciseId());
@@ -89,6 +91,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
+    assertEquals(CaseStatus.NOT_FOUND, uacDTO.getCaseStatus());
     assertEquals(UUID.fromString(uacTest.getCaseId()), uacDTO.getCaseId());
     assertEquals(
         UUID.fromString(uacTest.getCollectionExerciseId()), uacDTO.getCollectionExerciseId());
@@ -113,6 +116,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
+    assertEquals(CaseStatus.UNKNOWN, uacDTO.getCaseStatus());
     assertEquals(null, uacDTO.getCaseId());
     assertEquals(
         UUID.fromString(uacTest.getCollectionExerciseId()), uacDTO.getCollectionExerciseId());
