@@ -7,8 +7,16 @@ import lombok.Data;
 @Data
 public class UniqueAccessCodeDTO {
 
+  /** enum for valid case status */
+  public enum CaseStatus {
+    OK,
+    UNKNOWN,
+    NOT_FOUND
+  }
+
   private String uac;
   private boolean active;
+  private CaseStatus caseStatus;
   private Integer questionnaireId;
   private String caseType;
   private String region;

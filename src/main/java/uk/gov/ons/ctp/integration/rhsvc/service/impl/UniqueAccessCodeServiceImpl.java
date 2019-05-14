@@ -18,6 +18,7 @@ import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
 
@@ -55,11 +56,14 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
             dataRepo.readCollectionCase(uacMatch.get().getCaseId());
         if (caseMatch.isPresent()) {
           caseMapperFacade.map(caseMatch.get(), data);
+          data.setCaseStatus(CaseStatus.OK);
         } else {
           log.warn("Failed to retrieve Case for UAC from storage");
+          data.setCaseStatus(CaseStatus.NOT_FOUND);
         }
       } else {
         log.warn("Retrieved UAC CaseId not present");
+        data.setCaseStatus(CaseStatus.UNKNOWN);
       }
     } else {
       log.warn("Failed to retrieve UAC from storage.");
