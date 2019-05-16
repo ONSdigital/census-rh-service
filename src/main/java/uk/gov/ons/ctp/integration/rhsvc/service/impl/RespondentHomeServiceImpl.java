@@ -6,11 +6,11 @@ import java.util.Date;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.message.Header;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedResponse;
-import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
-import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
+import uk.gov.ons.ctp.common.event.model.Header;
+import uk.gov.ons.ctp.common.event.model.SurveyLaunchedEvent;
+import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
+import uk.gov.ons.ctp.integration.rhsvc.event.RespondentEventPublisher;
+import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 import uk.gov.ons.ctp.integration.rhsvc.utility.Constants;
 

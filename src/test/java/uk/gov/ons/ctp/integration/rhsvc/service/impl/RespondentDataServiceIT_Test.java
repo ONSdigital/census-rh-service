@@ -6,10 +6,10 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.Contact;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
+import uk.gov.ons.ctp.common.event.model.Address;
+import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.Contact;
+import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 // import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;

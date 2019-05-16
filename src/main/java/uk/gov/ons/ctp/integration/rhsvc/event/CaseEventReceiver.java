@@ -1,7 +1,8 @@
-package uk.gov.ons.ctp.integration.rhsvc.message;
+package uk.gov.ons.ctp.integration.rhsvc.event;
 
 import org.springframework.integration.annotation.MessageEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.model.CaseEvent;
 
 /**
  * Service implementation responsible for receipt of Case Events. See Spring Integration flow for

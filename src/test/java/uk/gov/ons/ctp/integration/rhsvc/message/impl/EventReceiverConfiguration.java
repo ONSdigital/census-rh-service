@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
+import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
 
 @Profile("mocked-connection-factory")
 @Configuration

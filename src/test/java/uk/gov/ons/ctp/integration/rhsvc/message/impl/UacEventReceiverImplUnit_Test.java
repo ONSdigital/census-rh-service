@@ -4,10 +4,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.message.Header;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
-import uk.gov.ons.ctp.integration.rhsvc.message.UACEvent;
-import uk.gov.ons.ctp.integration.rhsvc.message.UACPayload;
+import uk.gov.ons.ctp.common.event.model.Header;
+import uk.gov.ons.ctp.common.event.model.UAC;
+import uk.gov.ons.ctp.common.event.model.UACEvent;
+import uk.gov.ons.ctp.common.event.model.UACPayload;
+import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
