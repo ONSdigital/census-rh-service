@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.rhsvc.message.impl;
+package uk.gov.ons.ctp.integration.rhsvc.event.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
-import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
-import uk.gov.ons.ctp.integration.rhsvc.message.CaseEventReceiver;
+import uk.gov.ons.ctp.common.event.model.CaseEvent;
+import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.integration.rhsvc.event.CaseEventReceiver;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 /**

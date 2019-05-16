@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
+import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.GCSDataStore;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 /**

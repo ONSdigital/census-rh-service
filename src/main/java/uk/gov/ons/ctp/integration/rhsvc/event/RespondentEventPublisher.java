@@ -1,4 +1,6 @@
-package uk.gov.ons.ctp.integration.rhsvc.message;
+package uk.gov.ons.ctp.integration.rhsvc.event;
+
+import uk.gov.ons.ctp.common.event.model.SurveyLaunchedEvent;
 
 /**
  * Service responsible for the publication of respondent events to the Response Management System.

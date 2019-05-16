@@ -14,10 +14,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import uk.gov.ons.ctp.common.TestHelper;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedDTO;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.SurveyLaunchedResponse;
-import uk.gov.ons.ctp.integration.rhsvc.message.RespondentEventPublisher;
-import uk.gov.ons.ctp.integration.rhsvc.message.SurveyLaunchedEvent;
+import uk.gov.ons.ctp.common.event.model.SurveyLaunchedEvent;
+import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
+import uk.gov.ons.ctp.integration.rhsvc.event.RespondentEventPublisher;
+import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 
 public class RespondentHomeServiceImplTest {
 

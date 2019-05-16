@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.rhsvc.domain.model;
+package uk.gov.ons.ctp.integration.rhsvc.representation;
 
 import java.io.Serializable;
 import java.util.UUID;

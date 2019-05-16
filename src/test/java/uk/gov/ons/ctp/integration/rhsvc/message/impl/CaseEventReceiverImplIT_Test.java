@@ -18,12 +18,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.ons.ctp.common.message.Header;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.CollectionCase;
-import uk.gov.ons.ctp.integration.rhsvc.domain.model.Contact;
-import uk.gov.ons.ctp.integration.rhsvc.message.CaseEvent;
-import uk.gov.ons.ctp.integration.rhsvc.message.CasePayload;
+import uk.gov.ons.ctp.common.event.model.Address;
+import uk.gov.ons.ctp.common.event.model.CaseEvent;
+import uk.gov.ons.ctp.common.event.model.CasePayload;
+import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.Contact;
+import uk.gov.ons.ctp.common.event.model.Header;
+import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
 
 /** Spring Integration test of flow received from Response Management */
