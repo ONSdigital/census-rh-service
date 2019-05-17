@@ -1,42 +1,53 @@
-<settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
 
-  <profiles>
-    <profile>
-      <id>artifactory</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
+    <profiles>
+        <profile>
+            <id>artifactory</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 
-      <repositories>
-        <repository>
-          <id>release-repo</id>
-          <name>libs-release</name>
-          <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-release-local</url>
-        </repository>
-        <repository>
-          <id>snapshot-repo</id>
-          <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-snapshot-local/</url>
-        </repository>
-      </repositories>
-    </profile>
-  </profiles>
+            <repositories>
+                <repository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <id>central</id>
+                    <name>libs-release</name>
+                    <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-release-local</url>
+                </repository>
+                <repository>
+                    <id>snapshots</id>
+                    <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-snapshot-local/</url>
+                </repository>
+                <repository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <id>maven-central</id>
+                    <name>Central Repository</name>
+                    <url>https://repo.maven.apache.org/maven2</url>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
 
-  <servers>
-    <server>
-      <username>build</username>
-      <password>${env.ARTIFACTORY_PSW}</password>
-      <id>central</id>
-    </server>
-    <server>
-      <username>build</username>
-      <password>${env.ARTIFACTORY_PSW}</password>
-      <id>snapshots</id>
-    </server>
-  </servers>
+    <activeProfiles>
+        <activeProfile>artifactory</activeProfile>
+    </activeProfiles>
 
-  <activeProfiles>
-    <activeProfile>artifactory</activeProfile>
-  </activeProfiles>
+    <servers>
+        <server>
+            <username>build</username>
+            <password>${env.ARTIFACTORY_PASSWORD}</password>
+            <id>central</id>
+        </server>
+        <server>
+            <username>build</username>
+            <password>${env.ARTIFACTORY_PASSWORD}</password>
+            <id>snapshots</id>
+        </server>
+    </servers>
 </settings>
