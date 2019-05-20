@@ -12,7 +12,7 @@
     
     <bean id="caseEventListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
         <property name="connectionFactory" ref="connectionFactory" />
-        <property name="queueNames" value="Case.Gateway" />
+        <property name="queueNames" value="${queueconfig.case-queue}" />
         <property name="adviceChain" ref="caseEventRetryAdvice" />
         <property name="concurrentConsumers" value="${messaging.consumingThreads}" />
         <property name="prefetchCount" value="${messaging.prefetchCount}" />
