@@ -63,7 +63,7 @@ rabbitmq:
   virtualhost: /
 
 queueconfig:
-  event-exchange: case.outbound.exchange
+  event-exchange: events.exchange
   dead-letter-exchange: events.deadletter.exchange
   case-queue: case.rh.case
   case-queue-DLQ: case.rh.case.dlq
