@@ -62,6 +62,17 @@ rabbitmq:
   port: 35672
   virtualhost: /
 
+queueconfig:
+  event-exchange: events.exchange
+  dead-letter-exchange: events.deadletter.exchange
+  case-queue: case.rh.case
+  case-queue-DLQ: case.rh.case.dlq
+  case-routing-key: event.case.*
+  uac-queue: case.rh.uac
+  uac-queue-DLQ: case.rh.uac.dlq
+  uac-routing-key: event.uac.*
+  response-authentication-routing-key: event.response.authentication
+
 messaging:
   backoffInitial: 5000
   backoffMultiplier: 3

@@ -21,66 +21,42 @@
 
 	<!-- Start of Queues -->
 
-	<rabbit:queue name="Case.Gateway" durable="true">
+	<rabbit:queue name="${queueconfig.case-queue}" durable="true">
 		<rabbit:queue-arguments value-type="java.lang.String">
-			<entry key="x-dead-letter-exchange" value="case-deadletter-exchange" />
-			<entry key="x-dead-letter-routing-key" value="event.case.lifecycle" />
+			<entry key="x-dead-letter-exchange" value="${queueconfig.dead-letter-exchange}" />
+			<entry key="x-dead-letter-routing-key" value="${queueconfig.case-routing-key}" />
 		</rabbit:queue-arguments>
 	</rabbit:queue>
 
-	<rabbit:queue name="Case.GatewayDLQ" durable="true" />
+	<rabbit:queue name="${queueconfig.case-queue-DLQ}" durable="true" />
 
-	<rabbit:queue name="UAC.Gateway" durable="true">
+	<rabbit:queue name="${queueconfig.uac-queue}" durable="true">
 		<rabbit:queue-arguments value-type="java.lang.String">
-			<entry key="x-dead-letter-exchange" value="uac-deadletter-exchange" />
-			<entry key="x-dead-letter-routing-key" value="event.uac.updates" />
+			<entry key="x-dead-letter-exchange" value="${queueconfig.dead-letter-exchange}" />
+			<entry key="x-dead-letter-routing-key" value="${queueconfig.uac-routing-key}" />
 		</rabbit:queue-arguments>
 	</rabbit:queue>
 
-	<rabbit:queue name="UAC.GatewayDLQ" durable="true" />
+	<rabbit:queue name="${queueconfig.uac-queue-DLQ}" durable="true" />
 
-	<rabbit:queue name="Respondent.Event" durable="true">
-		<rabbit:queue-arguments value-type="java.lang.String">
-			<entry key="x-dead-letter-exchange" value="respondent-deadletter-exchange" />
-			<entry key="x-dead-letter-routing-key" value="Respondent.Event.binding" />
-		</rabbit:queue-arguments>
-	</rabbit:queue>
-
-	<rabbit:queue name="Respondent.EventDLQ" durable="true" />
 	<!-- End of Queues -->
 
 	<!-- Start of Exchanges -->
 
-	<rabbit:topic-exchange name="events">
+	<rabbit:topic-exchange name="${queueconfig.event-exchange}">
 		<rabbit:bindings>
-			<rabbit:binding queue="Case.Gateway" pattern="event.case.lifecycle" />
-			<rabbit:binding queue="UAC.Gateway" pattern="event.uac.updates" />
+			<rabbit:binding queue="${queueconfig.case-queue}" pattern="${queueconfig.case-routing-key}" />
+		    <rabbit:binding queue="${queueconfig.uac-queue}" pattern="${queueconfig.uac-routing-key}" />	
 		</rabbit:bindings>
 	</rabbit:topic-exchange>
 
-	<rabbit:topic-exchange name="case-deadletter-exchange">
+    <!-- Dead letter exchange for expired messages (where Time To Live set) or rejected messages -->
+	<rabbit:direct-exchange name="${queueconfig.dead-letter-exchange}">
 		<rabbit:bindings>
-			<rabbit:binding queue="Case.GatewayDLQ" pattern="event.case.lifecycle" />
+			<rabbit:binding queue="${queueconfig.case-queue-DLQ}" key="${queueconfig.case-routing-key}" />
+			<rabbit:binding queue="${queueconfig.uac-queue-DLQ}" key="${queueconfig.uac-routing-key}" />
 		</rabbit:bindings>
-	</rabbit:topic-exchange>
-
-	<rabbit:topic-exchange name="uac-deadletter-exchange">
-		<rabbit:bindings>
-			<rabbit:binding queue="UAC.GatewayDLQ" pattern="event.uac.updates" />
-		</rabbit:bindings>
-	</rabbit:topic-exchange>
-
-	<rabbit:topic-exchange name="respondent-outbound-exchange">
-		<rabbit:bindings>
-			<rabbit:binding queue="Respondent.Event" pattern="Respondent.Event.binding" />
-		</rabbit:bindings>
-	</rabbit:topic-exchange>
-
-	<rabbit:topic-exchange name="respondent-deadletter-exchange">
-		<rabbit:bindings>
-			<rabbit:binding queue="Respondent.EventDLQ" pattern="Respondent.Event.binding" />
-		</rabbit:bindings>
-	</rabbit:topic-exchange>
+	</rabbit:direct-exchange>
 
 	<!-- End of Exchanges -->
 
