@@ -51,10 +51,6 @@ spring:
   application:
     name: ONS RespondentHomeService
 
-  maxRedeliveries: 10
-  initialRedeliveryDelay: 1000
-  redeliveryDelay: 1000
-
 rabbitmq:
   username: guest
   password: guest
