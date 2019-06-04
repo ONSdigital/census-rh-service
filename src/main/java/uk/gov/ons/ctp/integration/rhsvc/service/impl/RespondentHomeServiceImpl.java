@@ -2,17 +2,15 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.Date;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.event.model.Header;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedEvent;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.event.RespondentEventPublisher;
+import uk.gov.ons.ctp.integration.rhsvc.event.impl.EventBuilder;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
-import uk.gov.ons.ctp.integration.rhsvc.utility.Constants;
 
 /** This is a service layer class, which performs RH business level logic for the endpoints. */
 @Service
@@ -22,25 +20,13 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
   @Autowired private RespondentEventPublisher publisher;
 
   @Override
-  public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) {
-    UUID transactionId = UUID.randomUUID();
-    log.debug(
-        "Generating SurveyLaunched event for questionnaireId: "
-            + surveyLaunchedDTO.getQuestionnaireId()
-            + ", caseId: "
-            + surveyLaunchedDTO.getCaseId()
-            + ". Using transactionId: "
-            + transactionId);
+  public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) throws CTPException {
 
-    // Build key parts of Survey Launched event
-    Header eventData =
-        Header.builder()
-            .type(Constants.MESSAGE_NAME_SURVEY_LAUNCHED)
-            .source(Constants.RH_SERVICE_NAME)
-            .channel(Constants.RH_CHANNEL_NAME)
-            .dateTime(new Date())
-            .transactionId(transactionId.toString())
-            .build();
+    log.debug(
+        "Generating SurveyLaunched event for caseId: "
+            + surveyLaunchedDTO.getCaseId()
+            + ", questionnaireId: "
+            + surveyLaunchedDTO.getQuestionnaireId());
 
     SurveyLaunchedResponse response =
         SurveyLaunchedResponse.builder()
@@ -49,14 +35,16 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
             .agentId(null)
             .build();
 
-    // Concatenate parts to create Survey Launched event
-    SurveyLaunchedEvent surveyLaunchedEvent = new SurveyLaunchedEvent();
-    surveyLaunchedEvent.setEvent(eventData);
-    surveyLaunchedEvent.getPayload().setResponse(response);
+    SurveyLaunchedEvent event =
+        EventBuilder.buildEvent(EventBuilder.EventType.SURVEY_LAUNCHED, response);
 
     // Publish to Rabbit exchange
-    publisher.sendEvent(surveyLaunchedEvent);
+    publisher.sendEvent(event);
 
-    log.debug("SurveyLaunch event published for transactionId: " + transactionId);
+    log.debug(
+        "SurveyLaunch event published for caseId: "
+            + event.getPayload().getResponse().getCaseId()
+            + ", transactionId: "
+            + event.getEvent().getTransactionId());
   }
 }

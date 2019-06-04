@@ -17,7 +17,7 @@ public class UniqueAccessCodeDTO {
   private String uac;
   private boolean active;
   private CaseStatus caseStatus;
-  private Integer questionnaireId;
+  private String questionnaireId;
   private String caseType;
   private String region;
   private UUID caseId;
