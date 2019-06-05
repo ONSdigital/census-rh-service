@@ -49,7 +49,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   }
 
   @Override
-  public UniqueAccessCodeDTO getUniqueAccessCodeData(String uac) throws CTPException {
+  public UniqueAccessCodeDTO getAndAuthenticateUAC(String uac) throws CTPException {
 
     UniqueAccessCodeDTO data = new UniqueAccessCodeDTO();
     data.setUac(uac);
@@ -112,7 +112,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   }
 
   /** Send RespondentAuthenticated event */
-  private void sendRespondentAuthenticatedEvent(UniqueAccessCodeDTO data) throws CTPException {
+  private void sendRespondentAuthenticatedEvent(UniqueAccessCodeDTO data) {
 
     log.debug(
         "Generating RespondentAuthenticated event for caseId: "
@@ -126,8 +126,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
             .caseId(data.getCaseId())
             .build();
 
-    RespondentAuthenticatedEvent event =
-        EventBuilder.buildEvent(EventBuilder.EventType.RESPONDENT_AUTHENTICATED, response);
+    RespondentAuthenticatedEvent event = EventBuilder.buildEvent(response);
 
     eventPublisher.sendEvent(event);
 

@@ -4,7 +4,6 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedEvent;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.event.RespondentEventPublisher;
@@ -20,7 +19,7 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
   @Autowired private RespondentEventPublisher publisher;
 
   @Override
-  public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) throws CTPException {
+  public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) {
 
     log.debug(
         "Generating SurveyLaunched event for caseId: "
@@ -35,8 +34,7 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
             .agentId(null)
             .build();
 
-    SurveyLaunchedEvent event =
-        EventBuilder.buildEvent(EventBuilder.EventType.SURVEY_LAUNCHED, response);
+    SurveyLaunchedEvent event = EventBuilder.buildEvent(response);
 
     // Publish to Rabbit exchange
     publisher.sendEvent(event);

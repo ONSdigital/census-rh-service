@@ -68,7 +68,7 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
     when(dataRepo.readCollectionCase(CASE_ID)).thenReturn(Optional.of(caseTest));
 
-    UniqueAccessCodeDTO uacDTO = uacSvc.getUniqueAccessCodeData(UAC);
+    UniqueAccessCodeDTO uacDTO = uacSvc.getAndAuthenticateUAC(UAC);
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(1)).readCollectionCase(CASE_ID);
@@ -119,7 +119,7 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
     when(dataRepo.readCollectionCase(CASE_ID)).thenReturn(Optional.empty());
 
-    UniqueAccessCodeDTO uacDTO = uacSvc.getUniqueAccessCodeData(UAC);
+    UniqueAccessCodeDTO uacDTO = uacSvc.getAndAuthenticateUAC(UAC);
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(1)).readCollectionCase(CASE_ID);
@@ -145,7 +145,7 @@ public class UniqueAccessCodeServiceImplTest {
     uacTest.setCaseId(null);
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
 
-    UniqueAccessCodeDTO uacDTO = uacSvc.getUniqueAccessCodeData(UAC);
+    UniqueAccessCodeDTO uacDTO = uacSvc.getAndAuthenticateUAC(UAC);
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(0)).readCollectionCase(CASE_ID);
@@ -173,7 +173,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     boolean exceptionThrown = false;
     try {
-      uacSvc.getUniqueAccessCodeData(UAC);
+      uacSvc.getAndAuthenticateUAC(UAC);
     } catch (CTPException e) {
       exceptionThrown = true;
     }
