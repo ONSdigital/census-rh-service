@@ -64,7 +64,7 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(UUID.fromString(uacTest.getCaseId()), uacDTO.getCaseId());
     assertEquals(
         UUID.fromString(uacTest.getCollectionExerciseId()), uacDTO.getCollectionExerciseId());
-    assertEquals(Integer.valueOf(uacTest.getQuestionnaireId()), uacDTO.getQuestionnaireId());
+    assertEquals(uacTest.getQuestionnaireId(), uacDTO.getQuestionnaireId());
     assertEquals(uacTest.getCaseType(), uacDTO.getCaseType());
     assertEquals(uacTest.getRegion(), uacDTO.getRegion());
 
@@ -95,7 +95,7 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(UUID.fromString(uacTest.getCaseId()), uacDTO.getCaseId());
     assertEquals(
         UUID.fromString(uacTest.getCollectionExerciseId()), uacDTO.getCollectionExerciseId());
-    assertEquals(Integer.valueOf(uacTest.getQuestionnaireId()), uacDTO.getQuestionnaireId());
+    assertEquals(uacTest.getQuestionnaireId(), uacDTO.getQuestionnaireId());
     assertEquals(uacTest.getCaseType(), uacDTO.getCaseType());
     assertEquals(uacTest.getRegion(), uacDTO.getRegion());
 
@@ -120,7 +120,7 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(null, uacDTO.getCaseId());
     assertEquals(
         UUID.fromString(uacTest.getCollectionExerciseId()), uacDTO.getCollectionExerciseId());
-    assertEquals(Integer.valueOf(uacTest.getQuestionnaireId()), uacDTO.getQuestionnaireId());
+    assertEquals(uacTest.getQuestionnaireId(), uacDTO.getQuestionnaireId());
     assertEquals(uacTest.getCaseType(), uacDTO.getCaseType());
     assertEquals(uacTest.getRegion(), uacDTO.getRegion());
 
