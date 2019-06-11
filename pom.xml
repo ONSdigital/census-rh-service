@@ -193,8 +193,8 @@
 
     <dependency>
       <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-storage</artifactId>
-      <version>1.66.0</version>
+      <artifactId>google-cloud-firestore</artifactId>
+      <version>1.6.0</version>
     </dependency>
 
     <!-- Testing -->
