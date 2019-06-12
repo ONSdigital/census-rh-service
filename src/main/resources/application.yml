@@ -35,7 +35,7 @@ management:
       enabled: true
 
 server:
-  port: 8171
+  port: 8071
 
 spring:
   mvc:
@@ -50,10 +50,6 @@ spring:
       enabled: never
   application:
     name: ONS RespondentHomeService
-
-  maxRedeliveries: 10
-  initialRedeliveryDelay: 1000
-  redeliveryDelay: 1000
 
 rabbitmq:
   username: guest

@@ -9,7 +9,6 @@
     <int:annotation-config/>
 
     <import resource="case-event-inbound.xml"/>
-    <import resource="response-authentication-outbound.xml"/>
     <import resource="uac-event-inbound.xml"/>
 
 

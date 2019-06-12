@@ -11,10 +11,13 @@ import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
@@ -29,6 +32,11 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   private static final Logger log = LoggerFactory.getLogger(UniqueAccessCodeService.class);
 
   @Autowired private RespondentDataService dataRepo;
+  @Autowired private EventPublisher eventPublisher;
+
+  @Value("${queueconfig.response-authentication-routing-key}")
+  private String routingKey;
+
   private BoundMapperFacade<UAC, UniqueAccessCodeDTO> uacMapperFacade;
   private BoundMapperFacade<CollectionCase, UniqueAccessCodeDTO> caseMapperFacade;
 
@@ -44,7 +52,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   }
 
   @Override
-  public UniqueAccessCodeDTO getUniqueAccessCodeData(String uac) throws CTPException {
+  public UniqueAccessCodeDTO getAndAuthenticateUAC(String uac) throws CTPException {
 
     UniqueAccessCodeDTO data = new UniqueAccessCodeDTO();
     data.setUac(uac);
@@ -57,6 +65,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         if (caseMatch.isPresent()) {
           caseMapperFacade.map(caseMatch.get(), data);
           data.setCaseStatus(CaseStatus.OK);
+          sendRespondentAuthenticatedEvent(data);
         } else {
           log.warn("Failed to retrieve Case for UAC from storage");
           data.setCaseStatus(CaseStatus.NOT_FOUND);
@@ -103,5 +112,29 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     }
 
     return uacHash;
+  }
+
+  /** Send RespondentAuthenticated event */
+  private void sendRespondentAuthenticatedEvent(UniqueAccessCodeDTO data) throws CTPException {
+
+    log.debug(
+        "Generating RespondentAuthenticated event for caseId: "
+            + data.getCaseId()
+            + ", questionnaireId: "
+            + data.getQuestionnaireId());
+
+    RespondentAuthenticatedResponse response =
+        RespondentAuthenticatedResponse.builder()
+            .questionnaireId(data.getQuestionnaireId())
+            .caseId(data.getCaseId())
+            .build();
+
+    String transactionId = eventPublisher.sendEvent(routingKey, response);
+
+    log.debug(
+        "RespondentAuthenticated event published for caseId: "
+            + response.getCaseId()
+            + ", transactionId: "
+            + transactionId);
   }
 }

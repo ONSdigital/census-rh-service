@@ -32,7 +32,7 @@ public class UniqueAccessCodeEndpoint {
   public ResponseEntity<UniqueAccessCodeDTO> getUACClaimContext(
       @PathVariable("uac") final String uac) throws CTPException {
 
-    UniqueAccessCodeDTO uacDTO = uacService.getUniqueAccessCodeData(uac);
+    UniqueAccessCodeDTO uacDTO = uacService.getAndAuthenticateUAC(uac);
 
     return ResponseEntity.ok(uacDTO);
   }

@@ -67,11 +67,6 @@ spring:
         ddl-auto: update
         default_schema: rhsvc
 
-redelivery-policy:
-  maxRedeliveries: 10
-  initialRedeliveryDelay: 1000
-  redeliveryDelay: 1000
-
 rabbitmq:
   username: ${cloud.services.rabbitmq.connection.username}
   password: ${cloud.services.rabbitmq.connection.password}
