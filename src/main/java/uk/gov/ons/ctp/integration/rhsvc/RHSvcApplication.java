@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.rhsvc;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
+import uk.gov.ons.ctp.common.event.EventPublisher;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
 @SpringBootApplication
@@ -20,6 +22,9 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 @ComponentScan(basePackages = {"uk.gov.ons.ctp.integration"})
 @ImportResource("springintegration/main.xml")
 public class RHSvcApplication {
+
+  @Value("${queueconfig.event-exchange}")
+  private String eventExchange;
 
   /**
    * The main entry point for this application.
@@ -40,16 +45,19 @@ public class RHSvcApplication {
     }
   }
 
+  /**
+   * Bean used to publish asynchronous event messages
+   *
+   * @param connectionFactory RabbitMQ connection settings and strategies
+   * @return the event publisher
+   */
   @Bean
-  public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
-    final var rabbitTemplate = new RabbitTemplate(connectionFactory);
-    rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
-    return rabbitTemplate;
-  }
-
-  @Bean
-  public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
-    return new Jackson2JsonMessageConverter();
+  public EventPublisher eventPublisher(final ConnectionFactory connectionFactory) {
+    final var template = new RabbitTemplate(connectionFactory);
+    template.setMessageConverter(new Jackson2JsonMessageConverter());
+    template.setExchange(eventExchange);
+    template.setChannelTransacted(true);
+    return new EventPublisher(template);
   }
 
   /**

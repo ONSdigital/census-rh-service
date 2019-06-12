@@ -11,16 +11,15 @@ import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedEvent;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
-import uk.gov.ons.ctp.integration.rhsvc.event.RespondentEventPublisher;
-import uk.gov.ons.ctp.integration.rhsvc.event.impl.EventBuilder;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
@@ -33,7 +32,11 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   private static final Logger log = LoggerFactory.getLogger(UniqueAccessCodeService.class);
 
   @Autowired private RespondentDataService dataRepo;
-  @Autowired private RespondentEventPublisher eventPublisher;
+  @Autowired private EventPublisher eventPublisher;
+
+  @Value("${queueconfig.response-authentication-routing-key}")
+  private String routingKey;
+
   private BoundMapperFacade<UAC, UniqueAccessCodeDTO> uacMapperFacade;
   private BoundMapperFacade<CollectionCase, UniqueAccessCodeDTO> caseMapperFacade;
 
@@ -112,7 +115,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   }
 
   /** Send RespondentAuthenticated event */
-  private void sendRespondentAuthenticatedEvent(UniqueAccessCodeDTO data) {
+  private void sendRespondentAuthenticatedEvent(UniqueAccessCodeDTO data) throws CTPException {
 
     log.debug(
         "Generating RespondentAuthenticated event for caseId: "
@@ -126,14 +129,12 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
             .caseId(data.getCaseId())
             .build();
 
-    RespondentAuthenticatedEvent event = EventBuilder.buildEvent(response);
-
-    eventPublisher.sendEvent(event);
+    String transactionId = eventPublisher.sendEvent(routingKey, response);
 
     log.debug(
         "RespondentAuthenticated event published for caseId: "
-            + event.getPayload().getResponse().getCaseId()
+            + response.getCaseId()
             + ", transactionId: "
-            + event.getEvent().getTransactionId());
+            + transactionId);
   }
 }
