@@ -11,7 +11,7 @@ Do the following steps to set up the code to run locally:
 * Install Java 11 locally
 * Install Docker: Sign in to docker hub and then install docker by downloading it from https://hub.docker.com/editions/community/docker-ce-desktop-mac
 * Install maven
-* Clone the following repository git repositories:
+* Clone the following git repositories:
 * https://github.com/ONSdigital/census-int-common-config
 * https://github.com/ONSdigital/census-int-common-service
 * https://github.com/ONSdigital/census-int-common-test-framework
