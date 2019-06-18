@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -10,7 +11,6 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldPath;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
@@ -21,21 +21,13 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 public class FirestoreDataStore implements CloudDataStore {
   private static final Logger log = LoggerFactory.getLogger(FirestoreDataStore.class);
 
-  private static final String FIRESTORE_CREDENTIALS_ENV_NAME = "GOOGLE_APPLICATION_CREDENTIALS";
-  private static final String FIRESTORE_PROJECT_ENV_NAME = "GOOGLE_CLOUD_PROJECT";
+  // Names of environment variables which firestore uses for connection information
+  public static final String FIRESTORE_CREDENTIALS_ENV_NAME = "GOOGLE_APPLICATION_CREDENTIALS";
+  public static final String FIRESTORE_PROJECT_ENV_NAME = "GOOGLE_CLOUD_PROJECT";
 
+  @Autowired
   private Firestore firestore;
 
-  public FirestoreDataStore() {
-    String googleCredentials = System.getenv(FIRESTORE_CREDENTIALS_ENV_NAME);
-    String googleProjectName = System.getenv(FIRESTORE_PROJECT_ENV_NAME);
-    log.debug(
-        "Connecting to Firestore project '{}' using credentials at '{}'",
-        googleProjectName,
-        googleCredentials);
-
-    firestore = FirestoreOptions.getDefaultInstance().getService();
-  }
 
   /**
    * Write object to Firestore collection. If the object already exists then it will be overwritten.
