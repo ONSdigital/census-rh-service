@@ -14,4 +14,6 @@ public interface RespondentDataService {
   Optional<UAC> readUAC(String universalAccessCode) throws CTPException;
 
   Optional<CollectionCase> readCollectionCase(String caseId) throws CTPException;
+  
+  Optional<CollectionCase> readCollectionCaseByUprn(final String uprn) throws CTPException;
 }

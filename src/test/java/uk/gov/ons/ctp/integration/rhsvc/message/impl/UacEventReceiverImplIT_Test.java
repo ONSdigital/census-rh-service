@@ -40,8 +40,6 @@ public class UacEventReceiverImplIT_Test {
   @Test
   public void uacEventFlowTest() throws Exception {
 
-    String bucket = "uac_bucket";
-
     // Construct UACEvent
     UACEvent uacEvent = new UACEvent();
     UACPayload uacPayload = uacEvent.getPayload();

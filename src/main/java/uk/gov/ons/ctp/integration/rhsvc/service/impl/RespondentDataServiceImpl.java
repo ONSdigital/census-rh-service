@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
@@ -55,8 +57,9 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   @Override
   public void writeUAC(final UAC uac) throws CTPException {
     cloudDataStore.storeObject(uacBucket, uac.getUacHash(), uac);
-    
-    Optional<UAC> retrievedUac = cloudDataStore.retrieveObject(UAC.class, uacBucket, uac.getUacHash());
+
+    Optional<UAC> retrievedUac =
+        cloudDataStore.retrieveObject(UAC.class, uacBucket, uac.getUacHash());
     log.info(retrievedUac.toString());
   }
 
@@ -81,9 +84,6 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   @Override
   public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
     cloudDataStore.storeObject(caseBucket, collectionCase.getId(), collectionCase);
-    
-    Optional<CollectionCase> retrievedCase = readCollectionCase(collectionCase.getId()); //PMB
-    log.info(retrievedCase.toString());// PMB
   }
 
   /**
@@ -99,9 +99,33 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   }
 
   /**
-   * Delete an object from the cloud.
-   * No exception is thrown if the object does not exist.
-   * 
+   * Read a Case object from cloud based on its uprn.
+   *
+   * @param uprn - is the uprn that the target case must contain.
+   * @return - de-serialised version of the stored object
+   * @throws CTPException - if a Firestore exception was detected.
+   */
+  @Override
+  public Optional<CollectionCase> readCollectionCaseByUprn(final String uprn) throws CTPException {
+    // Run search
+    String[] searchByUprnPath = new String[] {"address", "uprn"};
+    List<CollectionCase> searchResults = cloudDataStore.search(CollectionCase.class, caseBucket, searchByUprnPath, uprn);
+    
+    Optional<CollectionCase> collectionCase;
+    if (searchResults.isEmpty()) {
+      collectionCase = Optional.empty();
+    } else if (searchResults.size() == 1) {
+      collectionCase = Optional.of(searchResults.get(0));
+    } else {
+      throw new CTPException(Fault.SYSTEM_ERROR, "Multiple values (" + searchResults.size() + ") returned for uprn '" + uprn + "' in bucket '" + caseBucket + "'");
+    }
+    
+    return collectionCase;
+  }
+
+  /**
+   * Delete an object from the cloud. No exception is thrown if the object does not exist.
+   *
    * @param schema
    * @param key
    * @throws CTPException
