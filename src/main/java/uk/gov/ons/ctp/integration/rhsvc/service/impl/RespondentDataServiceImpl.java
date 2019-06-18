@@ -52,7 +52,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    * Stores a UAC object into the cloud data store.
    *
    * @param uac - object to be stored in the cloud
-   * @throws CTPException - if a Firestore exception was detected.
+   * @throws CTPException - if a cloud exception was detected.
    */
   @Override
   public void writeUAC(final UAC uac) throws CTPException {
@@ -68,7 +68,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    *
    * @param universalAccessCode - the unique id of the object stored
    * @return - de-serialised version of the stored object
-   * @throws CTPException - if a Firestore exception was detected.
+   * @throws CTPException - if a cloud exception was detected.
    */
   @Override
   public Optional<UAC> readUAC(final String universalAccessCode) throws CTPException {
@@ -79,7 +79,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    * Write a CollectionCase object into the cloud data store.
    *
    * @param collectionCase - is the case to be stored in the cloud.
-   * @throws CTPException - if a Firestore exception was detected.
+   * @throws CTPException - if a cloud exception was detected.
    */
   @Override
   public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
@@ -91,7 +91,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    *
    * @param caseId - the unique id of the object stored
    * @return - de-serialised version of the stored object
-   * @throws CTPException - if a Firestore exception was detected.
+   * @throws CTPException - if a cloud exception was detected.
    */
   @Override
   public Optional<CollectionCase> readCollectionCase(final String caseId) throws CTPException {
@@ -103,7 +103,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    *
    * @param uprn - is the uprn that the target case must contain.
    * @return - de-serialised version of the stored object
-   * @throws CTPException - if a Firestore exception was detected.
+   * @throws CTPException - if a cloud exception was detected.
    */
   @Override
   public Optional<CollectionCase> readCollectionCaseByUprn(final String uprn) throws CTPException {
