@@ -6,7 +6,7 @@ This repository contains the Respondent Data service. This microservice is a RES
 
 ## Set Up
 
-Do the following steps to set up the code to run locally:
+Do the following steps to setup the code to run locally:
 * Install Java 11 locally
 * Install Docker: Sign in to docker hub and then install docker by downloading it from https://hub.docker.com/editions/community/docker-ce-desktop-mac
 * Install maven
