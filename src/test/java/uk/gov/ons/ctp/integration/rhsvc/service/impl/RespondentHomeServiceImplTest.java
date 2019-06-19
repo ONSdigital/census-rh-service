@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.eq;
 
 import java.util.UUID;
 import org.junit.Before;
@@ -13,23 +13,27 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import uk.gov.ons.ctp.common.TestHelper;
-import uk.gov.ons.ctp.common.event.model.SurveyLaunchedEvent;
+import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
-import uk.gov.ons.ctp.integration.rhsvc.event.RespondentEventPublisher;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 
 public class RespondentHomeServiceImplTest {
 
-  @Mock RespondentEventPublisher publisher;
+  private static final String ROUTING_KEY_FIELD_NAME = "routingKey";
+  private static final String ROUTING_KEY_FIELD_VALUE = "whereAreWeRoutingThis";
+
+  @Mock EventPublisher publisher;
 
   @InjectMocks RespondentHomeServiceImpl respondentHomeService;
 
-  @Captor ArgumentCaptor<SurveyLaunchedEvent> sendEventCaptor;
+  @Captor ArgumentCaptor<SurveyLaunchedResponse> sendEventCaptor;
 
   @Before
   public void initMocks() {
     MockitoAnnotations.initMocks(this);
+    ReflectionTestUtils.setField(
+        respondentHomeService, ROUTING_KEY_FIELD_NAME, ROUTING_KEY_FIELD_VALUE);
   }
 
   @Test
@@ -40,21 +44,13 @@ public class RespondentHomeServiceImplTest {
     surveyLaunchedDTO.setCaseId(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"));
     respondentHomeService.surveyLaunched(surveyLaunchedDTO);
 
-    // Get hold of the event that respondentHomeService created
-    Mockito.verify(publisher).sendEvent(sendEventCaptor.capture());
-    SurveyLaunchedEvent surveyLaunchedEvent = sendEventCaptor.getValue();
+    // Get hold of the event pay load that respondentHomeService created
+    Mockito.verify(publisher).sendEvent(eq(ROUTING_KEY_FIELD_VALUE), sendEventCaptor.capture());
+    SurveyLaunchedResponse eventPayload = sendEventCaptor.getValue();
 
-    // Verify the contents of the top level event data
-    assertEquals("SURVEY_LAUNCHED", surveyLaunchedEvent.getEvent().getType());
-    assertEquals("RESPONDENT_HOME", surveyLaunchedEvent.getEvent().getSource());
-    assertEquals("RH", surveyLaunchedEvent.getEvent().getChannel());
-    assertNotNull(surveyLaunchedEvent.getEvent().getDateTime());
-    TestHelper.validateAsUUID(surveyLaunchedEvent.getEvent().getTransactionId());
-
-    // Verify contents of payload object
-    SurveyLaunchedResponse response = surveyLaunchedEvent.getPayload().getResponse();
-    assertEquals(surveyLaunchedDTO.getQuestionnaireId(), response.getQuestionnaireId());
-    assertEquals(surveyLaunchedDTO.getCaseId(), response.getCaseId());
-    assertNull(response.getAgentId());
+    // Verify contents of pay load object
+    assertEquals(surveyLaunchedDTO.getQuestionnaireId(), eventPayload.getQuestionnaireId());
+    assertEquals(surveyLaunchedDTO.getCaseId(), eventPayload.getCaseId());
+    assertNull(eventPayload.getAgentId());
   }
 }

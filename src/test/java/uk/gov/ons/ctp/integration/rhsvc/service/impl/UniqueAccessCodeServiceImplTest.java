@@ -2,6 +2,8 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,12 +13,16 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
@@ -29,10 +35,14 @@ public class UniqueAccessCodeServiceImplTest {
   private static final String UAC_HASH =
       "97a2e785f8cffc8f40b5e8fc626933bb8aedf3df82672299bf7aeafe68c99c93";
   private static final String CASE_ID = "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4";
+  private static final String ROUTING_KEY_FIELD_NAME = "routingKey";
+  private static final String ROUTING_KEY_FIELD_VALUE = "whereAreWeRoutingThis";
 
   @InjectMocks private UniqueAccessCodeServiceImpl uacSvc;
 
   @Mock private RespondentDataService dataRepo;
+
+  @Mock private EventPublisher eventPublisher;
 
   private List<UAC> uac;
   private List<CollectionCase> collectionCase;
@@ -43,20 +53,27 @@ public class UniqueAccessCodeServiceImplTest {
     MockitoAnnotations.initMocks(this);
     this.uac = FixtureHelper.loadClassFixtures(UAC[].class);
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
+    ReflectionTestUtils.setField(uacSvc, ROUTING_KEY_FIELD_NAME, ROUTING_KEY_FIELD_VALUE);
   }
 
   /** Test request for claim object where UAC and Case found */
   @Test
   public void getUniqueAccessCodeDataUACAndCaseFound() throws Exception {
+
+    ArgumentCaptor<RespondentAuthenticatedResponse> payloadCapture =
+        ArgumentCaptor.forClass(RespondentAuthenticatedResponse.class);
+
     UAC uacTest = uac.get(0);
     CollectionCase caseTest = collectionCase.get(0);
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
     when(dataRepo.readCollectionCase(CASE_ID)).thenReturn(Optional.of(caseTest));
 
-    UniqueAccessCodeDTO uacDTO = uacSvc.getUniqueAccessCodeData(UAC);
+    UniqueAccessCodeDTO uacDTO = uacSvc.getAndAuthenticateUAC(UAC);
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(1)).readCollectionCase(CASE_ID);
+    verify(eventPublisher, times(1))
+        .sendEvent(eq(ROUTING_KEY_FIELD_VALUE), payloadCapture.capture());
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
@@ -74,6 +91,10 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(caseTest.getAddress().getTownName(), uacDTO.getAddress().getTownName());
     assertEquals(caseTest.getAddress().getPostcode(), uacDTO.getAddress().getPostcode());
     assertEquals(caseTest.getAddress().getUprn(), uacDTO.getAddress().getUprn());
+
+    RespondentAuthenticatedResponse payload = payloadCapture.getValue();
+    assertEquals(uacDTO.getCaseId(), payload.getCaseId());
+    assertEquals(uacDTO.getQuestionnaireId(), payload.getQuestionnaireId());
   }
 
   /** Test request for claim object where UAC found with caseID, CollectionCase not found */
@@ -84,10 +105,11 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
     when(dataRepo.readCollectionCase(CASE_ID)).thenReturn(Optional.empty());
 
-    UniqueAccessCodeDTO uacDTO = uacSvc.getUniqueAccessCodeData(UAC);
+    UniqueAccessCodeDTO uacDTO = uacSvc.getAndAuthenticateUAC(UAC);
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(1)).readCollectionCase(CASE_ID);
+    verify(eventPublisher, times(0)).sendEvent(any(), any());
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
@@ -109,10 +131,11 @@ public class UniqueAccessCodeServiceImplTest {
     uacTest.setCaseId(null);
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
 
-    UniqueAccessCodeDTO uacDTO = uacSvc.getUniqueAccessCodeData(UAC);
+    UniqueAccessCodeDTO uacDTO = uacSvc.getAndAuthenticateUAC(UAC);
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(0)).readCollectionCase(CASE_ID);
+    verify(eventPublisher, times(0)).sendEvent(any(), any());
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
@@ -136,13 +159,14 @@ public class UniqueAccessCodeServiceImplTest {
 
     boolean exceptionThrown = false;
     try {
-      uacSvc.getUniqueAccessCodeData(UAC);
+      uacSvc.getAndAuthenticateUAC(UAC);
     } catch (CTPException e) {
       exceptionThrown = true;
     }
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(0)).readCollectionCase(CASE_ID);
+    verify(eventPublisher, times(0)).sendEvent(any(), any());
 
     assertTrue(exceptionThrown);
   }

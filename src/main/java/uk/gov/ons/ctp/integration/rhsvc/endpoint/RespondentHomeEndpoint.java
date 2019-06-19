@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
 
@@ -32,7 +33,8 @@ public final class RespondentHomeEndpoint implements CTPEndpoint {
    * @param surveyLaunchedDTO request dto containing body data
    */
   @RequestMapping(value = "/surveyLaunched", method = RequestMethod.POST)
-  public void surveyLaunched(@Valid @RequestBody SurveyLaunchedDTO surveyLaunchedDTO) {
+  public void surveyLaunched(@Valid @RequestBody SurveyLaunchedDTO surveyLaunchedDTO)
+      throws CTPException {
 
     respondentHomeService.surveyLaunched(surveyLaunchedDTO);
   }
