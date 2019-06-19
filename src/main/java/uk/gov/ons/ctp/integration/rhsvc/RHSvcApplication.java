@@ -27,9 +27,6 @@ import uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore;
 public class RHSvcApplication {
   private static final Logger log = LoggerFactory.getLogger(RHSvcApplication.class);
 
-  private static final String FIRESTORE_CREDENTIALS_ENV_NAME = "GOOGLE_APPLICATION_CREDENTIALS";
-  private static final String FIRESTORE_PROJECT_ENV_NAME = "GOOGLE_CLOUD_PROJECT";
-
   /**
    * The main entry point for this application.
    *

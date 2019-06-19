@@ -71,29 +71,15 @@ public class FirestoreDataStore implements CloudDataStore {
 
     // Submit read request to firestore
     FieldPath fieldPathForId = FieldPath.documentId();
-    ApiFuture<QuerySnapshot> query =
-        firestore.collection(schema).whereEqualTo(fieldPathForId, key).get();
-
-    // Wait for Firestore to fetch object
-    QuerySnapshot querySnapshot;
-    try {
-      querySnapshot = query.get();
-    } catch (Exception e) {
-      String failureMessage =
-          "Failed to read object from Firestore. Schema: " + schema + " with key " + key;
-      throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
-    }
-    List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
-
-    // Validate the query results
+    List<T> documents = runSearch(target, schema, fieldPathForId, key);
+    
+    // Squash results down to single document
     Optional<T> result = null;
     if (documents.isEmpty()) {
       result = Optional.empty();
     } else if (documents.size() == 1) {
-      // Convert to result type
-      T foundObject = (T) documents.get(0).toObject(target);
-      result = Optional.of(foundObject);
-    } else if (documents.size() != 1) {
+      result = Optional.of(documents.get(0));
+    } else {
       throw new CTPException(
           Fault.SYSTEM_ERROR,
           "Firestore returned incorrect number of objects. Returned "
@@ -123,10 +109,18 @@ public class FirestoreDataStore implements CloudDataStore {
       throws CTPException {
     // Run a query
     FieldPath searchPath = FieldPath.of(fieldPath);
-    ApiFuture<QuerySnapshot> query =
-        firestore.collection(schema).whereEqualTo(searchPath, searchValue).get();
+    List<T> r = runSearch(target, schema, searchPath, searchValue);
+    return r;
+  }
 
-    // Get hold of query results
+  public <T> List<T> runSearch(
+      Class<T> target, final String schema, FieldPath fieldPath, String searchValue)
+      throws CTPException {
+    // Run a query
+    ApiFuture<QuerySnapshot> query =
+        firestore.collection(schema).whereEqualTo(fieldPath, searchValue).get();
+
+    // Wait for query to complete and get results
     QuerySnapshot querySnapshot;
     try {
       querySnapshot = query.get();

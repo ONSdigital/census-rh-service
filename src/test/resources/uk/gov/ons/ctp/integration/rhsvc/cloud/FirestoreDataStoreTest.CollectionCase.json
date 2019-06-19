@@ -1,0 +1,60 @@
+[
+  {
+	"id": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
+	"caseRef": "10000000010",
+	"survey": "CENSUS",
+	"collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
+	"address": {
+		"addressLine1": "1 main street",
+		"addressLine2": "upper upperingham",
+		"addressLine3": "",
+		"townName": "upton",
+		"postcode": "UP103UP",
+		"region": "E",
+		"latitude": "50.863849",
+		"longitude": "-1.229710",
+		"uprn": "123456",
+		"arid": "XXXXX",
+		"addressType": "CE",
+		"estabType": "XXX"
+	},
+	"contact": {
+		"title": "Ms",
+		"forename": "jo",
+		"surname": "Jones",
+		"email": "me@example.com",
+		"telNo": "+447890000000"
+	},
+	"state": "ACTIONABLE",
+	"actionableFrom": "2011-08-12T20:17:46.384Z"
+  },
+  {
+	"id": "d9fa062c-0659-4cb4-980b-4d6a48039205",
+	"caseRef": "10000000011",
+	"survey": "CENSUS",
+	"collectionExerciseId": "3dc0349c-4f98-4ab4-9f2f-6cb652b27c4d",
+	"address": {
+		"addressLine1": "12 High Street",
+		"addressLine2": "Smedwick",
+		"addressLine3": "Stuckswig",
+		"townName": "Barnsmouth",
+		"postcode": "BM1 2EP",
+		"region": "E",
+		"latitude": "53.863849",
+		"longitude": "-4.229710",
+		"uprn": "34534522",
+		"arid": "XXXXX",
+		"addressType": "CE",
+		"estabType": "XXX"
+	},
+	"contact": {
+		"title": "Mr",
+		"forename": "Iain",
+		"surname": "Jones",
+		"email": "Iain@somewhere.com",
+		"telNo": "+447890023444"
+	},
+	"state": "ACTIONABLE",
+	"actionableFrom": "2011-08-12T20:17:46.384Z"
+  }
+] 

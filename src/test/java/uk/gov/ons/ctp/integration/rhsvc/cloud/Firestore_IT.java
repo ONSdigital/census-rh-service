@@ -2,13 +2,15 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.test.util.ReflectionTestUtils;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 
@@ -31,13 +33,16 @@ public class Firestore_IT {
 
   @BeforeClass
   public static void setUp() {
+    firestoreDataStore = new FirestoreDataStore();
+
     String googleCredentials = System.getenv(FIRESTORE_CREDENTIALS_ENV_NAME);
     String googleProjectName = System.getenv(FIRESTORE_PROJECT_ENV_NAME);
     System.out.printf(
         "Connecting to Firestore project '%s' using credentials at '%s'\n",
         googleProjectName, googleCredentials);
-
-    firestoreDataStore = new FirestoreDataStore();
+    Firestore firestore = FirestoreOptions.getDefaultInstance().getService();
+    
+    ReflectionTestUtils.setField(firestoreDataStore, "firestore", firestore);
   }
 
   @Before
