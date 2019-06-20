@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
@@ -16,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +24,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.TestHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
+import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedEvent;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
@@ -36,15 +38,16 @@ import uk.gov.ons.ctp.integration.rhsvc.endpoint.RespondentHomeEndpoint;
 
 /**
  * This is a component test which submits a Post saying that a survey has been launched and uses a
- * mock to confirm that RH publishes a survey launched event.
+ * mock of RabbitMQ to confirm that RH publishes a survey launched event.
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class SurveyLaunchedIT {
   @Autowired private RespondentHomeEndpoint respondentHomeEndpoint;
 
-  @MockBean(name = "surveyLaunchedRabbitTemplate")
-  private RabbitTemplate rabbitTemplate;
+  @MockBean private RabbitTemplate rabbitTemplate;
+
+  @Autowired EventPublisher eventPublisher;
 
   private MockMvc mockMvc;
 
@@ -52,7 +55,7 @@ public class SurveyLaunchedIT {
 
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
+    ReflectionTestUtils.setField(eventPublisher, "template", rabbitTemplate);
 
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(respondentHomeEndpoint)
@@ -77,7 +80,8 @@ public class SurveyLaunchedIT {
         .andExpect(status().isOk());
 
     // Get ready to capture the survey details published to the exchange
-    Mockito.verify(rabbitTemplate).convertAndSend(publishCaptor.capture());
+    Mockito.verify(rabbitTemplate)
+        .convertAndSend(eq("event.response.authentication"), publishCaptor.capture());
     SurveyLaunchedEvent publishedEvent = publishCaptor.getValue();
 
     // Validate contents of the published event
@@ -101,7 +105,9 @@ public class SurveyLaunchedIT {
   @Test
   public void surveyLaunched_failsOnSend() throws Exception {
     // Simulate event posting failure
-    Mockito.doThrow(AmqpException.class).when(rabbitTemplate).convertAndSend(any());
+    Mockito.doThrow(AmqpException.class)
+        .when(rabbitTemplate)
+        .convertAndSend((String) eq("event.response.authentication"), (Object) any());
 
     // Read request body from resource file
     ObjectNode surveyLaunchedRequestBody = FixtureHelper.loadClassObjectNode();
