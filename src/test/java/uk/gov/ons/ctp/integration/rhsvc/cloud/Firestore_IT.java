@@ -2,26 +2,28 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 
 /**
- * This class tests the FirestoreDataStore class by connecting to a real firestore project. 
- * 
- * To run this code: This class tests Firestore using the firestore API.
- * 1) Uncomment the @Ignore annotations.
- * 2) Make sure the Firestore environment variables are set. eg, I use:
- *   GOOGLE_APPLICATION_CREDENTIALS = /Users/peterbochel/.config/gcloud/application_default_credentials.json
- *   GOOGLE_CLOUD_PROJECT = census-rh-peterb
+ * This class tests the FirestoreDataStore class by connecting to a real firestore project.
+ *
+ * <p>To run this code: This class tests Firestore using the firestore API. 1) Uncomment the @Ignore
+ * annotations. 2) Make sure the Firestore environment variables are set. eg, I use:
+ * GOOGLE_APPLICATION_CREDENTIALS =
+ * /Users/peterbochel/.config/gcloud/application_default_credentials.json GOOGLE_CLOUD_PROJECT =
+ * census-rh-peterb
  */
 public class Firestore_IT {
 
@@ -41,7 +43,7 @@ public class Firestore_IT {
         "Connecting to Firestore project '%s' using credentials at '%s'\n",
         googleProjectName, googleCredentials);
     Firestore firestore = FirestoreOptions.getDefaultInstance().getService();
-    
+
     ReflectionTestUtils.setField(firestoreDataStore, "firestore", firestore);
   }
 
@@ -56,6 +58,7 @@ public class Firestore_IT {
     firestoreDataStore.deleteObject(TEST_SCHEMA, case2.getId());
   }
 
+  @Ignore
   @Test
   public void testStoreAndRetrieve() throws Exception {
     // Load test data
@@ -73,6 +76,7 @@ public class Firestore_IT {
     assertEquals(case1, retrievedCase1.get());
   }
 
+  @Ignore
   @Test
   public void testRetrieveObject_unknownObject() throws Exception {
     // Chuck an object into firestore
@@ -86,6 +90,7 @@ public class Firestore_IT {
     assertTrue(retrievedCase.isEmpty());
   }
 
+  @Ignore
   @Test
   public void testSearch_multipleResults() throws Exception {
     // Read test data
@@ -115,6 +120,7 @@ public class Firestore_IT {
     assertEquals(case2, retrievedCase2.get(0));
   }
 
+  @Ignore
   @Test
   public void testSearch_noResults() throws Exception {
     // Load test data
@@ -128,6 +134,7 @@ public class Firestore_IT {
     assertTrue(retrievedCase1.isEmpty());
   }
 
+  @Ignore
   @Test
   public void testDelete_success() throws Exception {
     // Load test data
@@ -148,6 +155,7 @@ public class Firestore_IT {
     assertTrue(retrievedCase.isEmpty());
   }
 
+  @Ignore
   @Test
   public void testDelete_onNonExistantObject() throws Exception {
     // Load test data, just so that Firestore has some data loaded

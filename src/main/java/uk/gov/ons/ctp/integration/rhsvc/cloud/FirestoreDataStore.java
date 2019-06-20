@@ -1,10 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.api.core.ApiFuture;
@@ -14,6 +9,11 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 
@@ -25,9 +25,7 @@ public class FirestoreDataStore implements CloudDataStore {
   public static final String FIRESTORE_CREDENTIALS_ENV_NAME = "GOOGLE_APPLICATION_CREDENTIALS";
   public static final String FIRESTORE_PROJECT_ENV_NAME = "GOOGLE_CLOUD_PROJECT";
 
-  @Autowired
-  private Firestore firestore;
-
+  @Autowired private Firestore firestore;
 
   /**
    * Write object to Firestore collection. If the object already exists then it will be overwritten.
@@ -72,7 +70,7 @@ public class FirestoreDataStore implements CloudDataStore {
     // Submit read request to firestore
     FieldPath fieldPathForId = FieldPath.documentId();
     List<T> documents = runSearch(target, schema, fieldPathForId, key);
-    
+
     // Squash results down to single document
     Optional<T> result = null;
     if (documents.isEmpty()) {
@@ -82,7 +80,7 @@ public class FirestoreDataStore implements CloudDataStore {
     } else {
       throw new CTPException(
           Fault.SYSTEM_ERROR,
-          "Firestore returned incorrect number of objects. Returned "
+          "Firestore returned more than 1 result object. Returned "
               + documents.size()
               + " objects for Schema: "
               + schema
@@ -107,7 +105,7 @@ public class FirestoreDataStore implements CloudDataStore {
   public <T> List<T> search(
       Class<T> target, final String schema, String[] fieldPath, String searchValue)
       throws CTPException {
-    // Run a query
+    // Run a query for a custom search path
     FieldPath searchPath = FieldPath.of(fieldPath);
     List<T> r = runSearch(target, schema, searchPath, searchValue);
     return r;
@@ -128,7 +126,7 @@ public class FirestoreDataStore implements CloudDataStore {
       throw new CTPException(
           Fault.SYSTEM_ERROR,
           e,
-          "Search of schema '" + schema + "' failed for field '" + "'" + fieldPath);
+          "Failed to search schema '" + schema + "' by field '" + "'" + fieldPath);
     }
     List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
 
@@ -141,7 +139,7 @@ public class FirestoreDataStore implements CloudDataStore {
   /**
    * Delete an object from Firestore. No error is thrown if the object doesn't exist.
    *
-   * @param scheama - is the name of the collection which holds the object.
+   * @param schema - is the name of the collection which holds the object.
    * @param key - identifies the object within the collection.
    */
   @Override

@@ -1,5 +1,9 @@
 package uk.gov.ons.ctp.integration.rhsvc;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -12,10 +16,6 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore;
 
@@ -70,10 +70,11 @@ public class RHSvcApplication {
 
   /**
    * Connect to Google Firestore.
+   *
    * @return a Firestore connection.
    */
   @Bean
-  public Firestore FirestoreDataStore() {
+  public Firestore firestore() {
     String googleCredentials = System.getenv(FirestoreDataStore.FIRESTORE_CREDENTIALS_ENV_NAME);
     String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
     log.info(

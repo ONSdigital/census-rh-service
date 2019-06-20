@@ -1,13 +1,13 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
@@ -109,27 +109,29 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   public Optional<CollectionCase> readCollectionCaseByUprn(final String uprn) throws CTPException {
     // Run search
     String[] searchByUprnPath = new String[] {"address", "uprn"};
-    List<CollectionCase> searchResults = cloudDataStore.search(CollectionCase.class, caseBucket, searchByUprnPath, uprn);
-    
+    List<CollectionCase> searchResults =
+        cloudDataStore.search(CollectionCase.class, caseBucket, searchByUprnPath, uprn);
+
     Optional<CollectionCase> collectionCase;
     if (searchResults.isEmpty()) {
       collectionCase = Optional.empty();
     } else if (searchResults.size() == 1) {
       collectionCase = Optional.of(searchResults.get(0));
     } else {
-      throw new CTPException(Fault.SYSTEM_ERROR, "Multiple values (" + searchResults.size() + ") returned for uprn '" + uprn + "' in bucket '" + caseBucket + "'");
+      throw new CTPException(
+          Fault.SYSTEM_ERROR,
+          "Multiple values ("
+              + searchResults.size()
+              + ") returned for uprn '"
+              + uprn
+              + "' in bucket '"
+              + caseBucket
+              + "'");
     }
-    
+
     return collectionCase;
   }
 
-  /**
-   * Delete an object from the cloud. No exception is thrown if the object does not exist.
-   *
-   * @param schema
-   * @param key
-   * @throws CTPException
-   */
   public void deleteJsonFromCloud(String schema, String key) throws CTPException {
     cloudDataStore.deleteObject(schema, key);
   }
