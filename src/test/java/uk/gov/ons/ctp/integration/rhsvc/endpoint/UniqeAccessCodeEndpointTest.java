@@ -53,7 +53,7 @@ public class UniqeAccessCodeEndpointTest {
   /** Test returns valid JSON for valid UAC */
   @Test
   public void getUACClaimContextUACFound() throws Exception {
-    when(uacService.getUniqueAccessCodeData(UAC)).thenReturn(uacDTO.get(0));
+    when(uacService.getAndAuthenticateUAC(UAC)).thenReturn(uacDTO.get(0));
 
     mockMvc
         .perform(get(String.format("/uacs/%s", UAC)))
@@ -67,7 +67,7 @@ public class UniqeAccessCodeEndpointTest {
   /** Test returns resource not found for invalid UAC */
   @Test
   public void getUACClaimContextUACNotFound() throws Exception {
-    when(uacService.getUniqueAccessCodeData(UAC))
+    when(uacService.getAndAuthenticateUAC(UAC))
         .thenThrow(new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, ERROR_MESSAGE));
 
     mockMvc
