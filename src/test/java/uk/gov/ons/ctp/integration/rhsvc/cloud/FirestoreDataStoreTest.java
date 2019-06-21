@@ -124,7 +124,7 @@ public class FirestoreDataStoreTest {
 
   @Test
   public void testSearch_noResults() throws Exception {
-    mockFirestoreSearch(TEST_SCHEMA, "Bob", null);
+    mockFirestoreSearch(TEST_SCHEMA, "Bob", null, null);
 
     // Verify that there are no results when searching for unknown forename
     String[] searchCriteria = new String[] {"contact", "forename"};
@@ -138,7 +138,7 @@ public class FirestoreDataStoreTest {
     // Read test data
     CollectionCase case1 = loadCaseFromFile(0);
 
-    mockFirestoreSearch(TEST_SCHEMA, case1.getContact().getForename(), null, case1);
+    mockFirestoreSearch(TEST_SCHEMA, case1.getContact().getForename(), null, null, case1);
 
     // Verify that search can find the  first case
     String[] searchCriteria = new String[] {"contact", "forename"};
@@ -156,7 +156,7 @@ public class FirestoreDataStoreTest {
     CollectionCase case1 = loadCaseFromFile(0);
     CollectionCase case2 = loadCaseFromFile(1);
 
-    mockFirestoreSearch(TEST_SCHEMA, "Smith", null, case1, case2);
+    mockFirestoreSearch(TEST_SCHEMA, "Smith", null, null, case1, case2);
 
     // Verify that search can find the  first case
     String[] searchCriteria = new String[] {"contact", "surname"};
@@ -177,7 +177,7 @@ public class FirestoreDataStoreTest {
 
     ExecutionException firestoreException =
         new ExecutionException("fake Firestore exception", null);
-    mockFirestoreSearch(TEST_SCHEMA, "Smith", firestoreException, case1, case2);
+    mockFirestoreSearch(TEST_SCHEMA, "Smith", firestoreException, null, case1, case2);
 
     boolean exceptionCaught = false;
     try {
@@ -188,6 +188,29 @@ public class FirestoreDataStoreTest {
       assertTrue(
           e.getCause().getMessage(),
           e.getCause().getMessage().contains("fake Firestore exception"));
+      exceptionCaught = true;
+    }
+    assertTrue(exceptionCaught);
+  }
+
+  @Test
+  public void testSearch_failsSerialisationException() throws Exception {
+    // Read test data
+    CollectionCase case1 = loadCaseFromFile(0);
+    CollectionCase case2 = loadCaseFromFile(1);
+
+    RuntimeException serialisationException = new RuntimeException("Could not deserialize object");
+    mockFirestoreSearch(TEST_SCHEMA, "Smith", null, serialisationException, case1, case2);
+
+    boolean exceptionCaught = false;
+    try {
+      String[] searchCriteria = new String[] {"contact", "surname"};
+      firestoreDataStore.search(CollectionCase.class, TEST_SCHEMA, searchCriteria, "Smith");
+    } catch (CTPException e) {
+      assertTrue(e.getMessage(), e.getMessage().contains("Failed to convert"));
+      assertTrue(
+          e.getCause().getMessage(),
+          e.getCause().getMessage().contains("Could not deserialize object"));
       exceptionCaught = true;
     }
     assertTrue(exceptionCaught);
@@ -273,19 +296,20 @@ public class FirestoreDataStoreTest {
       Exception exception,
       CollectionCase... case1)
       throws InterruptedException, ExecutionException {
-    mockFirestoreSearch(expectedSchema, expectedSearchValue, exception, case1);
+    mockFirestoreSearch(expectedSchema, expectedSearchValue, exception, null, case1);
   }
 
   private void mockFirestoreSearch(
       String expectedSchema,
       String expectedSearchValue,
-      Exception exception,
+      Exception searchException,
+      Exception serialisationException,
       CollectionCase... resultData)
       throws InterruptedException, ExecutionException {
 
     ApiFuture<QuerySnapshot> apiFuture = genericMock(ApiFuture.class);
 
-    if (exception == null) {
+    if (searchException == null && serialisationException == null) {
       // Build list of results which are to be returned
       List<QueryDocumentSnapshot> results = new ArrayList<>();
       for (CollectionCase caseObj : resultData) {
@@ -298,8 +322,19 @@ public class FirestoreDataStoreTest {
       Mockito.when(querySnapshot.getDocuments()).thenReturn(results);
 
       Mockito.when(apiFuture.get()).thenReturn(querySnapshot);
+    } else if (searchException != null) {
+      Mockito.when(apiFuture.get()).thenThrow(searchException);
     } else {
-      Mockito.when(apiFuture.get()).thenThrow(exception);
+      // SerialisationException
+      List<QueryDocumentSnapshot> results = new ArrayList<>();
+      QueryDocumentSnapshot doc1 = Mockito.mock(QueryDocumentSnapshot.class);
+      Mockito.when(doc1.toObject(eq(CollectionCase.class))).thenThrow(serialisationException);
+      results.add(doc1);
+
+      QuerySnapshot querySnapshot = Mockito.mock(QuerySnapshot.class);
+      Mockito.when(querySnapshot.getDocuments()).thenReturn(results);
+
+      Mockito.when(apiFuture.get()).thenReturn(querySnapshot);
     }
 
     Query query = Mockito.mock(Query.class);

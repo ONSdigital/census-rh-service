@@ -136,6 +136,26 @@ public class Firestore_IT {
 
   @Ignore
   @Test
+  public void testSearch_serialisationFailure() throws Exception {
+    // Add test data to Firestore
+    CollectionCase case1 = loadCaseFromFile(0);
+    firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
+
+    // Verify that search can find the first case
+    boolean exceptionCaught = false;
+    try {
+      String[] searchByForename = new String[] {"contact", "forename"};
+      firestoreDataStore.search(
+          String.class, TEST_SCHEMA, searchByForename, case1.getContact().getForename());
+    } catch (Exception e) {
+      assertTrue(e.getCause().getMessage(), e.getCause().getMessage().contains("e"));
+      exceptionCaught = true;
+    }
+    assertTrue(exceptionCaught);
+  }
+
+  @Ignore
+  @Test
   public void testDelete_success() throws Exception {
     // Load test data
     CollectionCase case1 = loadCaseFromFile(0);
