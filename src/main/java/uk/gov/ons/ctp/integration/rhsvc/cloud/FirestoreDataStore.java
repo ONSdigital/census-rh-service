@@ -39,7 +39,7 @@ public class FirestoreDataStore implements CloudDataStore {
   @Override
   public void storeObject(final String schema, final String key, final Object value)
       throws CTPException {
-    log.debug("Saving object to Firestore. Schema '{}' with key '{}'" + schema, key);
+    log.debug("Saving object to Firestore. Schema '{}' with key '{}'", schema, key);
 
     // Store the object
     ApiFuture<WriteResult> result = firestore.collection(schema).document(key).set(value);
@@ -47,7 +47,7 @@ public class FirestoreDataStore implements CloudDataStore {
     // Wait for Firestore to complete
     try {
       result.get();
-      log.debug("Firstore save completed. Schema '{}' with key '{}'" + schema, key);
+      log.debug("Firstore save completed. Schema '{}' with key '{}'", schema, key);
     } catch (Exception e) {
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
