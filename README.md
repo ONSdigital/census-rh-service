@@ -2,10 +2,12 @@
 [![Build Status](https://travis-ci.org/ONSdigital/census-rh-service.svg?branch=master)](https://travis-ci.org/ONSdigital/census-rh-service)
 [![codecov](https://codecov.io/gh/ONSdigital/census-rh-service/branch/master/graph/badge.svg)](https://codecov.io/gh/ONSdigital/census-rh-service)
 
-# Respondent Data Service
+# Respondent Home Data Service
+
 This repository contains the Respondent Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/). It manages respondent data, where a Respondent Data object represents an expected response from the Respondent Data service, which provides all the data that is required by Respondent Home in order for it to verify the respondent's UAC code and connect them to the relevant EQ questionnaire.
 
 ## Set Up
+
 Do the following steps to set up the code to run locally:
 * Install Java 11 locally
 * Install Docker: Sign in to docker hub and then install docker by downloading it from https://hub.docker.com/editions/community/docker-ce-desktop-mac
@@ -154,4 +156,3 @@ Is switched off by default for clean deploy. Switch on with;
     
 ## Copyright
 Copyright (C) 2019 Crown Copyright (Office for National Statistics)
-
