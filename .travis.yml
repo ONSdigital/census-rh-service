@@ -17,15 +17,15 @@ before_install:
 
 script:
   - travis_wait mvn verify
-    #  - if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    #  git config --global user.email "travis@travis-ci.org";
-    #  git config --global user.name "Travis CI";
-    #  mvn -B -Dusername=$GITHUB_API_KEY release:prepare;
-    #  mvn -B release:perform;
-    #fi
+  - if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+      git config --global user.email "travis@travis-ci.org";
+      git config --global user.name "Travis CI";
+      mvn -B -Dusername=$GITHUB_API_KEY release:prepare;
+      mvn -B release:perform;
+    fi
 
 after_success:
-  #- ./scripts/docker_push.sh
+  - ./scripts/docker_push.sh
   - bash <(curl -s https://codecov.io/bash)
 
 #notifications:
