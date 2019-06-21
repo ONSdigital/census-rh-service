@@ -27,14 +27,14 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   @Value("${GOOGLE_CLOUD_PROJECT}")
   String gcpProject;
 
-  @Value("${googleStorage.caseBucketName}")
-  String caseBucketName;
+  @Value("${googleStorage.caseSchemaName}")
+  String caseSchemaName;
 
-  @Value("${googleStorage.uacBucketName}")
-  String uacBucketName;
+  @Value("${googleStorage.uacSchemaName}")
+  String uacSchemaName;
 
-  String caseBucket;
-  String uacBucket;
+  String caseSchema;
+  String uacSchema;
 
   @Autowired private CloudDataStore cloudDataStore;
 
@@ -44,8 +44,8 @@ public class RespondentDataServiceImpl implements RespondentDataService {
 
   @PostConstruct
   public void init() {
-    caseBucket = gcpProject + "-" + caseBucketName.toLowerCase();
-    uacBucket = gcpProject + "-" + uacBucketName.toLowerCase();
+    caseSchema = gcpProject + "-" + caseSchemaName.toLowerCase();
+    uacSchema = gcpProject + "-" + uacSchemaName.toLowerCase();
   }
 
   /**
@@ -56,11 +56,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    */
   @Override
   public void writeUAC(final UAC uac) throws CTPException {
-    cloudDataStore.storeObject(uacBucket, uac.getUacHash(), uac);
-
-    Optional<UAC> retrievedUac =
-        cloudDataStore.retrieveObject(UAC.class, uacBucket, uac.getUacHash());
-    log.info(retrievedUac.toString());
+    cloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac);
   }
 
   /**
@@ -72,7 +68,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    */
   @Override
   public Optional<UAC> readUAC(final String universalAccessCode) throws CTPException {
-    return cloudDataStore.retrieveObject(UAC.class, caseBucket, universalAccessCode);
+    return cloudDataStore.retrieveObject(UAC.class, caseSchema, universalAccessCode);
   }
 
   /**
@@ -83,7 +79,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    */
   @Override
   public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
-    cloudDataStore.storeObject(caseBucket, collectionCase.getId(), collectionCase);
+    cloudDataStore.storeObject(caseSchema, collectionCase.getId(), collectionCase);
   }
 
   /**
@@ -95,7 +91,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    */
   @Override
   public Optional<CollectionCase> readCollectionCase(final String caseId) throws CTPException {
-    return cloudDataStore.retrieveObject(CollectionCase.class, caseBucket, caseId);
+    return cloudDataStore.retrieveObject(CollectionCase.class, caseSchema, caseId);
   }
 
   /**
@@ -110,7 +106,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
     // Run search
     String[] searchByUprnPath = new String[] {"address", "uprn"};
     List<CollectionCase> searchResults =
-        cloudDataStore.search(CollectionCase.class, caseBucket, searchByUprnPath, uprn);
+        cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
 
     Optional<CollectionCase> collectionCase;
     if (searchResults.isEmpty()) {
@@ -118,15 +114,18 @@ public class RespondentDataServiceImpl implements RespondentDataService {
     } else if (searchResults.size() == 1) {
       collectionCase = Optional.of(searchResults.get(0));
     } else {
-      throw new CTPException(
-          Fault.SYSTEM_ERROR,
+      String failureMessage =
           "Multiple values ("
               + searchResults.size()
-              + ") returned for uprn '"
+              + ") returned "
+              + "for uprn '"
               + uprn
-              + "' in bucket '"
-              + caseBucket
-              + "'");
+              + "' "
+              + "in schema '"
+              + caseSchema
+              + "'";
+      log.error(failureMessage);
+      throw new CTPException(Fault.SYSTEM_ERROR, failureMessage);
     }
 
     return collectionCase;
