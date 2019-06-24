@@ -68,7 +68,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
    */
   @Override
   public Optional<UAC> readUAC(final String universalAccessCode) throws CTPException {
-    return cloudDataStore.retrieveObject(UAC.class, caseSchema, universalAccessCode);
+    return cloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCode);
   }
 
   /**
