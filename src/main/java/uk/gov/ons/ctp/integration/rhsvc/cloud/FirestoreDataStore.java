@@ -22,7 +22,6 @@ public class FirestoreDataStore implements CloudDataStore {
   private static final Logger log = LoggerFactory.getLogger(FirestoreDataStore.class);
 
   // Names of environment variables which firestore uses for connection information
-  public static final String FIRESTORE_CREDENTIALS_ENV_NAME = "GOOGLE_APPLICATION_CREDENTIALS";
   public static final String FIRESTORE_PROJECT_ENV_NAME = "GOOGLE_CLOUD_PROJECT";
 
   @Autowired private Firestore firestore;

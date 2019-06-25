@@ -83,12 +83,8 @@ public class RHSvcApplication {
    */
   @Bean
   public Firestore firestore() {
-    String googleCredentials = System.getenv(FirestoreDataStore.FIRESTORE_CREDENTIALS_ENV_NAME);
     String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
-    log.info(
-        "Connecting to Firestore project '{}' using credentials at '{}'",
-        googleProjectName,
-        googleCredentials);
+    log.info("Connecting to Firestore project '{}'", googleProjectName);
 
     return FirestoreOptions.getDefaultInstance().getService();
   }
