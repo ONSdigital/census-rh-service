@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c11c38daa91f48818dca0a1e3a6837ea)](https://www.codacy.com/app/philwhiles/census-rh-service?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ONSdigital/census-rh-service&amp;utm_campaign=Badge_Grade)
 [![Build Status](https://travis-ci.org/ONSdigital/census-rh-service.svg?branch=master)](https://travis-ci.org/ONSdigital/census-rh-service)
 [![codecov](https://codecov.io/gh/ONSdigital/census-rh-service/branch/master/graph/badge.svg)](https://codecov.io/gh/ONSdigital/census-rh-service)
@@ -63,7 +64,7 @@ In order to run the Rabbitmq service, so that you can publish CaseCreated, CaseU
     docker-compose up -d
     ```
 Messages that are published to the events exchange will be routed to either the Case.Gateway or UAC.Gateway queue (depending on their binding).
-They will then be received by census-rh-service and stored in either the case_bucket or the uac_bucket (as appropriate) of the relevant Google Cloud Platform project.
+They will then be received by census-rh-service and stored in either the case_schema or the uac_schema (as appropriate) of the relevant Google Firestore datastore.
 The project to use is given by the Application Default Credentials (These are the credential associated with the service account that your app engine app runs as - to set these up please follow the steps given in the previous section).
 
 
@@ -76,76 +77,140 @@ When running successfully the words "Hello Census Integration!" should be found 
 NB. You need to enter user as ‘Admin’ and pw as ‘secret’ to access the URL.
 
 
-The Rabbitmq management console should be found at the following endpoint:
+When running on localhost the Rabbitmq management console should be found at the following endpoint:
 
-http://localhost:46672/#/queues
+* http://localhost:46672/#/queues
 
-CaseCreated and CaseUpdated events can be manually published to the events exchange, using the binding key event.case.lifecycle. They should have the following format:
+## Manual testing
 
-{
-  "event" : {
-    "type" : "CASE_UPDATED",
-    "source" : "CASE_SERVICE",
-    "channel" : "RM",
-    "dateTime" : "2011-08-12T20:17:46.384Z",
-    "transactionId" : "c45de4dc-3c3b-11e9-b210-d663bd873d93"
-  },
-  "payload" : {
-    "collectionCase" : {
-        "id":"bbd55984-0dbf-4499-bfa7-0aa4228700e9",
-        "caseRef":"10000000010",
-        "survey":"CENSUS",
-        "collectionExerciseId":"n66de4dc-3c3b-11e9-b210-d663bd873d93",
-        "address": {
-		"addressLine1":"1 main street",
-  		"addressLine2":"upper upperingham",
-  		"addressLine3":"",
-  		"townName":"upton",
-  		"postcode":"UP103UP",
-  		"region":"E",
-  		"latitude":"50.863849",
-  		"longitude":"-1.229710",
-  		"uprn":"XXXXXXXXXXXXX",
-  		"arid":"XXXXX",
-  		"addressType":"CE",
-  		"estabType":"XXX"
-	},
-	"contact": {
-	"title":"Ms",
-  	"forename":"jo",
-  	"surname":"smith",
-  	"email":"me@example.com",
-  	"telNo":"+447890000000"
-	},
-        "state":"ACTIONABLE",
-        "actionableFrom":"2011-08-12T20:17:46.384Z"
-}
-  }
-}
+To manually test RH:
+
+1) **Queue setup**
+ 
+In the RabbitMQ console make sure that the following queues have been created and bound to the 'events' exchange:
+ 
+      Routing key                    | Destination queue
+    ---------------------------------+--------------------------------
+      event.case.lifecycle           | Case.Gateway
+      event.uac.updates              | UAC.Gateway
+      event.response.authentication  | event.response.authentication
 
 
-UACUpdated events use the binding key event.uac.updates and have the following format:
+2) **UAC Data**
 
-{
-  "event" : {
-    "type" : "UAC_UPDATED",
-    "source" : "CASE_SERVICE",
-    "channel" : "RM",
-    "dateTime" : "2011-08-12T20:17:46.384Z",
-    "transactionId" : "c45de4dc-3c3b-11e9-b210-d663bd873d93"
-  },
-  "payload" : {
-    "uac" : {
-        "uacHash":  "72C84BA99D77EE766E9468A0DE36433A44888E5DEC4AFB84F8019777800B7364",
-        "active" : true,
-        "questionnaireId":"1110000009",
-        "caseType":"H",
-        "region":"E",
-        "caseId":"bbd55984-0dbf-4499-bfa7-0aa4228700e9",
-        "collectionExerciseId":"n66de4dc-3c3b-11e9-b210-d663bd873d93"
-}
-  }
-}
+Submit the UAC data by sending the following to the 'events' exchange with the routing key 'event.uac.updates':
+
+	{
+	  "event": {
+	    "type": "UAC_UPDATED",
+	    "source": "CASE_SERVICE",
+	    "channel": "RM",
+	    "dateTime": "2011-08-12T20:17:46.384Z",
+	    "transactionId": "c45de4dc-3c3b-11e9-b210-d663bd873d93"
+	  },
+	  "payload": {
+	    "uac": {
+	      "uacHash": "8a9d5db4bbee34fd16e40aa2aaae52cfbdf1842559023614c30edb480ec252b4",
+	      "active": true,
+	      "questionnaireId": "1110000009",
+	      "caseType": "HH",
+	      "region": "E",
+	      "caseId": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
+	      "collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93"
+	    }
+	  }
+	}
+
+3) **Case data**
+
+Submit the case by sending the following to the 'events' exchange with the routing key 'event.case.lifecycle':
+
+	{
+	  "event": {
+	    "type": "CASE_UPDATED",
+	    "source": "CASE_SERVICE",
+	    "channel": "RM",
+	    "dateTime": "2011-08-12T20:17:46.384Z",
+	    "transactionId": "c45de4dc-3c3b-11e9-b210-d663bd873d93"
+	  },
+	  "payload": {
+	    "collectionCase": {
+	      "id": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
+	      "caseRef": "10000000010",
+	      "survey": "CENSUS",
+	      "collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
+	      "address": {
+	        "addressLine1": "1 main street",
+	        "addressLine2": "upper upperingham",
+	        "addressLine3": "",
+	        "townName": "upton",
+	        "postcode": "UP103UP",
+	        "region": "E",
+	        "latitude": "50.863849",
+	        "longitude": "-1.229710",
+	        "uprn": "123456",
+	        "arid": "XXXXX",
+	        "addressType": "HH",
+	        "estabType": "XXX"
+	      },
+	      "contact": {
+	        "title": "Ms",
+	        "forename": "jo",
+	        "surname": "smith",
+	        "email": "me@example.com",
+	        "telNo": "+447890000000"
+	      },
+	      "state": "ACTIONABLE",
+	      "actionableFrom": "2011-08-12T20:17:46.384Z"
+	    }
+	  }
+	}
+
+
+4) **Generate respondent authenticated event**
+
+If you know the case id which matches the stored UAC hash then you can supply it in the UACS get request:
+  
+       $ curl -s -H "Content-Type: application/json" --user $CC_USERNAME:$CC_PASSWORD "http://localhost:8071/uacs/w4nwwpphjjptp7fn"
+ 
+If the case id is not known for the loaded UAC data then you can manually force execution through by running in the debugger and set a breakpoint in UniqueAccessCodeServiceImpl::getSha256Hash(), and then manually replacing the calculated SHA256 value with the uacHash value of an already loaded UAC.
+
+To calculate the sha256 value for a case id:
+
+    $ echo -n "w4nwwpphjjptp7fn" | shasum -a 256
+    8a9d5db4bbee34fd16e40aa2aaae52cfbdf1842559023614c30edb480ec252b4  -
+
+
+5) **Check the get request results**
+
+Firstly confirm that the curl command returned a 200 status.
+
+Also verify that it contains a line such as:
+"caseStatus": "OK",
+
+
+6) **Check the respondent authenticated event**
+
+Firstly retrieve the event data from the 'event.response.authentication' queue.
+
+Format the event text and make sure it looks like:
+
+	{
+	  "event": {
+	    "type": "RESPONDENT_AUTHENTICATED",
+	    "source": "RESPONDENT_HOME",
+	    "channel": "RH",
+	    "dateTime": "2019-06-24T10:38:07.550Z",
+	    "transactionId": "66cc1a1a-c4cc-4442-b7a4-4f86857d1aae"
+	  },
+	  "payload": {
+	    "response": {
+	      "questionnaireId": "1110000009",
+	      "caseId": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4"
+	    }
+	  }
+	}
+
 
 ## Docker image build
 
@@ -156,4 +221,3 @@ Is switched off by default for clean deploy. Switch on with;
     
 ## Copyright
 Copyright (C) 2019 Crown Copyright (Office for National Statistics)
-

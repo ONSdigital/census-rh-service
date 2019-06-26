@@ -99,5 +99,5 @@ retries:
   backoff: 5000
 
 googleStorage:
-  caseBucketName: case
-  uacBucketName: uac
+  caseSchemaName: case
+  uacSchemaName: uac

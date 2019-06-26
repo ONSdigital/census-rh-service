@@ -14,5 +14,5 @@ schedules:
   distribution-schedule-delay-milli-seconds: 1000
 
 googleStorage:
-  caseBucketName: case
-  uacBucketName: uac
+  caseSchemaName: case
+  uacSchemaName: uac
