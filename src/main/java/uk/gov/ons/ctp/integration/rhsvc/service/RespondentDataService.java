@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
+import java.util.List;
 import java.util.Optional;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
@@ -15,5 +16,5 @@ public interface RespondentDataService {
 
   Optional<CollectionCase> readCollectionCase(String caseId) throws CTPException;
 
-  Optional<CollectionCase> readCollectionCaseByUprn(final String uprn) throws CTPException;
+  List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException;
 }

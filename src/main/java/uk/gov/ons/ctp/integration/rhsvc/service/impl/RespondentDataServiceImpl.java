@@ -1,7 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
@@ -9,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
@@ -22,7 +19,6 @@ import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
  */
 @Service
 public class RespondentDataServiceImpl implements RespondentDataService {
-  private static final Logger log = LoggerFactory.getLogger(RespondentDataServiceImpl.class);
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
   String gcpProject;
@@ -95,40 +91,21 @@ public class RespondentDataServiceImpl implements RespondentDataService {
   }
 
   /**
-   * Read a Case object from cloud based on its uprn.
+   * Read case objects from cloud based on its uprn.
    *
-   * @param uprn - is the uprn that the target case must contain.
-   * @return - de-serialised version of the stored object
+   * @param uprn - is the uprn that the target case(s) must contain.
+   * @return - List containing 0 or more de-serialised version of the stored object. If no matching
+   *     cases are found then an empty List is returned.
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
-  public Optional<CollectionCase> readCollectionCaseByUprn(final String uprn) throws CTPException {
+  public List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException {
     // Run search
     String[] searchByUprnPath = new String[] {"address", "uprn"};
     List<CollectionCase> searchResults =
         cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
 
-    Optional<CollectionCase> collectionCase;
-    if (searchResults.isEmpty()) {
-      collectionCase = Optional.empty();
-    } else if (searchResults.size() == 1) {
-      collectionCase = Optional.of(searchResults.get(0));
-    } else {
-      String failureMessage =
-          "Multiple values ("
-              + searchResults.size()
-              + ") returned "
-              + "for uprn '"
-              + uprn
-              + "' "
-              + "in schema '"
-              + caseSchema
-              + "'";
-      log.error(failureMessage);
-      throw new CTPException(Fault.SYSTEM_ERROR, failureMessage);
-    }
-
-    return collectionCase;
+    return searchResults;
   }
 
   public void deleteJsonFromCloud(String schema, String key) throws CTPException {

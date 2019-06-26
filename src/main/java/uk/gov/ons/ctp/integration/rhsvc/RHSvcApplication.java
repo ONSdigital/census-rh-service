@@ -1,9 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -19,7 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
 @SpringBootApplication
@@ -27,7 +22,6 @@ import uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore;
 @ComponentScan(basePackages = {"uk.gov.ons.ctp.integration"})
 @ImportResource("springintegration/main.xml")
 public class RHSvcApplication {
-  private static final Logger log = LoggerFactory.getLogger(RHSvcApplication.class);
 
   @Value("${queueconfig.event-exchange}")
   private String eventExchange;
@@ -74,18 +68,5 @@ public class RHSvcApplication {
   @Bean
   public RestExceptionHandler restExceptionHandler() {
     return new RestExceptionHandler();
-  }
-
-  /**
-   * Connect to Google Firestore.
-   *
-   * @return a Firestore connection.
-   */
-  @Bean
-  public Firestore firestore() {
-    String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
-    log.info("Connecting to Firestore project '{}'", googleProjectName);
-
-    return FirestoreOptions.getDefaultInstance().getService();
   }
 }

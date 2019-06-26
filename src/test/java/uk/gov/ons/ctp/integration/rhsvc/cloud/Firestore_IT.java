@@ -78,6 +78,30 @@ public class Firestore_IT {
 
   @Ignore
   @Test
+  public void testReplaceObject() throws Exception {
+    // Load test data
+    CollectionCase case1 = loadCaseFromFile(0);
+    CollectionCase case2 = loadCaseFromFile(1);
+
+    // Add data to collection
+    String id = case1.getId();
+    firestoreDataStore.storeObject(TEST_SCHEMA, id, case1);
+
+    // Verify that 1st case can be read back
+    Optional<CollectionCase> retrievedCase =
+        firestoreDataStore.retrieveObject(CollectionCase.class, TEST_SCHEMA, id);
+    assertEquals(case1, retrievedCase.get());
+
+    // Replace contents with case2
+    firestoreDataStore.storeObject(TEST_SCHEMA, id, case2);
+
+    // Confirm contents of 'id', which was case1, is now case2
+    retrievedCase = firestoreDataStore.retrieveObject(CollectionCase.class, TEST_SCHEMA, id);
+    assertEquals(case2, retrievedCase.get());
+  }
+
+  @Ignore
+  @Test
   public void testRetrieveObject_unknownObject() throws Exception {
     // Chuck an object into firestore
     CollectionCase case1 = loadCaseFromFile(0);
@@ -111,13 +135,12 @@ public class Firestore_IT {
     assertEquals(case1, retrievedCase1.get(0));
 
     // Verify that search can find the second case
-    String[] searchByUprn = new String[] {"address", "uprn"};
+    String[] searchByUprn = new String[] {"address", "region"};
     List<CollectionCase> retrievedCase2 =
-        firestoreDataStore.search(
-            CollectionCase.class, TEST_SCHEMA, searchByUprn, case2.getAddress().getUprn());
-    assertEquals(1, retrievedCase2.size());
-    assertEquals(case2.getId(), retrievedCase2.get(0).getId());
-    assertEquals(case2, retrievedCase2.get(0));
+        firestoreDataStore.search(CollectionCase.class, TEST_SCHEMA, searchByUprn, "E");
+    assertEquals(2, retrievedCase2.size());
+    assertEquals(case1, retrievedCase2.get(0));
+    assertEquals(case2, retrievedCase2.get(1));
   }
 
   @Ignore

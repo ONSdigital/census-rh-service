@@ -6,13 +6,13 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldPath;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -24,15 +24,24 @@ public class FirestoreDataStore implements CloudDataStore {
   // Names of environment variables which firestore uses for connection information
   public static final String FIRESTORE_PROJECT_ENV_NAME = "GOOGLE_CLOUD_PROJECT";
 
-  @Autowired private Firestore firestore;
+  private Firestore firestore;
+
+  public FirestoreDataStore() {
+    String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
+    log.info("Connecting to Firestore project '{}'", googleProjectName);
+
+    firestore = FirestoreOptions.getDefaultInstance().getService();
+  }
 
   /**
-   * Write object to Firestore collection. If the object already exists then it will be overwritten.
+   * Write object to Firestore collection. If the collection already holds an object with the
+   * specified key then the contents of the value will be overwritten.
    *
    * @param schema - holds the name of the collection that the object will be added to.
    * @param key - identifies the object within the collection.
-   * @param value - is the object to be written to Firestore. It must provide get methods that allow
-   *     access to its contents.
+   * @param value - is the object to be written to Firestore. To be storable/retrievable by
+   *     Firestore it must either have public fields or provide get/set methods that allow access to
+   *     its contents.
    * @throws CTPException if any failure was detected interacting with Firestore.
    */
   @Override
@@ -46,7 +55,7 @@ public class FirestoreDataStore implements CloudDataStore {
     // Wait for Firestore to complete
     try {
       result.get();
-      log.debug("Firstore save completed. Schema '{}' with key '{}'", schema, key);
+      log.debug("Firestore save completed. Schema '{}' with key '{}'", schema, key);
     } catch (Exception e) {
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
@@ -101,26 +110,26 @@ public class FirestoreDataStore implements CloudDataStore {
    *
    * @param target is the object type that results should be returned in.
    * @param schema is the schema to search.
-   * @param fieldPath is an array of strings that describe the path to the search field. eg, [
-   *     "case", "addresss", "postcode" ]
+   * @param fieldPathElements is an array of strings that describe the path to the search field. eg,
+   *     [ "case", "addresss", "postcode" ]
    * @param searchValue is the value that the field must equal for it to be returned as a result.
    * @return An optional which contains a List of results.
    * @throws CTPException if anything goes wrong.
    */
   public <T> List<T> search(
-      Class<T> target, final String schema, String[] fieldPath, String searchValue)
+      Class<T> target, final String schema, String[] fieldPathElements, String searchValue)
       throws CTPException {
     log.debug(
         "Searching Firestore. Schema '{}' with field path '{}' and search value of '{}'. "
             + "Expected results of type '{}'",
         schema,
-        fieldPath,
+        fieldPathElements,
         searchValue,
         target);
 
     // Run a query for a custom search path
-    FieldPath searchPath = FieldPath.of(fieldPath);
-    List<T> r = runSearch(target, schema, searchPath, searchValue);
+    FieldPath fieldPath = FieldPath.of(fieldPathElements);
+    List<T> r = runSearch(target, schema, fieldPath, searchValue);
     log.debug("Firestore search return {} results", r.size());
 
     return r;
