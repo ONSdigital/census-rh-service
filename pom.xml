@@ -450,6 +450,9 @@
         <groupId>com.spotify</groupId>
         <artifactId>dockerfile-maven-plugin</artifactId>
         <version>1.4.4</version>
+        <configuration>
+          <skip>${skip.dockerfile}</skip>
+        </configuration>
         <dependencies>
           <dependency>
             <groupId>javax.activation</groupId>
@@ -464,7 +467,7 @@
             </goals>
             <phase>package</phase>
             <configuration>
-              <repository>eu.gcr.io/census-int-ci/census-rh-service/${project.artifactId}</repository>
+              <repository>census-rh-service/${project.artifactId}</repository>
               <buildArgs>
                 <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
               </buildArgs>
