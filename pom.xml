@@ -134,11 +134,16 @@
     <!-- SPRING END -->
 
     <!-- ONS libraries -->
-
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.31</version>
+      <version>0.0.34>
+    </dependency>
+
+    <dependency>
+      <groupId>uk.gov.ons.ctp.integration.common</groupId>
+      <artifactId>event-publisher</artifactId>
+      <version>0.0.1</version>
     </dependency>
 
     <dependency>

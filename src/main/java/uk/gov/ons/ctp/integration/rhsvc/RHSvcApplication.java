@@ -15,6 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.EventPublisher;
+import uk.gov.ons.ctp.common.event.EventSender;
+import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
 @SpringBootApplication
@@ -55,9 +57,11 @@ public class RHSvcApplication {
   public EventPublisher eventPublisher(final ConnectionFactory connectionFactory) {
     final var template = new RabbitTemplate(connectionFactory);
     template.setMessageConverter(new Jackson2JsonMessageConverter());
-    template.setExchange(eventExchange);
+    template.setExchange("events");
     template.setChannelTransacted(true);
-    return new EventPublisher(template);
+
+    EventSender sender = new SpringRabbitEventSender(template);
+    return new EventPublisher(sender);
   }
 
   /**

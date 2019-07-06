@@ -37,12 +37,9 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
   public void acceptCaseEvent(CaseEvent caseEvent) throws CTPException {
 
     CollectionCase collectionCase;
-    String caseType = caseEvent.getEvent().getType();
     String caseTransactionId = caseEvent.getEvent().getTransactionId();
 
-    log.with(caseType)
-        .with(caseTransactionId)
-        .info("Now receiving case event with transactionId and type as shown here");
+    log.with(caseTransactionId).info("Now receiving case event with transactionId shown");
 
     collectionCase = caseEvent.getPayload().getCollectionCase();
 

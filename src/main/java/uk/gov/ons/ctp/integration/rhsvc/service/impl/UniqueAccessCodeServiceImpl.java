@@ -11,11 +11,13 @@ import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
+import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
+import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -33,9 +35,6 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
   @Autowired private RespondentDataService dataRepo;
   @Autowired private EventPublisher eventPublisher;
-
-  @Value("${queueconfig.response-authentication-routing-key}")
-  private String routingKey;
 
   private BoundMapperFacade<UAC, UniqueAccessCodeDTO> uacMapperFacade;
   private BoundMapperFacade<CollectionCase, UniqueAccessCodeDTO> caseMapperFacade;
@@ -129,7 +128,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
             .caseId(data.getCaseId())
             .build();
 
-    String transactionId = eventPublisher.sendEvent(routingKey, response);
+    String transactionId =
+        eventPublisher.sendEvent(
+            EventType.RESPONDENT_AUTHENTICATED, Source.RESPONDENT_HOME, Channel.RH, response);
 
     log.debug(
         "RespondentAuthenticated event published for caseId: "

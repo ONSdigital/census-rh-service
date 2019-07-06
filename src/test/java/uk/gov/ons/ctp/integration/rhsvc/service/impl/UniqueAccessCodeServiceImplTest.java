@@ -17,10 +17,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
+import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
+import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -35,8 +37,6 @@ public class UniqueAccessCodeServiceImplTest {
   private static final String UAC_HASH =
       "97a2e785f8cffc8f40b5e8fc626933bb8aedf3df82672299bf7aeafe68c99c93";
   private static final String CASE_ID = "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4";
-  private static final String ROUTING_KEY_FIELD_NAME = "routingKey";
-  private static final String ROUTING_KEY_FIELD_VALUE = "whereAreWeRoutingThis";
 
   @InjectMocks private UniqueAccessCodeServiceImpl uacSvc;
 
@@ -53,7 +53,6 @@ public class UniqueAccessCodeServiceImplTest {
     MockitoAnnotations.initMocks(this);
     this.uac = FixtureHelper.loadClassFixtures(UAC[].class);
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
-    ReflectionTestUtils.setField(uacSvc, ROUTING_KEY_FIELD_NAME, ROUTING_KEY_FIELD_VALUE);
   }
 
   /** Test request for claim object where UAC and Case found */
@@ -73,7 +72,11 @@ public class UniqueAccessCodeServiceImplTest {
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(1)).readCollectionCase(CASE_ID);
     verify(eventPublisher, times(1))
-        .sendEvent(eq(ROUTING_KEY_FIELD_VALUE), payloadCapture.capture());
+        .sendEvent(
+            eq(EventType.RESPONDENT_AUTHENTICATED),
+            eq(Source.RESPONDENT_HOME),
+            eq(Channel.RH),
+            payloadCapture.capture());
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
@@ -109,7 +112,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(1)).readCollectionCase(CASE_ID);
-    verify(eventPublisher, times(0)).sendEvent(any(), any());
+    verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
@@ -135,7 +138,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(0)).readCollectionCase(CASE_ID);
-    verify(eventPublisher, times(0)).sendEvent(any(), any());
+    verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertEquals(UAC, uacDTO.getUac());
     assertEquals(Boolean.valueOf(uacTest.getActive()), uacDTO.isActive());
@@ -166,7 +169,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(0)).readCollectionCase(CASE_ID);
-    verify(eventPublisher, times(0)).sendEvent(any(), any());
+    verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertTrue(exceptionThrown);
   }

@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CasePayload;
@@ -61,7 +62,7 @@ public class CaseEventReceiverImplUnit_Test {
     contactFixture.setEmail("me@example.com");
     contactFixture.setTelNo("+447890000000");
     Header headerFixture = new Header();
-    headerFixture.setType("CASE_UPDATED");
+    headerFixture.setType(EventType.CASE_UPDATED);
     headerFixture.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     caseEventFixture.setEvent(headerFixture);
 

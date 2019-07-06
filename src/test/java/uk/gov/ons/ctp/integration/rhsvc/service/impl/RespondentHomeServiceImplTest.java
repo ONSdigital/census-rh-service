@@ -13,15 +13,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.event.EventPublisher;
+import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
+import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 
 public class RespondentHomeServiceImplTest {
-
-  private static final String ROUTING_KEY_FIELD_NAME = "routingKey";
-  private static final String ROUTING_KEY_FIELD_VALUE = "whereAreWeRoutingThis";
 
   @Mock EventPublisher publisher;
 
@@ -32,8 +31,6 @@ public class RespondentHomeServiceImplTest {
   @Before
   public void initMocks() {
     MockitoAnnotations.initMocks(this);
-    ReflectionTestUtils.setField(
-        respondentHomeService, ROUTING_KEY_FIELD_NAME, ROUTING_KEY_FIELD_VALUE);
   }
 
   @Test
@@ -45,7 +42,12 @@ public class RespondentHomeServiceImplTest {
     respondentHomeService.surveyLaunched(surveyLaunchedDTO);
 
     // Get hold of the event pay load that respondentHomeService created
-    Mockito.verify(publisher).sendEvent(eq(ROUTING_KEY_FIELD_VALUE), sendEventCaptor.capture());
+    Mockito.verify(publisher)
+        .sendEvent(
+            eq(EventType.SURVEY_LAUNCHED),
+            eq(Source.RESPONDENT_HOME),
+            eq(Channel.RH),
+            sendEventCaptor.capture());
     SurveyLaunchedResponse eventPayload = sendEventCaptor.getValue();
 
     // Verify contents of pay load object
