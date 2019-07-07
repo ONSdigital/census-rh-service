@@ -37,12 +37,9 @@ public class UACEventReceiverImpl {
   public void acceptUACEvent(UACEvent uacEvent) throws CTPException {
 
     UAC uac;
-    String uacType = uacEvent.getEvent().getType();
     String uacTransactionId = uacEvent.getEvent().getTransactionId();
 
-    log.with(uacType)
-        .with(uacTransactionId)
-        .info("Now receiving uac event with transactionId and type as shown here");
+    log.with(uacTransactionId).info("Now receiving uac event with transactionId and type shown");
 
     uac = uacEvent.getPayload().getUac();
 

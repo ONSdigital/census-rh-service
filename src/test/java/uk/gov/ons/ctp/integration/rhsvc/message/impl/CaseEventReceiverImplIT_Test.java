@@ -18,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CasePayload;
@@ -75,7 +76,7 @@ public class CaseEventReceiverImplIT_Test {
     contact.setTelNo("+447890000000");
 
     Header header = new Header();
-    header.setType("CASE_UPDATED");
+    header.setType(EventType.CASE_UPDATED);
     header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     caseEvent.setEvent(header);
 

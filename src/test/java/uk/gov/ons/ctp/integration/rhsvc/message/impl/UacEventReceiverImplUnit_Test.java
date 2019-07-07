@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
@@ -41,7 +42,7 @@ public class UacEventReceiverImplUnit_Test {
     uacFixture.setCaseId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     uacFixture.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
     Header headerFixture = new Header();
-    headerFixture.setType("UAC_UPDATED");
+    headerFixture.setType(EventType.UAC_UPDATED);
     headerFixture.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     uacEventFixture.setEvent(headerFixture);
 

@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
+import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
+import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
@@ -37,7 +40,9 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
             .agentId(null)
             .build();
 
-    String transactionId = eventPublisher.sendEvent(routingKey, response);
+    String transactionId =
+        eventPublisher.sendEvent(
+            EventType.SURVEY_LAUNCHED, Source.RESPONDENT_HOME, Channel.RH, response);
 
     log.debug(
         "SurveyLaunch event published for caseId: "
