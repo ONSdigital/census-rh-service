@@ -47,12 +47,6 @@ public class RHSvcApplication {
     }
   }
 
-  /**
-   * Bean used to publish asynchronous event messages
-   *
-   * @param connectionFactory RabbitMQ connection settings and strategies
-   * @return the event publisher
-   */
   @Bean
   public EventPublisher eventPublisher(final RabbitTemplate rabbitTemplate) {
     EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
@@ -68,11 +62,6 @@ public class RHSvcApplication {
     return template;
   }
 
-  /**
-   * Bean used to map exceptions for endpoints
-   *
-   * @return the service client
-   */
   @Bean
   public RestExceptionHandler restExceptionHandler() {
     return new RestExceptionHandler();

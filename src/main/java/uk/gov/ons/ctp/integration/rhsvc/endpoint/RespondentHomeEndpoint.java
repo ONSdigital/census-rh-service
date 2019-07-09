@@ -26,12 +26,6 @@ public final class RespondentHomeEndpoint implements CTPEndpoint {
     this.respondentHomeService = respondentHomeService;
   }
 
-  /**
-   * This is a POST endpoint which will be invoked when a survey is launched. It sends a survey
-   * launched event using RabbitMQ.
-   *
-   * @param surveyLaunchedDTO request dto containing body data
-   */
   @RequestMapping(value = "/surveyLaunched", method = RequestMethod.POST)
   public void surveyLaunched(@Valid @RequestBody SurveyLaunchedDTO surveyLaunchedDTO)
       throws CTPException {
