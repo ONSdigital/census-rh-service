@@ -11,7 +11,7 @@ info:
 logging:
   level:
     uk.gov.ons.ctp: DEBUG
-    org.springframework: ERROR
+    org.springframework: DEBUG
   profile: DEV
   useJson: false
 

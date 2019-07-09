@@ -54,14 +54,18 @@ public class RHSvcApplication {
    * @return the event publisher
    */
   @Bean
-  public EventPublisher eventPublisher(final ConnectionFactory connectionFactory) {
+  public EventPublisher eventPublisher(final RabbitTemplate rabbitTemplate) {
+    EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
+    return new EventPublisher(sender);
+  }
+
+  @Bean
+  public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
     final var template = new RabbitTemplate(connectionFactory);
     template.setMessageConverter(new Jackson2JsonMessageConverter());
     template.setExchange("events");
     template.setChannelTransacted(true);
-
-    EventSender sender = new SpringRabbitEventSender(template);
-    return new EventPublisher(sender);
+    return template;
   }
 
   /**
