@@ -6,6 +6,7 @@
 # Respondent Home Data Service
 
 This repository contains the Respondent Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/). It manages respondent data, where a Respondent Data object represents an expected response from the Respondent Data service, which provides all the data that is required by Respondent Home in order for it to verify the respondent's UAC code and connect them to the relevant EQ questionnaire.
+
 ## Set Up
 
 Do the following steps to set up the code to run locally:
@@ -174,7 +175,7 @@ If you know the case id which matches the stored UAC hash then you can supply it
  
 If the case id is not known for the loaded UAC data then you can manually force execution through by running in the debugger and set a breakpoint in UniqueAccessCodeServiceImpl::getSha256Hash(), and then manually replacing the calculated SHA256 value with the uacHash value of an already loaded UAC.
 
-To calculate the sha256 value for a case id:
+To calculate the sha256 value for a uac:
 
     $ echo -n "w4nwwpphjjptp7fn" | shasum -a 256
     8a9d5db4bbee34fd16e40aa2aaae52cfbdf1842559023614c30edb480ec252b4  -
@@ -220,4 +221,3 @@ Is switched off by default for clean deploy. Switch on with;
     
 ## Copyright
 Copyright (C) 2019 Crown Copyright (Office for National Statistics)
-
