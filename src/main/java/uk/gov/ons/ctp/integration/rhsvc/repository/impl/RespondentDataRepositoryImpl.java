@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.rhsvc.service.impl;
+package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,14 +11,11 @@ import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
-/**
- * A RespondentDataService implementation which encapsulates all business logic operating on the
- * Core Respondent Details entity model.
- */
+/** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
 @Service
-public class RespondentDataServiceImpl implements RespondentDataService {
+public class RespondentDataRepositoryImpl implements RespondentDataRepository {
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
   String gcpProject;
@@ -34,7 +31,7 @@ public class RespondentDataServiceImpl implements RespondentDataService {
 
   @Autowired private CloudDataStore cloudDataStore;
 
-  public RespondentDataServiceImpl() {
+  public RespondentDataRepositoryImpl() {
     this.cloudDataStore = new FirestoreDataStore();
   }
 
