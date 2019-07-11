@@ -59,7 +59,7 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
         fulfilmentsService.getFulfilments(caseType, region, deliveryChannel);
 
     log.info("Found {} fulfilment(s)", fulfilments.size());
-    
+
     return ResponseEntity.ok(fulfilments);
   }
 }

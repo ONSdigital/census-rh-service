@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -38,21 +39,26 @@ public class FulfilmentsServiceImplTest {
     // Mock the behaviour of the Product Reference
     List<Product> mockedResults = new ArrayList<>();
     Mockito.when(productReference.searchProducts(any())).thenReturn(mockedResults);
-    
+
     // Invoke the method under test
-    List<Product> products = fulfilmentsService.getFulfilments(CaseType.HI, Region.E, DeliveryChannel.SMS);
+    List<Product> products =
+        fulfilmentsService.getFulfilments(CaseType.HI, Region.E, DeliveryChannel.SMS);
 
     // Get hold of the example product used in the search
     Mockito.verify(productReference).searchProducts(exampleProductCaptor.capture());
     Product capturedExampleProduct = exampleProductCaptor.getValue();
-    
-    // Verify the contents of the example product used in the search
+
+    // Verify that the request to product reference was made as RH
     assertEquals(1, capturedExampleProduct.getRequestChannels().size());
     assertEquals(RequestChannel.RH, capturedExampleProduct.getRequestChannels().get(0));
+
+    // Verify the parameters are used in the product search
     assertEquals(CaseType.HI, capturedExampleProduct.getCaseType());
     assertEquals(1, capturedExampleProduct.getRegions().size());
     assertEquals(Region.E, capturedExampleProduct.getRegions().get(0));
     assertEquals(DeliveryChannel.SMS, capturedExampleProduct.getDeliveryChannel());
+
+    // Verify that nothing else was specified in the product search
     assertNull(capturedExampleProduct.getFulfilmentCode());
     assertNull(capturedExampleProduct.getInitialContactCode());
     assertNull(capturedExampleProduct.getReminderContactCode());
@@ -60,8 +66,8 @@ public class FulfilmentsServiceImplTest {
     assertNull(capturedExampleProduct.getDescription());
     assertNull(capturedExampleProduct.getLanguage());
     assertNull(capturedExampleProduct.getHandler());
-    
-    // Verify that getFulfilments returns the value it got from the ProductReference search
+
+    // Verify that getFulfilments() returns the value it got from the ProductReference search
     assertEquals(mockedResults, products);
   }
 }
