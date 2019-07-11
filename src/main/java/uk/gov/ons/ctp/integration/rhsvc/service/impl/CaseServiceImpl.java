@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 /** Implementation to deal with Case data */
 @Service
@@ -20,7 +20,7 @@ public class CaseServiceImpl implements CaseService {
 
   private static final Logger log = LoggerFactory.getLogger(CaseServiceImpl.class);
 
-  @Autowired private RespondentDataService dataRepo;
+  @Autowired private RespondentDataRepository dataRepo;
   @Autowired private MapperFacade mapperFacade;
 
   private enum CaseType {

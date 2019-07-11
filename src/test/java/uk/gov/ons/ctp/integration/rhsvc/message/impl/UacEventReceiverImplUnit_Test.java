@@ -9,12 +9,12 @@ import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
 import uk.gov.ons.ctp.common.event.model.UACPayload;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
-import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
+import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
 
 public class UacEventReceiverImplUnit_Test {
 
-  private RespondentDataService mockRespondentDataService;
+  private RespondentDataRepository mockRespondentDataRepo;
   private UACEventReceiverImpl target;
 
   @Before
@@ -22,8 +22,8 @@ public class UacEventReceiverImplUnit_Test {
 
     target = new UACEventReceiverImpl();
 
-    mockRespondentDataService = Mockito.mock(RespondentDataServiceImpl.class);
-    target.setRespondentDataService(mockRespondentDataService);
+    mockRespondentDataRepo = Mockito.mock(RespondentDataRepositoryImpl.class);
+    target.setRespondentDataRepo(mockRespondentDataRepo);
   }
 
   @Test
@@ -49,6 +49,6 @@ public class UacEventReceiverImplUnit_Test {
     target.acceptUACEvent(uacEventFixture);
 
     // verification
-    Mockito.verify(mockRespondentDataService).writeUAC(uacFixture);
+    Mockito.verify(mockRespondentDataRepo).writeUAC(uacFixture);
   }
 }

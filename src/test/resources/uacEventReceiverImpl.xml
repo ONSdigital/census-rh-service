@@ -11,7 +11,7 @@
 
     <int:annotation-config/>
 
-    <bean id="cloud" class="uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl"/>
+    <bean id="cloud" class="uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl"/>
 
     <bean id="firestoreDataStore" lazy-init="true" class="uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore"/>
 

@@ -18,9 +18,9 @@ import org.mockito.Spy;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 public class CaseServiceImplTest {
 
@@ -29,7 +29,7 @@ public class CaseServiceImplTest {
 
   @InjectMocks private CaseServiceImpl caseSvc;
 
-  @Mock private RespondentDataService dataRepo;
+  @Mock private RespondentDataRepository dataRepo;
 
   @Spy private MapperFacade mapperFacade = new RHSvcBeanMapper();
 

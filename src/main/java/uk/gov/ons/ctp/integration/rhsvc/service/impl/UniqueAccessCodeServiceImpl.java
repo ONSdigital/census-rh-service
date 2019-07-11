@@ -20,9 +20,9 @@ import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
 
 /** Implementation to deal with UAC data */
@@ -31,7 +31,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
   private static final Logger log = LoggerFactory.getLogger(UniqueAccessCodeService.class);
 
-  @Autowired private RespondentDataService dataRepo;
+  @Autowired private RespondentDataRepository dataRepo;
   @Autowired private EventPublisher eventPublisher;
 
   @Value("${queueconfig.response-authentication-routing-key}")

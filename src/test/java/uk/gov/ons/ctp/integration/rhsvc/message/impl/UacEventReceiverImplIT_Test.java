@@ -23,7 +23,7 @@ import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
 import uk.gov.ons.ctp.common.event.model.UACPayload;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
-import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
+import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
 
 /** Spring Integration test of flow received from Response Management */
 @SpringBootTest
@@ -34,7 +34,7 @@ public class UacEventReceiverImplIT_Test {
 
   @Autowired private UACEventReceiverImpl receiver;
   @Autowired private SimpleMessageListenerContainer uacEventListenerContainer;
-  @MockBean private RespondentDataServiceImpl respondentDataServiceImpl;
+  @MockBean private RespondentDataRepositoryImpl respondentDataRepo;
 
   /** Test the receiver flow */
   @Test

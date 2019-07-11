@@ -24,9 +24,9 @@ import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 
 /** Unit tests of the Unique Access Code Service */
 public class UniqueAccessCodeServiceImplTest {
@@ -40,7 +40,7 @@ public class UniqueAccessCodeServiceImplTest {
 
   @InjectMocks private UniqueAccessCodeServiceImpl uacSvc;
 
-  @Mock private RespondentDataService dataRepo;
+  @Mock private RespondentDataRepository dataRepo;
 
   @Mock private EventPublisher eventPublisher;
 
