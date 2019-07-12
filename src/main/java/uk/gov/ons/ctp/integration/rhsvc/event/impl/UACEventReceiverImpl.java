@@ -11,7 +11,7 @@ import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 /**
  * Service implementation responsible for receipt of UAC Events. See Spring Integration flow for
@@ -23,7 +23,7 @@ import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
 @MessageEndpoint
 public class UACEventReceiverImpl {
 
-  @Autowired private RespondentDataService respondentDataService;
+  @Autowired private RespondentDataRepository respondentDataRepo;
   private static final Logger log = LoggerFactory.getLogger(UACEventReceiverImpl.class);
 
   /**
@@ -44,7 +44,7 @@ public class UACEventReceiverImpl {
     uac = uacEvent.getPayload().getUac();
 
     try {
-      respondentDataService.writeUAC(uac);
+      respondentDataRepo.writeUAC(uac);
     } catch (CTPException ctpEx) {
       log.with(uacTransactionId)
           .with(ctpEx.getMessage())

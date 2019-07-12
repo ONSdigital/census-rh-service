@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.rhsvc.service.impl;
+package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
 import static org.junit.Assert.assertEquals;
 
@@ -10,13 +10,13 @@ import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.UAC;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 // import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
 
-public class RespondentDataServiceIT_Test {
+public class RespondentDataRepositoryIT_Test {
 
-  private RespondentDataService cloud;
+  private RespondentDataRepository cloud;
   private String caseId;
   private String uacHash;
   private UAC uac;
@@ -24,7 +24,7 @@ public class RespondentDataServiceIT_Test {
 
   @Before
   public void setup() {
-    cloud = new RespondentDataServiceImpl();
+    cloud = new RespondentDataRepositoryImpl();
     caseId = "c45de4dc-3c3b-11e9-b210-d663bd873d93";
     uacHash = "72C84BA99D77EE766E9468A0DE36433A44888E5DEC4AFB84F8019777800B7364"; // SHA-256 hash of
     // UAC

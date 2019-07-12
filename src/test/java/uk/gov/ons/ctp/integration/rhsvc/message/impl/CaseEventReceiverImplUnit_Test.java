@@ -12,12 +12,12 @@ import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentDataService;
-import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
+import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
 
 public class CaseEventReceiverImplUnit_Test {
 
-  private RespondentDataService mockRespondentDataService;
+  private RespondentDataRepository mockRespondentDataRepo;
   private CaseEventReceiverImpl target;
 
   @Before
@@ -25,8 +25,8 @@ public class CaseEventReceiverImplUnit_Test {
 
     target = new CaseEventReceiverImpl();
 
-    mockRespondentDataService = Mockito.mock(RespondentDataServiceImpl.class);
-    target.setRespondentDataService(mockRespondentDataService);
+    mockRespondentDataRepo = Mockito.mock(RespondentDataRepositoryImpl.class);
+    target.setRespondentDataRepo(mockRespondentDataRepo);
   }
 
   @Test
@@ -70,6 +70,6 @@ public class CaseEventReceiverImplUnit_Test {
     target.acceptCaseEvent(caseEventFixture);
 
     // verification
-    Mockito.verify(mockRespondentDataService).writeCollectionCase(collectionCaseFixture);
+    Mockito.verify(mockRespondentDataRepo).writeCollectionCase(collectionCaseFixture);
   }
 }
