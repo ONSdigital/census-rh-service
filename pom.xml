@@ -153,6 +153,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>uk.gov.ons.ctp.integration.common</groupId>
+      <artifactId>product-reference</artifactId>
+      <version>0.0.10</version>
+    </dependency>
+
     <!-- ONS END -->
 
     <!-- third party libraries -->

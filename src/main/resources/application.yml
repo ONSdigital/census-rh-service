@@ -10,8 +10,8 @@ info:
 # ie -Dlogging.level.org.springframework=DEBUG
 logging:
   level:
-    uk.gov.ons.ctp: DEBUG
-    org.springframework: DEBUG
+    uk.gov.ons.ctp: INFO
+    org.springframework: INFO
   profile: DEV
   useJson: false
 
