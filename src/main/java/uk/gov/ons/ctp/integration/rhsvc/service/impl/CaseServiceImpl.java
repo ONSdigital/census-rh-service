@@ -11,6 +11,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseType;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
@@ -22,13 +23,6 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private RespondentDataRepository dataRepo;
   @Autowired private MapperFacade mapperFacade;
-
-  private enum CaseType {
-    HH,
-    HI,
-    CE,
-    CI
-  }
 
   @Override
   public List<CaseDTO> getHHCaseByUPRN(final UniquePropertyReferenceNumber uprn)
