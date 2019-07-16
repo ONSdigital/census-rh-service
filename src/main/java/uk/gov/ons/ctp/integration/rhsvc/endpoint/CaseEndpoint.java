@@ -1,5 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.UUID;
 import javax.validation.Valid;
@@ -12,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
@@ -50,7 +50,7 @@ public class CaseEndpoint {
 
     return ResponseEntity.ok(results);
   }
-  
+
   /**
    * the POST end point to request an SMS fulfilment for a case.
    *
