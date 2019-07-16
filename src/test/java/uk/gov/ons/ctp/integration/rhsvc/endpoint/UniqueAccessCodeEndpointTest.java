@@ -23,7 +23,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
 
 /** Unit Tests on endpoint for UAC resources */
-public class UniqeAccessCodeEndpointTest {
+public class UniqueAccessCodeEndpointTest {
 
   private static final String UAC = "w4nwwpphjjpt";
   private static final String CASE_ID = "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4";
