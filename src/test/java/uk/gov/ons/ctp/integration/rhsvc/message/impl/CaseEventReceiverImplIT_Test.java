@@ -26,7 +26,7 @@ import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
-import uk.gov.ons.ctp.integration.rhsvc.service.impl.RespondentDataServiceImpl;
+import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
 
 /** Spring Integration test of flow received from Response Management */
 @SpringBootTest
@@ -37,7 +37,7 @@ public class CaseEventReceiverImplIT_Test {
 
   @Autowired private CaseEventReceiverImpl receiver;
   @Autowired private SimpleMessageListenerContainer caseEventListenerContainer;
-  @MockBean private RespondentDataServiceImpl respondentDataServiceImpl;
+  @MockBean private RespondentDataRepositoryImpl respondentDataRepo;
 
   /** Test the receiver flow */
   @Test

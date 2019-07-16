@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.ons.ctp.common.endpoint.CTPEndpoint;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
@@ -17,7 +16,7 @@ import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
  */
 @RestController
 @RequestMapping(value = "/", produces = "application/json")
-public final class RespondentHomeEndpoint implements CTPEndpoint {
+public final class RespondentHomeEndpoint {
 
   private RespondentHomeService respondentHomeService;
 
