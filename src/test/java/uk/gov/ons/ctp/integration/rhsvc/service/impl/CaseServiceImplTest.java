@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -147,7 +149,7 @@ public class CaseServiceImplTest {
     UUID caseId = UUID.fromString(caseDetails.getId());
 
     // Simulate firestore
-    when(dataRepo.readCollectionCase(eq(caseDetails.getId()))).thenReturn(Optional.of(caseDetails));
+    when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
 
     // Create example product that we expect the product search to be called with
     Product expectedSearchProduct = new Product();
@@ -202,5 +204,49 @@ public class CaseServiceImplTest {
     assertEquals(caseDetails.getContact(), actualFulfilmentRequest.getContact());
 
     return actualFulfilmentRequest;
+  }
+
+  @Test
+  public void fulfilmentRequestBySMS_unknownCase() throws Exception {
+    // Simulate firestore not finding the case
+    when(dataRepo.readCollectionCase(any())).thenReturn(Optional.empty());
+
+    // Build request
+    SMSFulfilmentRequestDTO requestBodyDTO = new SMSFulfilmentRequestDTO();
+    requestBodyDTO.setCaseId(UUID.fromString(collectionCase.get(0).getId()));
+
+    // Invoke method under test
+    boolean caughtException = false;
+    try {
+      caseSvc.fulfilmentRequestBySMS(requestBodyDTO);
+    } catch (Exception e) {
+      caughtException = true;
+      assertTrue(e.toString(), e.getMessage().contains("Case not found"));
+    }
+    assertTrue(caughtException);
+  }
+
+  @Test
+  public void fulfilmentRequestBySMS_unknownProduct() throws Exception {
+    // Simulate firestore
+    when(dataRepo.readCollectionCase(any())).thenReturn(Optional.of(collectionCase.get(0)));
+
+    // Simulate ProductReference not finding a product
+    when(productReference.searchProducts(any())).thenReturn(new ArrayList<>());
+
+    // Build request body
+    SMSFulfilmentRequestDTO requestBodyDTO = new SMSFulfilmentRequestDTO();
+    requestBodyDTO.setFulfilmentCode("XYZ");
+    requestBodyDTO.setCaseId(UUID.randomUUID());
+
+    // Invoke method under test
+    boolean caughtException = false;
+    try {
+      caseSvc.fulfilmentRequestBySMS(requestBodyDTO);
+    } catch (Exception e) {
+      caughtException = true;
+      assertTrue(e.toString(), e.getMessage().contains("Compatible product cannot be found"));
+    }
+    assertTrue(caughtException);
   }
 }
