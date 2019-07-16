@@ -18,19 +18,17 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
-import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
-public final class CaseEndpointTest {
+public class CaseEndpointTest {
   private static final String UPRN = "123456";
   private static final String INVALID_UPRN = "q23456";
   private static final String ERROR_CODE = "RESOURCE_NOT_FOUND";
@@ -57,19 +55,12 @@ public final class CaseEndpointTest {
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(caseEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
-            .setMessageConverters(new MappingJackson2HttpMessageConverter(new CustomObjectMapper()))
             .build();
     this.caseDTO = FixtureHelper.loadClassFixtures(CaseDTO[].class);
 
     this.smsFulfilmentRequest =
         FixtureHelper.loadClassFixtures(SMSFulfilmentRequestDTO[].class).get(0);
   }
-
-  //    this.mockMvc =
-  //        MockMvcBuilders.standaloneSetup(caseEndpoint)
-  //            .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
-  //            .build();
-  //  }
 
   /** Test returns valid JSON for valid UPRN */
   @Test
