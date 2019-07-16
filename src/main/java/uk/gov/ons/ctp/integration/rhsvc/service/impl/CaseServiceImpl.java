@@ -35,14 +35,11 @@ public class CaseServiceImpl implements CaseService {
 
   private static final Logger log = LoggerFactory.getLogger(CaseServiceImpl.class);
 
-  @Autowired private RespondentDataRepository respondentDataRepository;
-
+  @Autowired private RespondentDataRepository dataRepo;
+  @Autowired private MapperFacade mapperFacade;
   @Autowired private ProductReference productReference;
 
   @Autowired private EventPublisher publisher;
-
-  @Autowired private RespondentDataRepository dataRepo;
-  @Autowired private MapperFacade mapperFacade;
 
   @Override
   public List<CaseDTO> getHHCaseByUPRN(final UniquePropertyReferenceNumber uprn)
@@ -74,9 +71,8 @@ public class CaseServiceImpl implements CaseService {
   public void fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO) throws CTPException {
     UUID caseId = requestBodyDTO.getCaseId();
 
-    // Find the specified case
-    Optional<CollectionCase> caseDetails =
-        respondentDataRepository.readCollectionCase(caseId.toString());
+    // Read case from firestore
+    Optional<CollectionCase> caseDetails = dataRepo.readCollectionCase(caseId.toString());
     if (caseDetails.isEmpty()) {
       String errorMessage = "Case not found: " + caseId;
       log.info(errorMessage);
