@@ -7,9 +7,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -21,12 +24,11 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
-/** Unit Tests on endpoint for Case resources */
-public class CaseEndPointTest {
-
+public class CaseEndpointUnitTest {
   private static final String UPRN = "123456";
   private static final String INVALID_UPRN = "q23456";
   private static final String ERROR_CODE = "RESOURCE_NOT_FOUND";
@@ -40,6 +42,10 @@ public class CaseEndPointTest {
 
   private MockMvc mockMvc;
 
+  private SMSFulfilmentRequestDTO smsFulfilmentRequest;
+
+  private ObjectMapper mapper = new ObjectMapper();
+
   private List<CaseDTO> caseDTO;
 
   /** Setup tests */
@@ -51,6 +57,9 @@ public class CaseEndPointTest {
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
             .build();
     this.caseDTO = FixtureHelper.loadClassFixtures(CaseDTO[].class);
+
+    this.smsFulfilmentRequest =
+        FixtureHelper.loadClassFixtures(SMSFulfilmentRequestDTO[].class).get(0);
   }
 
   /** Test returns valid JSON for valid UPRN */
@@ -107,5 +116,35 @@ public class CaseEndPointTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code", is(INVALID_CODE)))
         .andExpect(jsonPath("$.error.message", is(INVALID_MESSAGE)));
+  }
+
+  @Test
+  public void fulfilmentRequestBySMS_valid() throws Exception {
+    String url = "/cases/" + smsFulfilmentRequest.getCaseId() + "/fulfilments/sms";
+    String smsFulfilmentRequestAsJson = mapper.writeValueAsString(smsFulfilmentRequest);
+    mockMvc.perform(postJson(url, smsFulfilmentRequestAsJson)).andExpect(status().isOk());
+  }
+
+  @Test
+  public void fulfilmentRequestBySMS_mismatchedCaseIds() throws Exception {
+    String url = "/cases/81455015-28b1-4975-b2f1-540d0b8876b6/fulfilments/sms";
+    smsFulfilmentRequest.setCaseId(UUID.randomUUID());
+    String smsFulfilmentRequestAsJson = mapper.writeValueAsString(smsFulfilmentRequest);
+    mockMvc.perform(postJson(url, smsFulfilmentRequestAsJson)).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void fulfilmentRequestBySMS_phoneNumberFailsRegex() throws Exception {
+    String url = "/cases/81455015-28b1-4975-b2f1-540d0b8876b6/fulfilments/sms";
+    smsFulfilmentRequest.setTelNo("abc123");
+    String smsFulfilmentRequestAsJson = mapper.writeValueAsString(smsFulfilmentRequest);
+    mockMvc.perform(postJson(url, smsFulfilmentRequestAsJson)).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void fulfilmentRequestBySMS_incorrectRequestBody() throws Exception {
+    String url = "/cases/81455015-28b1-4975-b2f1-540d0b8876b6/fulfilments/sms";
+    String requestAsJson = "{ \"name\": \"Fred\" }";
+    mockMvc.perform(postJson(url, requestAsJson)).andExpect(status().isBadRequest());
   }
 }
