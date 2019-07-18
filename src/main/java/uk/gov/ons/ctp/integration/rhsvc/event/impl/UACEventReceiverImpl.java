@@ -36,12 +36,10 @@ public class UACEventReceiverImpl {
   @ServiceActivator(inputChannel = "acceptUACEvent")
   public void acceptUACEvent(UACEvent uacEvent) throws CTPException {
 
-    UAC uac;
+    UAC uac = uacEvent.getPayload().getUac();
     String uacTransactionId = uacEvent.getEvent().getTransactionId();
 
-    log.with(uacTransactionId).info("Now receiving uac event with transactionId and type shown");
-
-    uac = uacEvent.getPayload().getUac();
+    log.with("transactionId", uacTransactionId).with("caseId", uac.getCaseId()).info("Now receiving uac event with transactionId and type shown");
 
     try {
       respondentDataRepo.writeUAC(uac);
