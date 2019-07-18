@@ -91,8 +91,8 @@ In the RabbitMQ console make sure that the following queues have been created an
  
       Routing key                    | Destination queue
     ---------------------------------+--------------------------------
-      event.case.lifecycle           | Case.Gateway
-      event.uac.updates              | UAC.Gateway
+      event.case.update              | case.rh.case
+      event.uac.update               | case.rh.uac
       event.response.authentication  | event.response.authentication
 
 
