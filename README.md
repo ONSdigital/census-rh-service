@@ -212,6 +212,57 @@ Format the event text and make sure it looks like:
 	}
 
 
+## Manual testing with EventGenerator
+
+This section does the same testing as the previous section but automates much of the work by using the EventGenerator. To run the whole test copy and paste the following in one go. Then check that, as in the privous section, that the respondent authenticated event has been published. Note that these commands require Httpie to be installed. They also assume that local RH and EventGenerator services are running.
+
+This is how the hash of the UAC was calculated:
+    $ echo -n "aaaabbbbccccdddd" | shasum -a 256
+    147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde  -
+
+This example uses a case uuid of: f868fcfc-7280-40ea-ab01-b173ac245da3
+ 
+    # Create UAC payload 
+    cat > /tmp/uac_updated.json <<EOF
+    {
+        "eventType": "UAC_UPDATED",
+        "source": "SAMPLE_LOADER",
+        "channel": "RM",
+        "contexts": [
+            {
+                "uacHash": "147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde",
+                "caseId": "f868fcfc-7280-40ea-ab01-b173ac245da3"
+            }
+        ]
+    }
+    EOF
+
+    # Create case updated payload
+    cat > /tmp/case_updated.json <<EOF 
+    {
+        "eventType": "CASE_UPDATED",
+        "source": "SAMPLE_LOADER",
+        "channel": "RM",
+        "contexts": [
+            {
+                "id": "f868fcfc-7280-40ea-ab01-b173ac245da3"
+            }
+        ]
+    }
+    EOF
+
+    # Use the generator to create the UAC and case objects in Firestore
+    http --auth generator:hitmeup POST "http://localhost:8171/generate" @/tmp/uac_updated.json
+    http --auth generator:hitmeup POST "http://localhost:8171/generate" @/tmp/case_updated.json
+
+    # Wait until UAC and case have been loaded into Firestore
+    http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=uac&key=147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde&timeout=500ms"
+    http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=case&key=f868fcfc-7280-40ea-ab01-b173ac245da3&timeout=500ms"
+
+    # Make the UAC authenticated request
+    http --auth serco_cks:temporary get "http://localhost:8071/uacs/aaaabbbbccccdddd"
+
+
 ## Docker image build
 
 Is switched off by default for clean deploy. Switch on with;
