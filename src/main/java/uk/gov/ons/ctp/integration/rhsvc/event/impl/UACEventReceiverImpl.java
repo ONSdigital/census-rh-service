@@ -39,7 +39,9 @@ public class UACEventReceiverImpl {
     UAC uac = uacEvent.getPayload().getUac();
     String uacTransactionId = uacEvent.getEvent().getTransactionId();
 
-    log.with("transactionId", uacTransactionId).with("caseId", uac.getCaseId()).info("Now receiving uac event with transactionId and type shown");
+    log.with("transactionId", uacTransactionId)
+        .with("caseId", uac.getCaseId())
+        .info("Now receiving uac event with transactionId and type shown");
 
     try {
       respondentDataRepo.writeUAC(uac);
