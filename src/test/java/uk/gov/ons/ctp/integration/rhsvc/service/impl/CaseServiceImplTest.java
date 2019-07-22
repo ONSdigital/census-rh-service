@@ -155,7 +155,6 @@ public class CaseServiceImplTest {
     Product expectedSearchProduct = new Product();
     expectedSearchProduct.setRequestChannels(Arrays.asList(Product.RequestChannel.RH));
     expectedSearchProduct.setRegions(Arrays.asList(Product.Region.E));
-    expectedSearchProduct.setCaseType(caseType);
     expectedSearchProduct.setDeliveryChannel(DeliveryChannel.SMS);
     expectedSearchProduct.setFulfilmentCode("F1");
 
@@ -200,8 +199,7 @@ public class CaseServiceImplTest {
     FulfilmentRequest actualFulfilmentRequest = fulfilmentRequestCaptor.getValue();
     assertEquals("F1", actualFulfilmentRequest.getFulfilmentCode());
     assertEquals(caseDetails.getId(), actualFulfilmentRequest.getCaseId());
-    assertEquals(caseDetails.getAddress(), actualFulfilmentRequest.getAddress());
-    assertEquals(caseDetails.getContact(), actualFulfilmentRequest.getContact());
+    assertEquals("07714111222", actualFulfilmentRequest.getContact().getTelNo());
 
     return actualFulfilmentRequest;
   }

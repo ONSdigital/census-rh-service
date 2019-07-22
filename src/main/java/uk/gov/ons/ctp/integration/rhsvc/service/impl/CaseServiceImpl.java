@@ -17,6 +17,7 @@ import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
@@ -103,10 +104,8 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
 
     Region region = Region.valueOf(caseDetails.getAddress().getRegion());
-    CaseType caseType = CaseType.valueOf(caseDetails.getAddress().getAddressType());
 
     log.with("region", region)
-        .with("caseType", caseType)
         .with("deliveryChannel", deliveryChannel)
         .with("fulfilmentCode", fulfilmentCode)
         .debug("Attempting to find product.");
@@ -115,7 +114,6 @@ public class CaseServiceImpl implements CaseService {
     Product searchCriteria = new Product();
     searchCriteria.setRequestChannels(Arrays.asList(Product.RequestChannel.RH));
     searchCriteria.setRegions(Arrays.asList(region));
-    searchCriteria.setCaseType(caseType);
     searchCriteria.setDeliveryChannel(deliveryChannel);
     searchCriteria.setFulfilmentCode(fulfilmentCode);
 
@@ -136,12 +134,10 @@ public class CaseServiceImpl implements CaseService {
     if (product.getCaseType().equals(Product.CaseType.HI)) {
       fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
     }
-
     fulfilmentRequest.setFulfilmentCode(product.getFulfilmentCode());
-    fulfilmentRequest.setAddress(caseDetails.getAddress());
-    fulfilmentRequest.setContact(caseDetails.getContact());
 
     // Use the phone number that was supplied for this fulfilment request
+    fulfilmentRequest.setContact(new Contact());
     fulfilmentRequest.getContact().setTelNo(telephoneNumber);
 
     return fulfilmentRequest;
