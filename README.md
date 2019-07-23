@@ -68,18 +68,15 @@ They will then be received by census-rh-service and stored in either the case_sc
 The project to use is given by the Application Default Credentials (These are the credential associated with the service account that your app engine app runs as - to set these up please follow the steps given in the previous section).
 
 
-## End Points
-
-When running successfully the words "Hello Census Integration!" should be found at the following endpoint:
-    
-* localhost:8171/respondent/data
-
-NB. You need to enter user as ‘Admin’ and pw as ‘secret’ to access the URL.
-
+## RabbitMQ
 
 When running on localhost the Rabbitmq management console should be found at the following endpoint:
 
 * http://localhost:46672/#/queues
+
+## Firestore
+
+RH service uses a Firestore datastore. If running locally you'll need to create this for your GCP account. When you go into the 'Firestore' section let it create a database for you in 'Native' mode.
 
 ## Manual testing
 
@@ -88,13 +85,12 @@ To manually test RH:
 1) **Queue setup**
  
 In the RabbitMQ console make sure that the following queues have been created and bound to the 'events' exchange:
- 
+
       Routing key                    | Destination queue
     ---------------------------------+--------------------------------
       event.case.update              | case.rh.case
       event.uac.update               | case.rh.uac
       event.response.authentication  | event.response.authentication
-
 
 2) **UAC Data**
 
@@ -171,7 +167,7 @@ Submit the case by sending the following to the 'events' exchange with the routi
 
 If you know the case id which matches the stored UAC hash then you can supply it in the UACS get request:
   
-       $ curl -s -H "Content-Type: application/json" --user $CC_USERNAME:$CC_PASSWORD "http://localhost:8071/uacs/w4nwwpphjjptp7fn"
+       $ curl -s -H "Content-Type: application/json" "http://localhost:8071/uacs/w4nwwpphjjptp7fn"
  
 If the case id is not known for the loaded UAC data then you can manually force execution through by running in the debugger and set a breakpoint in UniqueAccessCodeServiceImpl::getSha256Hash(), and then manually replacing the calculated SHA256 value with the uacHash value of an already loaded UAC.
 
