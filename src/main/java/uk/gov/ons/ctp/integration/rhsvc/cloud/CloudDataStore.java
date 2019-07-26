@@ -6,6 +6,8 @@ import uk.gov.ons.ctp.common.error.CTPException;
 
 public interface CloudDataStore {
 
+  void connect();
+
   void storeObject(final String schema, final String key, final Object value) throws CTPException;
 
   <T> Optional<T> retrieveObject(Class<T> target, final String schema, final String key)

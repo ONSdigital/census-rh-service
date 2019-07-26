@@ -26,7 +26,7 @@ public class FirestoreDataStore implements CloudDataStore {
 
   private Firestore firestore;
 
-  public FirestoreDataStore() {
+  public void connect() {
     String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
     log.info("Connecting to Firestore project '{}'", googleProjectName);
 
