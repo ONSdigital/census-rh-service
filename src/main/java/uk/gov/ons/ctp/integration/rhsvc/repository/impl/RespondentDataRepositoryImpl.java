@@ -33,6 +33,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
 
   public RespondentDataRepositoryImpl() {
     this.cloudDataStore = new FirestoreDataStore();
+    this.cloudDataStore.connect();
   }
 
   @PostConstruct
