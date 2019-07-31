@@ -3,16 +3,33 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.converter.ConverterFactory;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.EventPublisher;
+import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
+import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.model.Address;
+import uk.gov.ons.ctp.common.event.model.AddressModification;
+import uk.gov.ons.ctp.common.event.model.AddressModified;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
+import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseType;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
+import uk.gov.ons.ctp.integration.rhsvc.representation.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
 /** Implementation to deal with Case data */
@@ -23,6 +40,21 @@ public class CaseServiceImpl implements CaseService {
 
   @Autowired private RespondentDataRepository dataRepo;
   @Autowired private MapperFacade mapperFacade;
+  @Autowired private EventPublisher eventPublisher;
+
+  private BoundMapperFacade<AddressDTO, AddressModified> addressDTOMapperFacade;
+  private BoundMapperFacade<Address, AddressModified> addressMapperFacade;
+
+  /** Constructor */
+  public CaseServiceImpl() {
+
+    MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
+    ConverterFactory converterFactory = mapperFactory.getConverterFactory();
+    converterFactory.registerConverter(new StringToUPRNConverter());
+    this.addressDTOMapperFacade =
+        mapperFactory.getMapperFacade(AddressDTO.class, AddressModified.class);
+    this.addressMapperFacade = mapperFactory.getMapperFacade(Address.class, AddressModified.class);
+  }
 
   @Override
   public List<CaseDTO> getHHCaseByUPRN(final UniquePropertyReferenceNumber uprn)
@@ -42,5 +74,90 @@ public class CaseServiceImpl implements CaseService {
     log.debug("{} HH case(s) retrieved for UPRN {}", caseData.size(), uprnValue);
 
     return caseData;
+  }
+
+  @Override
+  public CaseDTO modifyAddress(final UUID caseId, final AddressChangeDTO addressChanges)
+      throws CTPException {
+
+    Optional<CollectionCase> caseMatch = dataRepo.readCollectionCase(caseId.toString());
+
+    if (!caseMatch.isPresent()) {
+      log.with("caseId", caseId).error("Failed to retrieve Case from storage");
+      throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
+    }
+
+    CollectionCase rmCase = caseMatch.get();
+
+    CaseDTO caseData = createModifiedAddressCaseDetails(caseId, rmCase, addressChanges);
+
+    AddressModified originalAddress = addressMapperFacade.map(rmCase.getAddress());
+
+    AddressModified updatedAddress =
+        addressDTOMapperFacade.map(
+            addressChanges.getAddress(), addressMapperFacade.map(rmCase.getAddress()));
+
+    sendAddressModifiedEvent(caseId, originalAddress, updatedAddress);
+
+    return caseData;
+  }
+
+  /**
+   * Create case details with updated Address
+   *
+   * @param caseId requested caseId for which to update address
+   * @param rmCase original Case from repository
+   * @param addressChanges Changed address details from request
+   * @return CaseDTO updated case details
+   * @throws CTPException UPRN of stored address and request change do not match
+   */
+  private CaseDTO createModifiedAddressCaseDetails(
+      UUID caseId, CollectionCase rmCase, AddressChangeDTO addressChanges) throws CTPException {
+
+    CaseDTO caseData = mapperFacade.map(rmCase, CaseDTO.class);
+    if (!caseData.getAddress().getUprn().equals(addressChanges.getAddress().getUprn())) {
+      log.with("caseId", caseId)
+          .with("UPRN", addressChanges.getAddress().getUprn().toString())
+          .error("Address CaseId and UPRN do not match");
+      throw new CTPException(
+          CTPException.Fault.BAD_REQUEST, "Address CaseId and UPRN do not match");
+    }
+    caseData.setAddress(addressChanges.getAddress());
+    return caseData;
+  }
+
+  /**
+   * Send AddressModified event
+   *
+   * @param caseId of updated case
+   * @param originalAddress details of case
+   * @param newAddress details of case
+   */
+  private void sendAddressModifiedEvent(
+      UUID caseId, AddressModified originalAddress, AddressModified newAddress)
+      throws CTPException {
+
+    log.debug(
+        "Generating AddressModified event for caseId: "
+            + caseId.toString()
+            + ", UPRN: "
+            + originalAddress.getUprn());
+
+    AddressModification addressModification =
+        AddressModification.builder()
+            .collectionCase(new CollectionCaseCompact(caseId))
+            .originalAddress(originalAddress)
+            .newAddress(newAddress)
+            .build();
+
+    String transactionId =
+        eventPublisher.sendEvent(
+            EventType.ADDRESS_MODIFIED, Source.RESPONDENT_HOME, Channel.RH, addressModification);
+
+    log.debug(
+        "AddressModified event published for caseId: "
+            + addressModification.getCollectionCase().getId().toString()
+            + ", transactionId: "
+            + transactionId);
   }
 }

@@ -24,14 +24,9 @@ public class RHSvcBeanMapper extends ConfigurableMapper {
 
     factory
         .classMap(CollectionCase.class, CaseDTO.class)
+        .field("id", "caseId")
         .field("address.addressType", "addressType")
-        .field("address.addressLine1", "addressLine1")
-        .field("address.addressLine2", "addressLine2")
-        .field("address.addressLine3", "addressLine3")
-        .field("address.townName", "townName")
         .field("address.region", "region")
-        .field("address.postcode", "postcode")
-        .field("address.uprn", "uprn")
         .byDefault()
         .register();
   }

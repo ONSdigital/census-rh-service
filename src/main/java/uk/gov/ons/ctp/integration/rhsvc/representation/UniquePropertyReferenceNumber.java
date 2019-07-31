@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
  * with '@JsonUnwrapped'.
  */
 @Data
+@EqualsAndHashCode
 @AllArgsConstructor
 public class UniquePropertyReferenceNumber {
 
@@ -22,7 +24,7 @@ public class UniquePropertyReferenceNumber {
   private static final long UPRN_MAX = 999999999999L;
 
   @JsonCreator
-  public UniquePropertyReferenceNumber(@JsonProperty("uprn") String str) {
+  public UniquePropertyReferenceNumber(@JsonProperty(value = "uprn", required = true) String str) {
     if (!StringUtils.isBlank(str)) {
       try {
         Long uprn = Long.parseLong(str);
