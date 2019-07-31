@@ -40,7 +40,6 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.CaseType;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
@@ -101,7 +100,7 @@ public class CaseServiceImplTest {
     List<CollectionCase> nonHHCases =
         collectionCase
             .stream()
-            .filter(c -> !c.getAddress().getAddressType().equals(CaseType.HH.name()))
+            .filter(c -> !c.getAddress().getAddressType().equals(Product.CaseType.H.name()))
             .collect(Collectors.toList());
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(nonHHCases);
@@ -126,7 +125,7 @@ public class CaseServiceImplTest {
 
   @Test
   public void testFulfilmentRequestBySMS_Household() throws Exception {
-    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HH);
+    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.H);
 
     // Individual case id field should not be set for non-individual
     assertNull(actualFulfilmentRequest.getIndividualCaseId());
@@ -160,7 +159,7 @@ public class CaseServiceImplTest {
 
     // Simulate the behaviour of the ProductReference
     Product product = new Product();
-    product.setCaseType(Product.CaseType.HH);
+    product.setCaseType(Product.CaseType.H);
     product.setFulfilmentCode("F1");
     product.setCaseType(caseType);
     List<Product> foundProducts = new ArrayList<>();
