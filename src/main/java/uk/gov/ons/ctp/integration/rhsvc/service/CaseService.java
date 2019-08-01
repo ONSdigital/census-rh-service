@@ -5,9 +5,13 @@ import java.util.UUID;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
-/** Service responsible for Case requests */
+/**
+ * This class contains business level logic for handling case related functionality for the case
+ * endpoint.
+ */
 public interface CaseService {
 
   /**
@@ -28,4 +32,6 @@ public interface CaseService {
    * @throws CTPException
    */
   CaseDTO modifyAddress(final UUID caseId, final AddressChangeDTO address) throws CTPException;
+
+  void fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO) throws CTPException;
 }

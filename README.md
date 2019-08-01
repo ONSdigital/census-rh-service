@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c11c38daa91f48818dca0a1e3a6837ea)](https://www.codacy.com/app/philwhiles/census-rh-service?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ONSdigital/census-rh-service&amp;utm_campaign=Badge_Grade)
 [![Build Status](https://travis-ci.org/ONSdigital/census-rh-service.svg?branch=master)](https://travis-ci.org/ONSdigital/census-rh-service)
 [![codecov](https://codecov.io/gh/ONSdigital/census-rh-service/branch/master/graph/badge.svg)](https://codecov.io/gh/ONSdigital/census-rh-service)
@@ -68,18 +67,15 @@ They will then be received by census-rh-service and stored in either the case_sc
 The project to use is given by the Application Default Credentials (These are the credential associated with the service account that your app engine app runs as - to set these up please follow the steps given in the previous section).
 
 
-## End Points
-
-When running successfully the words "Hello Census Integration!" should be found at the following endpoint:
-    
-* localhost:8171/respondent/data
-
-NB. You need to enter user as ‘Admin’ and pw as ‘secret’ to access the URL.
-
+## RabbitMQ
 
 When running on localhost the Rabbitmq management console should be found at the following endpoint:
 
 * http://localhost:46672/#/queues
+
+## Firestore
+
+RH service uses a Firestore datastore. If running locally you'll need to create this for your GCP account. When you go into the 'Firestore' section let it create a database for you in 'Native' mode.
 
 ## Manual testing
 
@@ -88,13 +84,12 @@ To manually test RH:
 1) **Queue setup**
  
 In the RabbitMQ console make sure that the following queues have been created and bound to the 'events' exchange:
- 
+
       Routing key                    | Destination queue
     ---------------------------------+--------------------------------
-      event.case.lifecycle           | Case.Gateway
-      event.uac.updates              | UAC.Gateway
+      event.case.update              | case.rh.case
+      event.uac.update               | case.rh.uac
       event.response.authentication  | event.response.authentication
-
 
 2) **UAC Data**
 
@@ -171,7 +166,7 @@ Submit the case by sending the following to the 'events' exchange with the routi
 
 If you know the case id which matches the stored UAC hash then you can supply it in the UACS get request:
   
-       $ curl -s -H "Content-Type: application/json" --user $CC_USERNAME:$CC_PASSWORD "http://localhost:8071/uacs/w4nwwpphjjptp7fn"
+       $ curl -s -H "Content-Type: application/json" "http://localhost:8071/uacs/w4nwwpphjjptp7fn"
  
 If the case id is not known for the loaded UAC data then you can manually force execution through by running in the debugger and set a breakpoint in UniqueAccessCodeServiceImpl::getSha256Hash(), and then manually replacing the calculated SHA256 value with the uacHash value of an already loaded UAC.
 
@@ -210,6 +205,57 @@ Format the event text and make sure it looks like:
 	    }
 	  }
 	}
+
+
+## Manual testing with EventGenerator
+
+This section does the same testing as the previous section but automates much of the work by using the EventGenerator. To run the whole test copy and paste the following in one go. Then check that, as in the privous section, that the respondent authenticated event has been published. Note that these commands require Httpie to be installed. They also assume that local RH and EventGenerator services are running.
+
+This is how the hash of the UAC was calculated:
+    $ echo -n "aaaabbbbccccdddd" | shasum -a 256
+    147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde  -
+
+This example uses a case uuid of: f868fcfc-7280-40ea-ab01-b173ac245da3
+ 
+    # Create UAC payload 
+    cat > /tmp/uac_updated.json <<EOF
+    {
+        "eventType": "UAC_UPDATED",
+        "source": "SAMPLE_LOADER",
+        "channel": "RM",
+        "contexts": [
+            {
+                "uacHash": "147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde",
+                "caseId": "f868fcfc-7280-40ea-ab01-b173ac245da3"
+            }
+        ]
+    }
+    EOF
+
+    # Create case updated payload
+    cat > /tmp/case_updated.json <<EOF 
+    {
+        "eventType": "CASE_UPDATED",
+        "source": "SAMPLE_LOADER",
+        "channel": "RM",
+        "contexts": [
+            {
+                "id": "f868fcfc-7280-40ea-ab01-b173ac245da3"
+            }
+        ]
+    }
+    EOF
+
+    # Use the generator to create the UAC and case objects in Firestore
+    http --auth generator:hitmeup POST "http://localhost:8171/generate" @/tmp/uac_updated.json
+    http --auth generator:hitmeup POST "http://localhost:8171/generate" @/tmp/case_updated.json
+
+    # Wait until UAC and case have been loaded into Firestore
+    http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=uac&key=147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde&timeout=500ms"
+    http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=case&key=f868fcfc-7280-40ea-ab01-b173ac245da3&timeout=500ms"
+
+    # Make the UAC authenticated request
+    http --auth serco_cks:temporary get "http://localhost:8071/uacs/aaaabbbbccccdddd"
 
 
 ## Docker image build

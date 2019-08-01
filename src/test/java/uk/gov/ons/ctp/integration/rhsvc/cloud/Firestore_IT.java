@@ -36,6 +36,7 @@ public class Firestore_IT {
   @BeforeClass
   public static void setUp() {
     firestoreDataStore = new FirestoreDataStore();
+    firestoreDataStore.connect();
 
     String googleCredentials = System.getenv(FIRESTORE_CREDENTIALS_ENV_NAME);
     String googleProjectName = System.getenv(FIRESTORE_PROJECT_ENV_NAME);
