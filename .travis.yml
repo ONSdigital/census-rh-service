@@ -8,32 +8,25 @@ language: java
 jdk: openjdk11
 
 before_install:
-  - if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  #  - if [ "$TRAVIS_BRANCH" != "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
     git checkout $TRAVIS_BRANCH;
-    fi
+  #  fi
   - cp .maven.settings.xml $HOME/.m2/settings.xml
   - mvn fmt:check
   - export TZ=Europe/London
 
 script:
   - travis_wait mvn verify
-  - if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    #- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       git config --global user.email "travis@travis-ci.org";
       git config --global user.name "Travis CI";
       mvn -B -Dusername=$GITHUB_API_KEY release:prepare;
       mvn -B release:perform;
-    fi
+    #fi
 
 after_success:
   - ./scripts/docker_push.sh
   - bash <(curl -s https://codecov.io/bash)
-
-#notifications:
-#  slack:
-#    rooms:
-#      secure: "NcFdQQ5QbZu6naz8goI75PLKkKrlgkEV6td9yYZ4Wt13ZgYdT+rE5NtQiLQbPqvX56/Lphmm8sYm2VV/I92ibK5/Xbr0RGDQ3nl6kcmdwmHDSsPPVWYQvAtuzcvsxI0CGVQ+ek/pZYFBNOnsqHi4Dxfe1jdcVZROUSVao8xE0Hey63wDNj5UNA8S6qOBEyJSMOZ5tR6R5Xr83LteVGGuvNlPnOFu5ehZKZLPChWlyOcnHcdHZbHCiclDJn/fYV40EQ2NcU2uoN+HxLPKHUBAK/DYUkSOzVkHJdDN3rn9SVWvu/Z9rDHF+0jPVPEmNexV4QfE1oR5OVhj/CdPo5K1D1sVSfbVZlsIj93ThrARdm3meA5MNJdBcPF1o6ira8tf1xw8CcVXuj4hV6ywcin0pHvMMMIWQx7HqVo1WCX1lRyf2HnP+Qvu69kGJVPQ0HCosYlMI9P5woqerdtayuX0UlYiGr8/0a1vKnN78zxM6LnabmK9KPW/xGVcY5H43vJwYjvkdSib8EA5+EwDj3u0HR9LRtv0Wi7Yoa1sKT/ZL8dXobIWGJef/vX4M9PaTqx5dA+kyr8L5JcCEBTfMvOaW6Q5UDkec28NIMh4F4CAQt2avgoBW/fZqLmSleNNtRnhXaGhODgzOnRSyILxCMfrcxWpFCbWzWwIPOFx2IR3f0k="
-#    on_failure: always
-#    on_success: never
 
 cache:
   directories:
