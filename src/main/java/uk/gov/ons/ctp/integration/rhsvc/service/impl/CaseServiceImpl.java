@@ -53,7 +53,7 @@ public class CaseServiceImpl implements CaseService {
     List<CollectionCase> results =
         rmCase
             .stream()
-            .filter(c -> c.getAddress().getAddressType().equals(CaseType.H.name()))
+            .filter(c -> c.getAddress().getAddressType().equals(CaseType.HH.name()))
             .collect(Collectors.toList());
     List<CaseDTO> caseData = mapperFacade.mapAsList(results, CaseDTO.class);
 

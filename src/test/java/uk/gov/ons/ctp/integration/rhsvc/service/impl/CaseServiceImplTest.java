@@ -100,7 +100,7 @@ public class CaseServiceImplTest {
     List<CollectionCase> nonHHCases =
         collectionCase
             .stream()
-            .filter(c -> !c.getAddress().getAddressType().equals(Product.CaseType.H.name()))
+            .filter(c -> !c.getAddress().getAddressType().equals(Product.CaseType.HH.name()))
             .collect(Collectors.toList());
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(nonHHCases);
@@ -125,7 +125,7 @@ public class CaseServiceImplTest {
 
   @Test
   public void testFulfilmentRequestBySMS_Household() throws Exception {
-    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.H);
+    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HH);
 
     // Individual case id field should not be set for non-individual
     assertNull(actualFulfilmentRequest.getIndividualCaseId());
@@ -159,7 +159,7 @@ public class CaseServiceImplTest {
 
     // Simulate the behaviour of the ProductReference
     Product product = new Product();
-    product.setCaseType(Product.CaseType.H);
+    product.setCaseType(Product.CaseType.HH);
     product.setFulfilmentCode("F1");
     product.setCaseType(caseType);
     List<Product> foundProducts = new ArrayList<>();
