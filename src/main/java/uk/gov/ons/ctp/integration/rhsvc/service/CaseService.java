@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
 import java.util.List;
-import java.util.UUID;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
@@ -26,12 +25,11 @@ public interface CaseService {
   /**
    * Change address for a Case
    *
-   * @param caseId UUID for case to which address relates
    * @param AddressChangeDTO for change of address
    * @return Case details for changed address
    * @throws CTPException
    */
-  CaseDTO modifyAddress(final UUID caseId, final AddressChangeDTO address) throws CTPException;
+  CaseDTO modifyAddress(final AddressChangeDTO address) throws CTPException;
 
   void fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO) throws CTPException;
 }

@@ -72,6 +72,7 @@ public class CaseServiceImplTest {
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
+
     MockitoAnnotations.initMocks(this);
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
     this.addressChangeDTO = FixtureHelper.loadClassFixtures(AddressChangeDTO[].class);
@@ -139,14 +140,13 @@ public class CaseServiceImplTest {
   public void modifyAddressByCaseIdFound() throws Exception {
 
     CollectionCase rmCase = collectionCase.get(0);
-    UUID caseId = UUID.fromString(rmCase.getId());
     AddressChangeDTO addressChange = addressChangeDTO.get(0);
     ArgumentCaptor<AddressModification> payloadCapture =
         ArgumentCaptor.forClass(AddressModification.class);
 
     when(dataRepo.readCollectionCase(rmCase.getId())).thenReturn(Optional.of(rmCase));
 
-    CaseDTO caseDTO = caseSvc.modifyAddress(caseId, addressChange);
+    CaseDTO caseDTO = caseSvc.modifyAddress(addressChange);
 
     verify(eventPublisher, times(1))
         .sendEvent(
@@ -167,7 +167,7 @@ public class CaseServiceImplTest {
     assertSame(addressChange.getAddress(), caseDTO.getAddress());
     assertEquals(rmCase.getAddress().getRegion(), caseDTO.getRegion());
 
-    assertSame(payload.getCollectionCase().getId(), caseId);
+    assertEquals(payload.getCollectionCase().getId().toString(), rmCase.getId());
 
     assertEquals(rmCase.getAddress().getAddressLine1(), originalAddress.getAddressLine1());
     assertEquals(rmCase.getAddress().getAddressLine2(), originalAddress.getAddressLine2());
@@ -193,20 +193,20 @@ public class CaseServiceImplTest {
   public void modifyAddressByCaseIdNotFound() throws Exception {
 
     CollectionCase rmCase = collectionCase.get(0);
-    UUID caseId = UUID.fromString(rmCase.getId());
+    String caseId = rmCase.getId();
     AddressChangeDTO addressChange = addressChangeDTO.get(0);
 
-    when(dataRepo.readCollectionCase(caseId.toString())).thenReturn(Optional.empty());
+    when(dataRepo.readCollectionCase(caseId)).thenReturn(Optional.empty());
 
     boolean exceptionThrown = false;
     try {
-      caseSvc.modifyAddress(caseId, addressChange);
+      caseSvc.modifyAddress(addressChange);
     } catch (CTPException e) {
       assertEquals(CTPException.Fault.RESOURCE_NOT_FOUND, e.getFault());
       exceptionThrown = true;
     }
 
-    verify(dataRepo, times(1)).readCollectionCase(caseId.toString());
+    verify(dataRepo, times(1)).readCollectionCase(caseId);
     verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertTrue(exceptionThrown);
@@ -217,21 +217,21 @@ public class CaseServiceImplTest {
   public void modifyAddressByCaseIdDifferentUPRN() throws Exception {
 
     CollectionCase rmCase = collectionCase.get(0);
-    UUID caseId = UUID.fromString(rmCase.getId());
+    String caseId = rmCase.getId();
     AddressChangeDTO addressChange = addressChangeDTO.get(0);
     addressChange.getAddress().getUprn().setValue(0L);
 
-    when(dataRepo.readCollectionCase(caseId.toString())).thenReturn(Optional.of(rmCase));
+    when(dataRepo.readCollectionCase(caseId)).thenReturn(Optional.of(rmCase));
 
     boolean exceptionThrown = false;
     try {
-      caseSvc.modifyAddress(caseId, addressChange);
+      caseSvc.modifyAddress(addressChange);
     } catch (CTPException e) {
       assertEquals(CTPException.Fault.BAD_REQUEST, e.getFault());
       exceptionThrown = true;
     }
 
-    verify(dataRepo, times(1)).readCollectionCase(caseId.toString());
+    verify(dataRepo, times(1)).readCollectionCase(caseId);
     verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertTrue(exceptionThrown);

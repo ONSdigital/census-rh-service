@@ -7,11 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.converter.ConverterFactory;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -20,7 +16,6 @@ import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.AddressModified;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
@@ -34,11 +29,9 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
-import uk.gov.ons.ctp.integration.rhsvc.representation.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
 /** Implementation to deal with Case data */
@@ -51,20 +44,6 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private MapperFacade mapperFacade;
   @Autowired private EventPublisher eventPublisher;
   @Autowired private ProductReference productReference;
-
-  private BoundMapperFacade<AddressDTO, AddressModified> addressDTOMapperFacade;
-  private BoundMapperFacade<Address, AddressModified> addressMapperFacade;
-
-  /** Constructor */
-  public CaseServiceImpl() {
-
-    MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
-    ConverterFactory converterFactory = mapperFactory.getConverterFactory();
-    converterFactory.registerConverter(new StringToUPRNConverter());
-    this.addressDTOMapperFacade =
-        mapperFactory.getMapperFacade(AddressDTO.class, AddressModified.class);
-    this.addressMapperFacade = mapperFactory.getMapperFacade(Address.class, AddressModified.class);
-  }
 
   @Override
   public List<CaseDTO> getHHCaseByUPRN(final UniquePropertyReferenceNumber uprn)
@@ -87,10 +66,11 @@ public class CaseServiceImpl implements CaseService {
   }
 
   @Override
-  public CaseDTO modifyAddress(final UUID caseId, final AddressChangeDTO addressChanges)
-      throws CTPException {
+  public CaseDTO modifyAddress(final AddressChangeDTO addressChanges) throws CTPException {
 
-    Optional<CollectionCase> caseMatch = dataRepo.readCollectionCase(caseId.toString());
+    String caseId = addressChanges.getCaseId().toString();
+
+    Optional<CollectionCase> caseMatch = dataRepo.readCollectionCase(caseId);
 
     if (!caseMatch.isPresent()) {
       log.with("caseId", caseId).error("Failed to retrieve Case from storage");
@@ -101,11 +81,11 @@ public class CaseServiceImpl implements CaseService {
 
     CaseDTO caseData = createModifiedAddressCaseDetails(caseId, rmCase, addressChanges);
 
-    AddressModified originalAddress = addressMapperFacade.map(rmCase.getAddress());
+    AddressModified originalAddress = mapperFacade.map(rmCase.getAddress(), AddressModified.class);
 
-    AddressModified updatedAddress =
-        addressDTOMapperFacade.map(
-            addressChanges.getAddress(), addressMapperFacade.map(rmCase.getAddress()));
+    AddressModified updatedAddress = mapperFacade.map(rmCase.getAddress(), AddressModified.class);
+
+    mapperFacade.map(addressChanges.getAddress(), updatedAddress);
 
     sendAddressModifiedEvent(caseId, originalAddress, updatedAddress);
 
@@ -122,15 +102,16 @@ public class CaseServiceImpl implements CaseService {
    * @throws CTPException UPRN of stored address and request change do not match
    */
   private CaseDTO createModifiedAddressCaseDetails(
-      UUID caseId, CollectionCase rmCase, AddressChangeDTO addressChanges) throws CTPException {
+      String caseId, CollectionCase rmCase, AddressChangeDTO addressChanges) throws CTPException {
 
     CaseDTO caseData = mapperFacade.map(rmCase, CaseDTO.class);
     if (!caseData.getAddress().getUprn().equals(addressChanges.getAddress().getUprn())) {
       log.with("caseId", caseId)
           .with("UPRN", addressChanges.getAddress().getUprn().toString())
-          .error("Address CaseId and UPRN do not match");
+          .error("The UPRN of the referenced Case and the provided Address UPRN must be matching");
       throw new CTPException(
-          CTPException.Fault.BAD_REQUEST, "Address CaseId and UPRN do not match");
+          CTPException.Fault.BAD_REQUEST,
+          "The UPRN of the referenced Case and the provided Address UPRN must be matching");
     }
     caseData.setAddress(addressChanges.getAddress());
     return caseData;
@@ -144,18 +125,16 @@ public class CaseServiceImpl implements CaseService {
    * @param newAddress details of case
    */
   private void sendAddressModifiedEvent(
-      UUID caseId, AddressModified originalAddress, AddressModified newAddress)
+      String caseId, AddressModified originalAddress, AddressModified newAddress)
       throws CTPException {
 
-    log.debug(
-        "Generating AddressModified event for caseId: "
-            + caseId.toString()
-            + ", UPRN: "
-            + originalAddress.getUprn());
+    log.with("caseId", caseId)
+        .with("UPRN", originalAddress.getUprn())
+        .debug("Generating AddressModified event");
 
     AddressModification addressModification =
         AddressModification.builder()
-            .collectionCase(new CollectionCaseCompact(caseId))
+            .collectionCase(new CollectionCaseCompact(UUID.fromString(caseId)))
             .originalAddress(originalAddress)
             .newAddress(newAddress)
             .build();
@@ -164,11 +143,9 @@ public class CaseServiceImpl implements CaseService {
         eventPublisher.sendEvent(
             EventType.ADDRESS_MODIFIED, Source.RESPONDENT_HOME, Channel.RH, addressModification);
 
-    log.debug(
-        "AddressModified event published for caseId: "
-            + addressModification.getCollectionCase().getId().toString()
-            + ", transactionId: "
-            + transactionId);
+    log.with("caseId", caseId)
+        .with("transactionId", transactionId)
+        .debug("AddressModified event published");
   }
 
   /**

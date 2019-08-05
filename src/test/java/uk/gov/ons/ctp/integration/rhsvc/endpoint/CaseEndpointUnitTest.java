@@ -36,11 +36,15 @@ public class CaseEndpointUnitTest {
 
   private static final String UPRN = "123456";
   private static final String INVALID_UPRN = "q23456";
+  private static final String INCONSISTENT_CASEID = "ff9999f9-ff9f-9f99-f999-9ff999ff9ff9";
   private static final String ERROR_MESSAGE = "Failed to retrieve UPRN";
   private static final String INVALID_CODE = "VALIDATION_FAILED";
   private static final String INVALID_MESSAGE = "Provided json is incorrect.";
   private static final String JSON_VALIDATION_FAILURE = "Provided json fails validation.";
-  private static final String CASEID_UPRN_INCONSISTENT = "Address CaseId and UPRN do not match";
+  private static final String CASEID_UPRN_INCONSISTENT =
+      "The UPRN of the referenced Case and the provided Address UPRN must be matching";
+  private static final String CASEID_INCONSISTENT =
+      "The caseid in the URL does not match the caseid in the request body";
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 
@@ -130,10 +134,10 @@ public class CaseEndpointUnitTest {
   @Test
   public void putModifyAddressByCaseIdOK() throws Exception {
     CaseDTO rmCase = caseDTO.get(0);
-    UUID caseId = UUID.fromString(rmCase.getCaseId().toString());
-    AddressChangeDTO addressChangeDTO = new AddressChangeDTO(caseId, rmCase.getAddress());
+    AddressChangeDTO addressChangeDTO =
+        new AddressChangeDTO(rmCase.getCaseId(), rmCase.getAddress());
 
-    when(caseService.modifyAddress(caseId, addressChangeDTO)).thenReturn(rmCase);
+    when(caseService.modifyAddress(addressChangeDTO)).thenReturn(rmCase);
 
     mockMvc
         .perform(
@@ -151,6 +155,23 @@ public class CaseEndpointUnitTest {
         .andExpect(jsonPath("$.addressLine3", is(rmCase.getAddress().getAddressLine3())))
         .andExpect(jsonPath("$.townName", is(rmCase.getAddress().getTownName())))
         .andExpect(jsonPath("$.postcode", is(rmCase.getAddress().getPostcode())));
+  }
+
+  /** Test returns bad request if caseId path parameter and body don't match */
+  @Test
+  public void putModifyAddressByCaseIdInconsistent() throws Exception {
+    CaseDTO rmCase = caseDTO.get(0);
+    AddressChangeDTO addressChangeDTO =
+        new AddressChangeDTO(UUID.fromString(rmCase.getCaseId().toString()), rmCase.getAddress());
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/cases/{caseId}/address", INCONSISTENT_CASEID)
+                .content(mapper.writeValueAsString(addressChangeDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code", is(CTPException.Fault.BAD_REQUEST.toString())))
+        .andExpect(jsonPath("$.error.message", is(CASEID_INCONSISTENT)));
   }
 
   /** Test returns bad request for missing UPRN */
@@ -211,13 +232,11 @@ public class CaseEndpointUnitTest {
   @Test
   public void putModifyCaseIdUPRNInconsistent() throws Exception {
     CaseDTO rmCase = caseDTO.get(0);
-    UUID caseId = UUID.fromString(rmCase.getCaseId().toString());
-    AddressChangeDTO addressChangeDTO = new AddressChangeDTO(caseId, rmCase.getAddress());
+    AddressChangeDTO addressChangeDTO =
+        new AddressChangeDTO(rmCase.getCaseId(), rmCase.getAddress());
 
-    when(caseService.modifyAddress(caseId, addressChangeDTO))
-        .thenThrow(
-            new CTPException(
-                CTPException.Fault.BAD_REQUEST, "Address CaseId and UPRN do not match"));
+    when(caseService.modifyAddress(addressChangeDTO))
+        .thenThrow(new CTPException(CTPException.Fault.BAD_REQUEST, CASEID_UPRN_INCONSISTENT));
 
     mockMvc
         .perform(

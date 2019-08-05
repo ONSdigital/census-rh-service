@@ -4,9 +4,13 @@ import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.ctp.common.event.model.Address;
+import uk.gov.ons.ctp.common.event.model.AddressModified;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
+import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.util.StringToUPRNConverter;
 
 /** The bean mapper that maps to/from DTOs and repository entity types. */
 @Component
@@ -21,6 +25,7 @@ public class RHSvcBeanMapper extends ConfigurableMapper {
 
     ConverterFactory converterFactory = factory.getConverterFactory();
     converterFactory.registerConverter(new StringToUUIDConverter());
+    converterFactory.registerConverter(new StringToUPRNConverter());
 
     factory
         .classMap(CollectionCase.class, CaseDTO.class)
@@ -29,5 +34,9 @@ public class RHSvcBeanMapper extends ConfigurableMapper {
         .field("address.region", "region")
         .byDefault()
         .register();
+
+    factory.classMap(AddressDTO.class, AddressModified.class).byDefault().register();
+
+    factory.classMap(Address.class, AddressModified.class).byDefault().register();
   }
 }
