@@ -1,5 +1,5 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c11c38daa91f48818dca0a1e3a6837ea)](https://www.codacy.com/app/philwhiles/census-rh-service?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ONSdigital/census-rh-service&amp;utm_campaign=Badge_Grade)
-[![Build Status](https://travis-ci.org/ONSdigital/census-rh-service.svg?branch=master)](https://travis-ci.org/ONSdigital/census-rh-service)
+[![Build Status](https://concourse.census-gcp.onsdigital.uk/api/v1/teams/int/pipelines/respondent-home/jobs/rhsvc-build/badge)](https://concourse.census-gcp.onsdigital.uk/teams/int/pipelines/respondent-home/jobs/rhui-build)
 [![codecov](https://codecov.io/gh/ONSdigital/census-rh-service/branch/master/graph/badge.svg)](https://codecov.io/gh/ONSdigital/census-rh-service)
 
 # Respondent Home Data Service
