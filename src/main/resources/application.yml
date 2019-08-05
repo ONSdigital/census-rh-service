@@ -63,10 +63,10 @@ queueconfig:
   dead-letter-exchange: events.deadletter.exchange
   case-queue: case.rh.case
   case-queue-DLQ: case.rh.case.dlq
-  case-routing-key: event.case.*
+  case-routing-key: event.case.update
   uac-queue: case.rh.uac
   uac-queue-DLQ: case.rh.uac.dlq
-  uac-routing-key: event.uac.*
+  uac-routing-key: event.uac.update
   response-authentication-routing-key: event.response.authentication
 
 messaging:

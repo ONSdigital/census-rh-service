@@ -1,6 +1,6 @@
 [
 	{
-		"id": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
+		"caseId": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
 		"caseRef": "10000000010",
 		"addressType": "HH",
 		"state": "ACTIONABLE",
@@ -13,7 +13,7 @@
 		"uprn": "123456"
 	},
 	{
-		"id": "dc4477d1-dd3f-4c69-b182-7ff725dc9fa5",
+		"caseId": "dc4477d1-dd3f-4c69-b182-7ff725dc9fa5",
 		"caseRef": "10000000011",
 		"addressType": "HH",
 		"state": "ACTIONABLE",
