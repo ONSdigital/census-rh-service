@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class CaseDTO {
 
-  private UUID id;
+  private UUID caseId;
 
   private String caseRef;
 
@@ -16,17 +16,7 @@ public class CaseDTO {
 
   private String state;
 
-  private String addressLine1;
-
-  private String addressLine2;
-
-  private String addressLine3;
-
-  private String townName;
+  @JsonUnwrapped private AddressDTO address;
 
   private String region;
-
-  private String postcode;
-
-  @JsonUnwrapped private UniquePropertyReferenceNumber uprn;
 }
