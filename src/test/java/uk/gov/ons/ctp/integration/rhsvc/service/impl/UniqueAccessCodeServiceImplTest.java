@@ -93,7 +93,8 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(caseTest.getAddress().getAddressLine3(), uacDTO.getAddress().getAddressLine3());
     assertEquals(caseTest.getAddress().getTownName(), uacDTO.getAddress().getTownName());
     assertEquals(caseTest.getAddress().getPostcode(), uacDTO.getAddress().getPostcode());
-    assertEquals(caseTest.getAddress().getUprn(), uacDTO.getAddress().getUprn());
+    assertEquals(
+        caseTest.getAddress().getUprn(), Long.toString(uacDTO.getAddress().getUprn().getValue()));
 
     RespondentAuthenticatedResponse payload = payloadCapture.getValue();
     assertEquals(uacDTO.getCaseId(), payload.getCaseId());
