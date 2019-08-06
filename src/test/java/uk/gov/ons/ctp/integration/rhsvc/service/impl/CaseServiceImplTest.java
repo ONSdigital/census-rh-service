@@ -47,7 +47,6 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.CaseType;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
@@ -112,7 +111,7 @@ public class CaseServiceImplTest {
     List<CollectionCase> nonHHCases =
         collectionCase
             .stream()
-            .filter(c -> !c.getAddress().getAddressType().equals(CaseType.HH.name()))
+            .filter(c -> !c.getAddress().getAddressType().equals(Product.CaseType.HH.name()))
             .collect(Collectors.toList());
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(nonHHCases);
