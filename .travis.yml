@@ -8,24 +8,22 @@ language: java
 jdk: openjdk11
 
 before_install:
-  #  - if [ "$TRAVIS_BRANCH" != "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
     git checkout $TRAVIS_BRANCH;
-  #  fi
   - cp .maven.settings.xml $HOME/.m2/settings.xml
   - mvn fmt:check
   - export TZ=Europe/London
 
 script:
   - travis_wait mvn verify
-    #- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       git config --global user.email "travis@travis-ci.org";
       git config --global user.name "Travis CI";
       mvn -B -Dusername=$GITHUB_API_KEY release:prepare;
       mvn -B release:perform;
-    #fi
 
 after_success:
-  - ./scripts/docker_push.sh
+  - if [ "$TRAVIS_BRANCH" != "master" ]; then
+      ./scripts/docker_push.sh
+    fi
   - bash <(curl -s https://codecov.io/bash)
 
 cache:
