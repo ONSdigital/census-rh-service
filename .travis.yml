@@ -17,10 +17,7 @@ before_install:
 
 script:
   - travis_wait mvn verify
-  - git config --global user.email "travis@travis-ci.org"
-  - git config --global user.name "Travis CI"
-  - mvn -B -Dusername=$GITHUB_API_KEY release:prepare
-  - mvn -B release:perform
+  - mvn clean install
 
 after_success:
   - if [ "$TRAVIS_BRANCH" != "master" ]; then
