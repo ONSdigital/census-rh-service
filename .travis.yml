@@ -8,17 +8,19 @@ language: java
 jdk: openjdk11
 
 before_install:
-    git checkout $TRAVIS_BRANCH;
+  - if [ "$TRAVIS_BRANCH" != "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+      git checkout $TRAVIS_BRANCH;
+    fi
   - cp .maven.settings.xml $HOME/.m2/settings.xml
   - mvn fmt:check
   - export TZ=Europe/London
 
 script:
   - travis_wait mvn verify
-      git config --global user.email "travis@travis-ci.org";
-      git config --global user.name "Travis CI";
-      mvn -B -Dusername=$GITHUB_API_KEY release:prepare;
-      mvn -B release:perform;
+  - git config --global user.email "travis@travis-ci.org"
+  - git config --global user.name "Travis CI"
+  - mvn -B -Dusername=$GITHUB_API_KEY release:prepare
+  - mvn -B release:perform
 
 after_success:
   - if [ "$TRAVIS_BRANCH" != "master" ]; then
