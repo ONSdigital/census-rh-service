@@ -12,8 +12,8 @@ logging:
   level:
     uk.gov.ons.ctp: INFO
     org.springframework: INFO
-  profile: DEV
-  useJson: false
+  profile: CLOUD
+  useJson: true
 
 management:
   health:

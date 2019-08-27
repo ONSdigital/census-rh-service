@@ -29,7 +29,7 @@
           </Pattern>
         </Pattern>
         <globalCustomFields>
-          <customFields>{"service":"samplesvc"}</customFields>
+          <customFields>{"service":"rhsvc"}</customFields>
         </globalCustomFields>
         <message>
           <fieldName>event</fieldName>
@@ -85,6 +85,7 @@
       <level>WARN</level>
     </filter>
   </appender>
+
   <root level="WARN">
     <appender-ref ref="${profile}"/>
     <appender-ref ref="SYSLOG"/>

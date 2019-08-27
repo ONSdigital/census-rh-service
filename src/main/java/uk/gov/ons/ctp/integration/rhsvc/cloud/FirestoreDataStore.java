@@ -28,7 +28,7 @@ public class FirestoreDataStore implements CloudDataStore {
 
   public void connect() {
     String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
-    log.info("Connecting to Firestore project '{}'", googleProjectName);
+    log.with(googleProjectName).debug("Connecting to Firestore project");
 
     firestore = FirestoreOptions.getDefaultInstance().getService();
   }
@@ -47,7 +47,7 @@ public class FirestoreDataStore implements CloudDataStore {
   @Override
   public void storeObject(final String schema, final String key, final Object value)
       throws CTPException {
-    log.debug("Saving object to Firestore. Schema '{}' with key '{}'", schema, key);
+    log.with(schema).with(key).debug("Saving object to Firestore");
 
     // Store the object
     ApiFuture<WriteResult> result = firestore.collection(schema).document(key).set(value);
@@ -55,7 +55,7 @@ public class FirestoreDataStore implements CloudDataStore {
     // Wait for Firestore to complete
     try {
       result.get();
-      log.debug("Firestore save completed. Schema '{}' with key '{}'", schema, key);
+      log.with(schema).with(key).debug("Firestore save completed");
     } catch (Exception e) {
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
@@ -119,13 +119,11 @@ public class FirestoreDataStore implements CloudDataStore {
   public <T> List<T> search(
       Class<T> target, final String schema, String[] fieldPathElements, String searchValue)
       throws CTPException {
-    log.debug(
-        "Searching Firestore. Schema '{}' with field path '{}' and search value of '{}'. "
-            + "Expected results of type '{}'",
-        schema,
-        fieldPathElements,
-        searchValue,
-        target);
+    log.with(schema)
+    .with(fieldPathElements)
+    .with(searchValue)
+    .with(target)
+    .debug("Searching Firestore");
 
     // Run a query for a custom search path
     FieldPath fieldPath = FieldPath.of(fieldPathElements);
