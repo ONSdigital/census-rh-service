@@ -21,7 +21,7 @@ script:
 
 after_success:
   - if [ "$TRAVIS_BRANCH" != "master" ]; then
-      ./scripts/docker_push.sh
+      ./scripts/docker_push.sh;
     fi
   - bash <(curl -s https://codecov.io/bash)
 
