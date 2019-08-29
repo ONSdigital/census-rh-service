@@ -16,13 +16,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
+import uk.gov.ons.ctp.integration.rhsvc.service.SurveyLaunchedService;
 
 /** Respondent Home Endpoint Unit tests */
-public final class RespondentHomeEndpointUnitTest {
-  @InjectMocks private RespondentHomeEndpoint respondentHomeEndpoint;
+public final class SurveyLaunchedEndpointUnitTest {
+  @InjectMocks private SurveyLaunchedEndpoint surveyLaunchedEndpoint;
 
-  @Mock RespondentHomeService respondentHomeService;
+  @Mock SurveyLaunchedService surveyLaunchedService;
 
   private MockMvc mockMvc;
 
@@ -36,18 +36,33 @@ public final class RespondentHomeEndpointUnitTest {
     MockitoAnnotations.initMocks(this);
 
     this.mockMvc =
-        MockMvcBuilders.standaloneSetup(respondentHomeEndpoint)
+        MockMvcBuilders.standaloneSetup(surveyLaunchedEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
             .setMessageConverters(new MappingJackson2HttpMessageConverter(new CustomObjectMapper()))
             .build();
   }
 
   @Test
-  public void surveyLaunchedSuccessCase() throws Exception {
-    Mockito.doNothing().when(respondentHomeService).surveyLaunched(any());
+  public void surveyLaunchedSuccessCaseEmptyString() throws Exception {
+    Mockito.doNothing().when(surveyLaunchedService).surveyLaunched(any());
 
     String surveyLaunchedRequestBody =
-        "{ \"questionnaireId\": \"23434234234\",   \"caseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\" }";
+        "{ \"questionnaireId\": \"23434234234\", "
+            + "\"caseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", "
+            + "\"agentId\": \"\"}";
+    mockMvc
+        .perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  public void surveyLaunchedSuccessCaseAssistedDigitalLocation() throws Exception {
+    Mockito.doNothing().when(surveyLaunchedService).surveyLaunched(any());
+
+    String surveyLaunchedRequestBody =
+        "{ \"questionnaireId\": \"23434234234\", "
+            + "\"caseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", "
+            + "\"agentId\": \"1000007\"}";
     mockMvc
         .perform(postJson("/surveyLaunched", surveyLaunchedRequestBody))
         .andExpect(status().isOk());

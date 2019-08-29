@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
-import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
+import uk.gov.ons.ctp.integration.rhsvc.service.SurveyLaunchedService;
 
 /**
  * The REST endpoint controller for the Respondent Home service. This class covers top level
@@ -18,21 +18,17 @@ import uk.gov.ons.ctp.integration.rhsvc.service.RespondentHomeService;
  */
 @RestController
 @RequestMapping(value = "/", produces = "application/json")
-public final class RespondentHomeEndpoint {
+public final class SurveyLaunchedEndpoint {
 
-  private static final Logger log = LoggerFactory.getLogger(RespondentHomeEndpoint.class);
-  private RespondentHomeService respondentHomeService;
+  private static final Logger log = LoggerFactory.getLogger(SurveyLaunchedEndpoint.class);
 
-  @Autowired
-  public RespondentHomeEndpoint(final RespondentHomeService respondentHomeService) {
-    this.respondentHomeService = respondentHomeService;
-  }
+  @Autowired private SurveyLaunchedService surveyLaunchedService;
 
   @RequestMapping(value = "/surveyLaunched", method = RequestMethod.POST)
   public void surveyLaunched(@Valid @RequestBody SurveyLaunchedDTO surveyLaunchedDTO)
       throws CTPException {
 
     log.with("requestBody", surveyLaunchedDTO).info("Entering POST surveyLaunched");
-    respondentHomeService.surveyLaunched(surveyLaunchedDTO);
+    surveyLaunchedService.surveyLaunched(surveyLaunchedDTO);
   }
 }
