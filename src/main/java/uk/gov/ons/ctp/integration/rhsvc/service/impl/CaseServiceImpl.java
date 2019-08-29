@@ -163,8 +163,8 @@ public class CaseServiceImpl implements CaseService {
     // Read case from firestore
     Optional<CollectionCase> caseDetails = dataRepo.readCollectionCase(caseId.toString());
     if (caseDetails.isEmpty()) {
+      log.with("caseId", caseId).info("Case not found");
       String errorMessage = "Case not found: " + caseId;
-      log.info(errorMessage);
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, errorMessage);
     }
 
