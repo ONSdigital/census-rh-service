@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
@@ -14,6 +16,8 @@ import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
 @RestController
 @RequestMapping(value = "/uacs", produces = "application/json")
 public class UniqueAccessCodeEndpoint {
+
+  private static final Logger log = LoggerFactory.getLogger(UniqueAccessCodeEndpoint.class);
 
   @Autowired private UniqueAccessCodeService uacService;
 
@@ -28,6 +32,7 @@ public class UniqueAccessCodeEndpoint {
   public ResponseEntity<UniqueAccessCodeDTO> getUACClaimContext(
       @PathVariable("uac") final String uac) throws CTPException {
 
+    log.info("Entering GET getUACClaimContext");
     UniqueAccessCodeDTO uacDTO = uacService.getAndAuthenticateUAC(uac);
 
     return ResponseEntity.ok(uacDTO);

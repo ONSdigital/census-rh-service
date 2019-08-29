@@ -41,14 +41,14 @@ public class UACEventReceiverImpl {
 
     log.with("transactionId", uacTransactionId)
         .with("caseId", uac.getCaseId())
-        .info("Now receiving uac event with transactionId and type shown");
+        .info("Entering acceptUACEvent");
 
     try {
       respondentDataRepo.writeUAC(uac);
     } catch (CTPException ctpEx) {
       log.with(uacTransactionId)
           .with(ctpEx.getMessage())
-          .error("ERROR: The event processing, for this transactionId, has failed");
+          .error("UAC Event processing failed");
       throw new CTPException(ctpEx.getFault());
     }
   }

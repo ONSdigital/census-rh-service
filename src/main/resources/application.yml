@@ -12,13 +12,13 @@ logging:
   level:
     uk.gov.ons.ctp: INFO
     org.springframework: INFO
-  profile: CLOUD
+  profile: DEV
   useJson: true
 
 management:
   health:
     rabbit:
-      enabled: true 
+      enabled: false 
   endpoints:
     enabled-by-default: true
     web:
@@ -33,6 +33,53 @@ management:
       enabled: true 
     defaults:
       enabled: true
+  endpoint:
+    auditevents:
+      enabled: false
+    beans:
+      enabled: false
+    caches:
+      enabled: false
+    conditions:
+      enabled: false
+    configprops:
+      enabled: false
+    env:
+      enabled: false
+    flyway:
+      enabled: false
+    health:
+      enabled: false
+    httptrace:
+      enabled: false
+    info:
+      enabled: false
+    integrationgraph:
+      enabled: false
+    loggers:
+      enabled: false
+    liquibase:
+      enabled: false
+    metrics:
+      enabled: false
+    mappings:
+      enabled: false
+    scheduledtasks:
+      enabled: false
+    sessions:
+      enabled: false
+    shutdown:
+      enabled: false
+    threaddump:
+      enabled: false
+    heapdump:
+      enabled: false
+    jolokia:
+      enabled: false
+    logfile:
+      enabled: false
+    prometheus:
+      enabled: false
 
 server:
   port: 8071

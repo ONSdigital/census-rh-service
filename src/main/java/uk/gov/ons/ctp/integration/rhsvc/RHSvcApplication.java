@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -69,8 +70,8 @@ public class RHSvcApplication {
     return new RestExceptionHandler();
   }
 
-  @Value("${logging.useJson")
-  private Boolean useJsonLogging;
+  @Value("#{new Boolean('${logging.useJson}')}")
+  private boolean useJsonLogging;
 
   @PostConstruct
   public void initJsonLogging() {

@@ -1,66 +1,71 @@
 <configuration>
-  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-  <timestamp datePattern="yyyyMMdd'T'HHmmss" key="bySecond"/>
-  <property resource="application.yml"/>
-  <springProperty name="profile" source="logging.profile"/>
+  <include
+    resource="org/springframework/boot/logging/logback/defaults.xml" />
+  <timestamp datePattern="yyyyMMdd'T'HHmmss" key="bySecond" />
+  <property resource="application.yml" />
+  <springProperty name="profile" source="logging.profile" />
   <springProperty name="springAppName" scope="context"
-    source="spring.application.name"/>
+    source="spring.application.name" />
   <property name="CONSOLE_LOG_PATTERN"
-    value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p})  %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+    value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p})  %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}" />
   <property name="SYSLOG_PATTERN"
-    value="${LOG_LEVEL_PATTERN:-%5level} %-40.40logger{39} : %message%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
-  <property name="ISO8601_DATE_FORMAT" value="yyyy-MM-dd'T'HH:mm:ss'Z'" />
+    value="${LOG_LEVEL_PATTERN:-%5level} %-40.40logger{39} : %message%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}" />
+  <property name="ISO8601_DATE_FORMAT"
+    value="yyyy-MM-dd'T'HH:mm:ss'Z'" />
 
-  <appender name="CLOUD" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+  <appender name="CLOUD"
+    class="ch.qos.logback.core.ConsoleAppender">
+    <encoder
+      class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
       <providers>
         <timestamp>
           <timeZone>UTC</timeZone>
           <pattern>${ISO8601_DATE_FORMAT}</pattern>
           <fieldName>created</fieldName>
         </timestamp>
-        <Pattern>
-          <Pattern>
-            {
-            "trace" : "%X{X-B3-TraceId:-}",
-            "span" : "%X{X-B3-SpanId:-}",
-            "parent" : "%X{X-B3-ParentSpanId:-}"
-            }
-          </Pattern>
-        </Pattern>
         <globalCustomFields>
           <customFields>{"service":"rhsvc"}</customFields>
         </globalCustomFields>
         <message>
           <fieldName>event</fieldName>
         </message>
-        <loggerName/>
-        <threadName/>
+        <loggerName>
+          <fieldName>context</fieldName>
+        </loggerName>
+        <threadName />
         <logLevel>
           <fieldName>level</fieldName>
         </logLevel>
         <stackTrace>
-          <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+          <throwableConverter
+            class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
             <maxDepthPerThrowable>20</maxDepthPerThrowable>
             <maxLength>1000</maxLength>
             <shortenedClassNameLength>30</shortenedClassNameLength>
             <rootCauseFirst>true</rootCauseFirst>
             <exclude>^sun\.reflect\..*\.invoke</exclude>
-            <exclude>^net\.sf\.cglib\.proxy\.MethodProxy\.invoke</exclude>
+            <exclude>^net\.sf\.cglib\.proxy\.MethodProxy\.invoke
+            </exclude>
           </throwableConverter>
         </stackTrace>
-        <context/>
-        <jsonMessage/>
+        <!-- <context/> -->
+        <jsonMessage />
         <mdc>
           <includeMdcKeyName>included</includeMdcKeyName>
         </mdc>
-        <contextMap/>
-        <tags/>
-        <logstashMarkers/>
-        <arguments>
-          <includeNonStructuredArguments>true</includeNonStructuredArguments>
-          <nonStructuredArgumentsFieldPrefix>prefix</nonStructuredArgumentsFieldPrefix>
-        </arguments>
+        <nestedField>
+          <fieldName>data</fieldName>
+          <providers>
+            <arguments>
+              <includeNonStructuredArguments>true
+              </includeNonStructuredArguments>
+              <nonStructuredArgumentsFieldPrefix>prefix
+              </nonStructuredArgumentsFieldPrefix>
+            </arguments>
+        <tags />
+        <logstashMarkers />
+          </providers>
+        </nestedField>
       </providers>
     </encoder>
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -68,7 +73,8 @@
     </filter>
   </appender>
 
-  <appender class="ch.qos.logback.core.ConsoleAppender" name="DEV">
+  <appender class="ch.qos.logback.core.ConsoleAppender"
+    name="DEV">
     <encoder>
       <pattern>${CONSOLE_LOG_PATTERN}</pattern>
     </encoder>
@@ -77,7 +83,8 @@
     </filter>
   </appender>
 
-  <appender class="ch.qos.logback.classic.net.SyslogAppender" name="SYSLOG">
+  <appender class="ch.qos.logback.classic.net.SyslogAppender"
+    name="SYSLOG">
     <syslogHost>localhost</syslogHost>
     <facility>DAEMON</facility>
     <suffixPattern>${SYSLOG_PATTERN}</suffixPattern>
@@ -87,8 +94,8 @@
   </appender>
 
   <root level="WARN">
-    <appender-ref ref="${profile}"/>
-    <appender-ref ref="SYSLOG"/>
+    <appender-ref ref="${profile}" />
+    <appender-ref ref="SYSLOG" />
   </root>
 
 </configuration>

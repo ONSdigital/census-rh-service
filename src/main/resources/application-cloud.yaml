@@ -1,7 +1,0 @@
-# ie -Dlogging.level.org.springframework=DEBUG
-logging:
-  level:
-    uk.gov.ons.ctp: ERROR
-    org.springframework: ERROR
-  profile: CLOUD
-  useJson: true
