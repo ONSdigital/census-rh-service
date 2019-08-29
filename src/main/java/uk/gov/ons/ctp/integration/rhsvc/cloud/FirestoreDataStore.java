@@ -120,10 +120,10 @@ public class FirestoreDataStore implements CloudDataStore {
       Class<T> target, final String schema, String[] fieldPathElements, String searchValue)
       throws CTPException {
     log.with(schema)
-    .with(fieldPathElements)
-    .with(searchValue)
-    .with(target)
-    .debug("Searching Firestore");
+        .with(fieldPathElements)
+        .with(searchValue)
+        .with(target)
+        .debug("Searching Firestore");
 
     // Run a query for a custom search path
     FieldPath fieldPath = FieldPath.of(fieldPathElements);
@@ -176,7 +176,6 @@ public class FirestoreDataStore implements CloudDataStore {
   public void deleteObject(final String schema, final String key) throws CTPException {
     log.with("schema", schema).with("key", key).debug("Deleting object from Firestore");
 
-
     // Tell firestore to delete object
     DocumentReference docRef = firestore.collection(schema).document(key);
     ApiFuture<WriteResult> result = docRef.delete();
@@ -186,7 +185,9 @@ public class FirestoreDataStore implements CloudDataStore {
       result.get();
       log.debug("Firestore delete completed");
     } catch (Exception e) {
-      log.with("schema", schema).with("key", key).error(e, "Failed to delete object from Firestore");
+      log.with("schema", schema)
+          .with("key", key)
+          .error(e, "Failed to delete object from Firestore");
       String failureMessage =
           "Failed to delete object from Firestore. Schema: " + schema + " with key " + key;
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);

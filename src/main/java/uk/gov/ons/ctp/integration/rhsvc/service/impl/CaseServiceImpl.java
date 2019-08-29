@@ -60,7 +60,9 @@ public class CaseServiceImpl implements CaseService {
             .collect(Collectors.toList());
     List<CaseDTO> caseData = mapperFacade.mapAsList(results, CaseDTO.class);
 
-    log.with("cases", caseData.size()).with("uprn", uprnValue).debug("HH case(s) retrieved for UPRN");
+    log.with("cases", caseData.size())
+        .with("uprn", uprnValue)
+        .debug("HH case(s) retrieved for UPRN");
 
     return caseData;
   }

@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc;
 
+import com.godaddy.logging.LoggingConfigs;
 import javax.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -10,12 +11,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import com.godaddy.logging.LoggingConfigs;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
@@ -79,5 +78,4 @@ public class RHSvcApplication {
       LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
     }
   }
-  
 }

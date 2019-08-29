@@ -1,8 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc.representation;
 
-import java.util.UUID;
 import com.godaddy.logging.LoggingScope;
 import com.godaddy.logging.Scope;
+import java.util.UUID;
 import lombok.Data;
 
 /** Representation of a UAC claim request */
@@ -18,6 +18,7 @@ public class UniqueAccessCodeDTO {
 
   @LoggingScope(scope = Scope.SKIP)
   private String uac;
+
   private boolean active;
   private CaseStatus caseStatus;
   private String questionnaireId;

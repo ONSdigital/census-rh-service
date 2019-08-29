@@ -40,6 +40,8 @@ public class RespondentHomeServiceImpl implements RespondentHomeService {
         eventPublisher.sendEvent(
             EventType.SURVEY_LAUNCHED, Source.RESPONDENT_HOME, Channel.RH, response);
 
-    log.with("caseId", response.getCaseId()).with("transactionId", transactionId).debug("SurveyLaunch event published");
+    log.with("caseId", response.getCaseId())
+        .with("transactionId", transactionId)
+        .debug("SurveyLaunch event published");
   }
 }

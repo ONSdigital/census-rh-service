@@ -65,7 +65,9 @@ public class CaseEndpoint {
   public ResponseEntity<CaseDTO> modifyAddress(
       @PathVariable("caseId") final UUID caseId, @Valid @RequestBody AddressChangeDTO addressChange)
       throws CTPException {
-    log.with("pathParam.caseId", caseId).with("requestBody", addressChange).info("Entering PUT modifyAddress");
+    log.with("pathParam.caseId", caseId)
+        .with("requestBody", addressChange)
+        .info("Entering PUT modifyAddress");
 
     if (!caseId.equals(addressChange.getCaseId())) {
       String message = "The caseid in the URL does not match the caseid in the request body";
