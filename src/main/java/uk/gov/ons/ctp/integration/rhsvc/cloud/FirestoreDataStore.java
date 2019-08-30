@@ -91,7 +91,10 @@ public class FirestoreDataStore implements CloudDataStore {
       result = Optional.of(documents.get(0));
       log.debug("Search found single result");
     } else {
-      log.with("results.size", documents.size()).with("schema", schema).with("key", key).error("Firestore found more than one result object");
+      log.with("results.size", documents.size())
+          .with("schema", schema)
+          .with("key", key)
+          .error("Firestore found more than one result object");
       String failureMessage =
           "Firestore returned more than 1 result object. Returned "
               + documents.size()

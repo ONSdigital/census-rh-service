@@ -70,7 +70,8 @@ public class CaseEndpoint {
         .info("Entering PUT modifyAddress");
 
     if (!caseId.equals(addressChange.getCaseId())) {
-      String message = "The caseid in the modifyAddress URL does not match the caseid in the request body";
+      String message =
+          "The caseid in the modifyAddress URL does not match the caseid in the request body";
       log.with(caseId).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
@@ -100,7 +101,8 @@ public class CaseEndpoint {
         .info("Entering POST fulfilmentRequestBySMS");
 
     if (!caseId.equals(requestBodyDTO.getCaseId())) {
-      String message = "The caseid in the fulfilmentRequestBySMS URL does not match the caseid in the request body";
+      String message =
+          "The caseid in the fulfilmentRequestBySMS URL does not match the caseid in the request body";
       log.with(caseId).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
