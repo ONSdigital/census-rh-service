@@ -28,7 +28,7 @@ public class FirestoreDataStore implements CloudDataStore {
 
   public void connect() {
     String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
-    log.info("Connecting to Firestore project '{}'", googleProjectName);
+    log.with(googleProjectName).debug("Connecting to Firestore project");
 
     firestore = FirestoreOptions.getDefaultInstance().getService();
   }
@@ -47,7 +47,7 @@ public class FirestoreDataStore implements CloudDataStore {
   @Override
   public void storeObject(final String schema, final String key, final Object value)
       throws CTPException {
-    log.debug("Saving object to Firestore. Schema '{}' with key '{}'", schema, key);
+    log.with(schema).with(key).debug("Saving object to Firestore");
 
     // Store the object
     ApiFuture<WriteResult> result = firestore.collection(schema).document(key).set(value);
@@ -55,11 +55,11 @@ public class FirestoreDataStore implements CloudDataStore {
     // Wait for Firestore to complete
     try {
       result.get();
-      log.debug("Firestore save completed. Schema '{}' with key '{}'", schema, key);
+      log.with(schema).with(key).debug("Firestore save completed");
     } catch (Exception e) {
+      log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
-      log.error(e, failureMessage);
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
     }
   }
@@ -75,7 +75,8 @@ public class FirestoreDataStore implements CloudDataStore {
   @Override
   public <T> Optional<T> retrieveObject(Class<T> target, final String schema, final String key)
       throws CTPException {
-    log.debug("Fetching object from Firestore. Schema '{}' with key '{}'", schema, key);
+
+    log.with("schema", schema).with("key", key).debug("Fetching object from Firestore");
 
     // Submit read request to firestore
     FieldPath fieldPathForId = FieldPath.documentId();
@@ -90,6 +91,10 @@ public class FirestoreDataStore implements CloudDataStore {
       result = Optional.of(documents.get(0));
       log.debug("Search found single result");
     } else {
+      log.with("results.size", documents.size())
+          .with("schema", schema)
+          .with("key", key)
+          .error("Firestore found more than one result object");
       String failureMessage =
           "Firestore returned more than 1 result object. Returned "
               + documents.size()
@@ -98,7 +103,6 @@ public class FirestoreDataStore implements CloudDataStore {
               + "' with key '"
               + key
               + "'";
-      log.error(failureMessage);
       throw new CTPException(Fault.SYSTEM_ERROR, failureMessage);
     }
 
@@ -119,18 +123,16 @@ public class FirestoreDataStore implements CloudDataStore {
   public <T> List<T> search(
       Class<T> target, final String schema, String[] fieldPathElements, String searchValue)
       throws CTPException {
-    log.debug(
-        "Searching Firestore. Schema '{}' with field path '{}' and search value of '{}'. "
-            + "Expected results of type '{}'",
-        schema,
-        fieldPathElements,
-        searchValue,
-        target);
+    log.with(schema)
+        .with(fieldPathElements)
+        .with(searchValue)
+        .with(target)
+        .debug("Searching Firestore");
 
     // Run a query for a custom search path
     FieldPath fieldPath = FieldPath.of(fieldPathElements);
     List<T> r = runSearch(target, schema, fieldPath, searchValue);
-    log.debug("Firestore search return {} results", r.size());
+    log.with("resultSize", r.size()).debug("Firestore search returning results");
 
     return r;
   }
@@ -147,9 +149,9 @@ public class FirestoreDataStore implements CloudDataStore {
     try {
       querySnapshot = query.get();
     } catch (Exception e) {
+      log.with("schema", schema).with("fieldPath", fieldPath).error(e, "Failed to search schema");
       String failureMessage =
           "Failed to search schema '" + schema + "' by field '" + "'" + fieldPath;
-      log.error(e, failureMessage);
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
     }
     List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
@@ -159,9 +161,9 @@ public class FirestoreDataStore implements CloudDataStore {
     try {
       results = documents.stream().map(d -> d.toObject(target)).collect(Collectors.toList());
     } catch (Exception e) {
+      log.with("target", target).error(e, "Failed to convert Firestore result to Java object");
       String failureMessage =
           "Failed to convert Firestore result to Java object. Target class '" + target + "'";
-      log.error(e, failureMessage);
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
     }
 
@@ -176,7 +178,7 @@ public class FirestoreDataStore implements CloudDataStore {
    */
   @Override
   public void deleteObject(final String schema, final String key) throws CTPException {
-    log.debug("Deleting object from Firestore. Schema '{}' for key '{}'", schema, key);
+    log.with("schema", schema).with("key", key).debug("Deleting object from Firestore");
 
     // Tell firestore to delete object
     DocumentReference docRef = firestore.collection(schema).document(key);
@@ -187,9 +189,11 @@ public class FirestoreDataStore implements CloudDataStore {
       result.get();
       log.debug("Firestore delete completed");
     } catch (Exception e) {
+      log.with("schema", schema)
+          .with("key", key)
+          .error(e, "Failed to delete object from Firestore");
       String failureMessage =
           "Failed to delete object from Firestore. Schema: " + schema + " with key " + key;
-      log.error(e, failureMessage);
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
     }
   }

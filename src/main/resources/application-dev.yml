@@ -1,0 +1,10 @@
+logging:
+  level:
+    uk.gov.ons.ctp: DEBUG
+    org.springframework: WARN
+  profile: CLOUD
+  useJson: true
+
+messaging:
+  consumingThreads: 1
+  prefetchCount: 1

@@ -15,8 +15,6 @@ import springfox.documentation.spring.web.plugins.Docket;
 import uk.gov.ons.ctp.integration.rhsvc.endpoint.SurveyLaunchedEndpoint;
 
 /** Created by stevee on 23/06/2017. */
-// @CoverageIgnore
-// @EnableSwagger2
 @Configuration
 @ComponentScan(basePackageClasses = {SurveyLaunchedEndpoint.class})
 public class SwaggerConfig {

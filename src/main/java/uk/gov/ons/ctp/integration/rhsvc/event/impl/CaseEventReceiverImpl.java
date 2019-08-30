@@ -39,16 +39,14 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
     CollectionCase collectionCase;
     String caseTransactionId = caseEvent.getEvent().getTransactionId();
 
-    log.with(caseTransactionId).info("Now receiving case event with transactionId shown");
+    log.with(caseTransactionId).info("Entering acceptCaseEvent");
 
     collectionCase = caseEvent.getPayload().getCollectionCase();
 
     try {
       respondentDataRepo.writeCollectionCase(collectionCase);
     } catch (CTPException ctpEx) {
-      log.with(caseTransactionId)
-          .with(ctpEx.getMessage())
-          .error("ERROR: The event processing, for this transactionId, has failed");
+      log.with(caseTransactionId).with(ctpEx.getMessage()).error("Case Event processing failed");
       throw new CTPException(ctpEx.getFault());
     }
   }

@@ -28,11 +28,7 @@ public class SurveyLaunchedServiceImpl implements SurveyLaunchedService {
   @Override
   public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) throws CTPException {
 
-    log.debug(
-        "Generating SurveyLaunched event for caseId: "
-            + surveyLaunchedDTO.getCaseId()
-            + ", questionnaireId: "
-            + surveyLaunchedDTO.getQuestionnaireId());
+    log.with("surveyLaunchedDTO", surveyLaunchedDTO).info("Generating SurveyLaunched event");
 
     SurveyLaunchedResponse response =
         SurveyLaunchedResponse.builder()
@@ -50,10 +46,8 @@ public class SurveyLaunchedServiceImpl implements SurveyLaunchedService {
         eventPublisher.sendEvent(
             EventType.SURVEY_LAUNCHED, Source.RESPONDENT_HOME, channel, response);
 
-    log.debug(
-        "SurveyLaunch event published for caseId: "
-            + response.getCaseId()
-            + ", transactionId: "
-            + transactionId);
+    log.with("caseId", response.getCaseId())
+        .with("transactionId", transactionId)
+        .debug("SurveyLaunch event published");
   }
 }

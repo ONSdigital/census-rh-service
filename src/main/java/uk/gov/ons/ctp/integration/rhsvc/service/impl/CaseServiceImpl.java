@@ -50,7 +50,7 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
 
     String uprnValue = Long.toString(uprn.getValue());
-    log.debug("Fetching case details by UPRN: {}", uprnValue);
+    log.with("uprn", uprn).debug("Fetching case details by UPRN");
 
     List<CollectionCase> rmCase = dataRepo.readCollectionCasesByUprn(uprnValue);
     List<CollectionCase> results =
@@ -60,7 +60,9 @@ public class CaseServiceImpl implements CaseService {
             .collect(Collectors.toList());
     List<CaseDTO> caseData = mapperFacade.mapAsList(results, CaseDTO.class);
 
-    log.debug("{} HH case(s) retrieved for UPRN {}", caseData.size(), uprnValue);
+    log.with("cases", caseData.size())
+        .with("uprn", uprnValue)
+        .debug("HH case(s) retrieved for UPRN");
 
     return caseData;
   }
@@ -107,7 +109,7 @@ public class CaseServiceImpl implements CaseService {
     CaseDTO caseData = mapperFacade.map(rmCase, CaseDTO.class);
     if (!caseData.getAddress().getUprn().equals(addressChanges.getAddress().getUprn())) {
       log.with("caseId", caseId)
-          .with("UPRN", addressChanges.getAddress().getUprn().toString())
+          .with("uprn", addressChanges.getAddress().getUprn().toString())
           .error("The UPRN of the referenced Case and the provided Address UPRN must be matching");
       throw new CTPException(
           CTPException.Fault.BAD_REQUEST,
@@ -129,7 +131,7 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
 
     log.with("caseId", caseId)
-        .with("UPRN", originalAddress.getUprn())
+        .with("uprn", originalAddress.getUprn())
         .debug("Generating AddressModified event");
 
     AddressModification addressModification =
@@ -161,8 +163,8 @@ public class CaseServiceImpl implements CaseService {
     // Read case from firestore
     Optional<CollectionCase> caseDetails = dataRepo.readCollectionCase(caseId.toString());
     if (caseDetails.isEmpty()) {
+      log.with("caseId", caseId).info("Case not found");
       String errorMessage = "Case not found: " + caseId;
-      log.info(errorMessage);
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, errorMessage);
     }
 

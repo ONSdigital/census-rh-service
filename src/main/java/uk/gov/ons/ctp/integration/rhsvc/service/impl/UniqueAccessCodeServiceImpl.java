@@ -74,7 +74,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         data.setCaseStatus(CaseStatus.UNKNOWN);
       }
     } else {
-      log.warn("Failed to retrieve UAC from storage.");
+      log.warn("Failed to retrieve UAC from storage");
       throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve UAC");
     }
 
@@ -107,6 +107,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     }
 
     if (uacHash.length() != 64) {
+      log.error("SHA256 Hash length incorrect");
       throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND);
     }
 
@@ -116,11 +117,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   /** Send RespondentAuthenticated event */
   private void sendRespondentAuthenticatedEvent(UniqueAccessCodeDTO data) throws CTPException {
 
-    log.debug(
-        "Generating RespondentAuthenticated event for caseId: "
-            + data.getCaseId()
-            + ", questionnaireId: "
-            + data.getQuestionnaireId());
+    log.with("caseId", data.getCaseId())
+        .with("questionnaireId", data.getQuestionnaireId())
+        .info("Generating RespondentAuthenticated event for caseId");
 
     RespondentAuthenticatedResponse response =
         RespondentAuthenticatedResponse.builder()

@@ -50,15 +50,15 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
       @RequestParam(required = false) DeliveryChannel deliveryChannel)
       throws CTPException {
 
-    log.with("caseType", caseType)
-        .with("region", region)
-        .with("deliveryChannel", deliveryChannel)
+    log.with("requestParam.caseType", caseType)
+        .with("requestParam.region", region)
+        .with("requestParam.deliveryChannel", deliveryChannel)
         .info("Entering GET getFulfilments");
 
     List<Product> fulfilments =
         fulfilmentsService.getFulfilments(caseType, region, deliveryChannel);
 
-    log.info("Found {} fulfilment(s)", fulfilments.size());
+    log.with("size", fulfilments.size()).info("Found fulfilment(s)");
 
     return ResponseEntity.ok(fulfilments);
   }
