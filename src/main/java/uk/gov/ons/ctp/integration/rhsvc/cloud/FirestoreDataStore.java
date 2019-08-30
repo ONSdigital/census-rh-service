@@ -57,9 +57,9 @@ public class FirestoreDataStore implements CloudDataStore {
       result.get();
       log.with(schema).with(key).debug("Firestore save completed");
     } catch (Exception e) {
+      log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
-      log.error(e, failureMessage);
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
     }
   }
@@ -75,7 +75,8 @@ public class FirestoreDataStore implements CloudDataStore {
   @Override
   public <T> Optional<T> retrieveObject(Class<T> target, final String schema, final String key)
       throws CTPException {
-    log.debug("Fetching object from Firestore. Schema '{}' with key '{}'", schema, key);
+
+    log.with("schema", schema).with("key", key).debug("Fetching object from Firestore");
 
     // Submit read request to firestore
     FieldPath fieldPathForId = FieldPath.documentId();
@@ -90,6 +91,7 @@ public class FirestoreDataStore implements CloudDataStore {
       result = Optional.of(documents.get(0));
       log.debug("Search found single result");
     } else {
+      log.with("results.size", documents.size()).with("schema", schema).with("key", key).error("Firestore found more than one result object");
       String failureMessage =
           "Firestore returned more than 1 result object. Returned "
               + documents.size()
@@ -98,7 +100,6 @@ public class FirestoreDataStore implements CloudDataStore {
               + "' with key '"
               + key
               + "'";
-      log.error(failureMessage);
       throw new CTPException(Fault.SYSTEM_ERROR, failureMessage);
     }
 

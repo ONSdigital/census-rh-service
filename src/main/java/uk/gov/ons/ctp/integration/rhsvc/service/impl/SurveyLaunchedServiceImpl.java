@@ -28,7 +28,7 @@ public class SurveyLaunchedServiceImpl implements SurveyLaunchedService {
   @Override
   public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) throws CTPException {
 
-    log.with("surveyLaunchedDTO", surveyLaunchedDTO).debug("Generating SurveyLaunched event");
+    log.with("surveyLaunchedDTO", surveyLaunchedDTO).info("Generating SurveyLaunched event");
 
     SurveyLaunchedResponse response =
         SurveyLaunchedResponse.builder()
