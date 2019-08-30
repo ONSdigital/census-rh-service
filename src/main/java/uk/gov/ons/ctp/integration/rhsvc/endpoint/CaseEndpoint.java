@@ -102,7 +102,8 @@ public class CaseEndpoint {
 
     if (!caseId.equals(requestBodyDTO.getCaseId())) {
       String message =
-          "The caseid in the fulfilmentRequestBySMS URL does not match the caseid in the request body";
+          "The caseid in the fulfilmentRequestBySMS URL does not"
+              + " match the caseid in the request body";
       log.with(caseId).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }

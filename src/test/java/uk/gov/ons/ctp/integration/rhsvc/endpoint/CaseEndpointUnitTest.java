@@ -44,7 +44,7 @@ public class CaseEndpointUnitTest {
   private static final String CASEID_UPRN_INCONSISTENT =
       "The UPRN of the referenced Case and the provided Address UPRN must be matching";
   private static final String CASEID_INCONSISTENT =
-      "The caseid in the URL does not match the caseid in the request body";
+      "The caseid in the modifyAddress URL does not match the caseid in the request body";
 
   @InjectMocks private CaseEndpoint caseEndpoint;
 
