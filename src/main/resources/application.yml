@@ -52,8 +52,6 @@ management:
       enabled: false
     httptrace:
       enabled: false
-    info:
-      enabled: false
     integrationgraph:
       enabled: false
     loggers:
