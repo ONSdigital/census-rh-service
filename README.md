@@ -91,7 +91,7 @@ In the RabbitMQ console make sure that the following queues have been created an
 
 2) **UAC Data**
 
-Submit the UAC data by sending the following to the 'events' exchange with the routing key 'event.uac.updates':
+Submit the UAC data by sending the following to the 'events' exchange with the routing key 'event.uac.update':
 
 	{
 	  "event": {
@@ -229,7 +229,7 @@ This example uses a case uuid of: f868fcfc-7280-40ea-ab01-b173ac245da3
         ]
     }
     EOF
-
+    
     # Create case updated payload
     cat > /tmp/case_updated.json <<EOF 
     {
@@ -244,16 +244,27 @@ This example uses a case uuid of: f868fcfc-7280-40ea-ab01-b173ac245da3
     }
     EOF
 
+    #Prepare outbound queue
+    http --auth generator:hitmeup GET http://localhost:8171/rabbit/create/SURVEY_LAUNCHED
+    http --auth generator:hitmeup GET http://localhost:8171/rabbit/flush/event.response.authentication
+
     # Use the generator to create the UAC and case objects in Firestore
     http --auth generator:hitmeup POST "http://localhost:8171/generate" @/tmp/uac_updated.json
     http --auth generator:hitmeup POST "http://localhost:8171/generate" @/tmp/case_updated.json
 
     # Wait until UAC and case have been loaded into Firestore
-    http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=uac&key=147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde&timeout=500ms"
-    http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=case&key=f868fcfc-7280-40ea-ab01-b173ac245da3&timeout=500ms"
+    http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=uac&key=147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde&timeout=1s"
+    http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=case&key=f868fcfc-7280-40ea-ab01-b173ac245da3&timeout=1s"
 
     # Make the UAC authenticated request
     http --auth serco_cks:temporary get "http://localhost:8071/uacs/aaaabbbbccccdddd"
+
+    # Grab respondent authenticated event
+    http --auth generator:hitmeup GET "http://localhost:8171/rabbit/get/event.response.authentication?timeout=500ms"
+    
+    # Nicely close down rabbit connection (Probably not required)
+    http --auth generator:hitmeup GET "http://localhost:8171/rabbit/close"
+    
 
 
 ## Docker image build

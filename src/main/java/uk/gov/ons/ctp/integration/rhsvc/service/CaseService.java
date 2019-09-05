@@ -18,16 +18,16 @@ public interface CaseService {
    *
    * @param uprn of address for which HH case details are requested
    * @return List of HH Case details for address UPRN
-   * @throws CTPException
+   * @throws CTPException if anything went wrong.
    */
   List<CaseDTO> getHHCaseByUPRN(final UniquePropertyReferenceNumber uprn) throws CTPException;
 
   /**
    * Change address for a Case
    *
-   * @param AddressChangeDTO for change of address
+   * @param address for change of address
    * @return Case details for changed address
-   * @throws CTPException
+   * @throws CTPException if anything went wrong.
    */
   CaseDTO modifyAddress(final AddressChangeDTO address) throws CTPException;
 

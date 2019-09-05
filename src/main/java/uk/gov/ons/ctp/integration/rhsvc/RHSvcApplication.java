@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Primary;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,6 +20,7 @@ import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
+import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
 @SpringBootApplication
@@ -62,6 +64,17 @@ public class RHSvcApplication {
     template.setExchange("events");
     template.setChannelTransacted(true);
     return template;
+  }
+
+  /**
+   * Custom Object Mapper
+   *
+   * @return a customer object mapper
+   */
+  @Bean
+  @Primary
+  public CustomObjectMapper customObjectMapper() {
+    return new CustomObjectMapper();
   }
 
   @Bean
