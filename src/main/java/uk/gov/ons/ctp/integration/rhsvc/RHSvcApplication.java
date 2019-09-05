@@ -1,5 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc;
 
+import com.godaddy.logging.LoggingConfigs;
+import javax.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -78,5 +80,15 @@ public class RHSvcApplication {
   @Bean
   public RestExceptionHandler restExceptionHandler() {
     return new RestExceptionHandler();
+  }
+
+  @Value("#{new Boolean('${logging.useJson}')}")
+  private boolean useJsonLogging;
+
+  @PostConstruct
+  public void initJsonLogging() {
+    if (useJsonLogging) {
+      LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
+    }
   }
 }

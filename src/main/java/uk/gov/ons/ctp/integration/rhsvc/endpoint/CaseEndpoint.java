@@ -65,10 +65,13 @@ public class CaseEndpoint {
   public ResponseEntity<CaseDTO> modifyAddress(
       @PathVariable("caseId") final UUID caseId, @Valid @RequestBody AddressChangeDTO addressChange)
       throws CTPException {
-    log.with("CaseId", caseId).info("Entering PUT modifyAddress");
+    log.with("pathParam.caseId", caseId)
+        .with("requestBody", addressChange)
+        .info("Entering PUT modifyAddress");
 
     if (!caseId.equals(addressChange.getCaseId())) {
-      String message = "The caseid in the URL does not match the caseid in the request body";
+      String message =
+          "The caseid in the modifyAddress URL does not match the caseid in the request body";
       log.with(caseId).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
@@ -93,12 +96,14 @@ public class CaseEndpoint {
       @Valid @RequestBody SMSFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
 
-    log.with("caseId", caseId)
-        .with("request", requestBodyDTO.getFulfilmentCode())
+    log.with("pathParam.caseId", caseId)
+        .with("requestBody", requestBodyDTO)
         .info("Entering POST fulfilmentRequestBySMS");
 
     if (!caseId.equals(requestBodyDTO.getCaseId())) {
-      String message = "The caseid in the URL does not match the caseid in the request body";
+      String message =
+          "The caseid in the fulfilmentRequestBySMS URL does not"
+              + " match the caseid in the request body";
       log.with(caseId).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }

@@ -34,7 +34,7 @@ import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedEvent;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
-import uk.gov.ons.ctp.integration.rhsvc.endpoint.RespondentHomeEndpoint;
+import uk.gov.ons.ctp.integration.rhsvc.endpoint.SurveyLaunchedEndpoint;
 
 /**
  * This is a component test which submits a Post saying that a survey has been launched and uses a
@@ -43,7 +43,7 @@ import uk.gov.ons.ctp.integration.rhsvc.endpoint.RespondentHomeEndpoint;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class SurveyLaunchedIT {
-  @Autowired private RespondentHomeEndpoint respondentHomeEndpoint;
+  @Autowired private SurveyLaunchedEndpoint surveyLaunchedEndpoint;
 
   @MockBean private RabbitTemplate rabbitTemplate;
 
@@ -58,7 +58,7 @@ public class SurveyLaunchedIT {
     ReflectionTestUtils.setField(eventPublisher, "template", rabbitTemplate);
 
     this.mockMvc =
-        MockMvcBuilders.standaloneSetup(respondentHomeEndpoint)
+        MockMvcBuilders.standaloneSetup(surveyLaunchedEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
             .build();
   }
