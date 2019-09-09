@@ -1,6 +1,7 @@
 [
 	{
 		"id": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
+		"caseType": "HH",
 		"caseRef": "10000000010 ",
 		"survey": "CENSUS",
 		"collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
@@ -30,6 +31,7 @@
 	},
 	{
 		"id": "dc4477d1-dd3f-4c69-b182-7ff725dc9fa5",
+		"caseType": "HI",
 		"caseRef": "10000000011 ",
 		"survey": "CENSUS",
 		"collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
@@ -44,7 +46,7 @@
 			"longitude": "-1.229710",
 			"uprn": "123456",
 			"arid": "XXXXX",
-			"addressType": "HI",
+			"addressType": "HH",
 			"estabType": "XXX"
 		},
 		"contact": {
@@ -59,6 +61,7 @@
 	},
 	{
 		"id": "dc4477d1-dd3f-4c69-b183-7ff725dc9fa6",
+		"caseType": "HI",
 		"caseRef": "10000000012 ",
 		"survey": "CENSUS",
 		"collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
@@ -73,7 +76,7 @@
 			"longitude": "-1.229710",
 			"uprn": "123456",
 			"arid": "XXXXX",
-			"addressType": "HI",
+			"addressType": "HH",
 			"estabType": "XXX"
 		},
 		"contact": {

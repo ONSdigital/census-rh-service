@@ -1,5 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.representation;
 
+import com.godaddy.logging.LoggingScope;
+import com.godaddy.logging.Scope;
 import java.util.Date;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
@@ -22,6 +24,7 @@ public class SMSFulfilmentRequestDTO {
   @NotNull
   @Size(max = 20)
   @Pattern(regexp = Constants.PHONENUMBER_RE)
+  @LoggingScope(scope = Scope.SKIP)
   private String telNo;
 
   @NotNull
