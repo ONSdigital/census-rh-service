@@ -12,6 +12,8 @@ public class CaseDTO {
 
   private String caseRef;
 
+  private String caseType;
+
   private String addressType;
 
   private String state;
