@@ -40,7 +40,7 @@ public class CaseEndpoint {
   @RequestMapping(value = "/uprn/{uprn}", method = RequestMethod.GET)
   public ResponseEntity<List<CaseDTO>> getHHCaseByUPRN(
       @PathVariable(value = "uprn") final UniquePropertyReferenceNumber uprn) throws CTPException {
-    log.with("uprn", uprn).info("Entering GET getHHCaseByUPRN");
+    log.with("pathParam.uprn", uprn).info("Entering GET getHHCaseByUPRN");
 
     List<CaseDTO> results = caseService.getHHCaseByUPRN(uprn);
 

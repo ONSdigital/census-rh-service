@@ -93,6 +93,7 @@ public class CaseServiceImplTest {
     assertEquals(hhCase.getId(), rmCase.getCaseId().toString());
     assertEquals(hhCase.getCaseRef(), rmCase.getCaseRef());
     assertEquals(hhCase.getState(), rmCase.getState());
+    assertEquals(hhCase.getCaseType(), rmCase.getCaseType());
     assertEquals(hhCase.getAddress().getAddressType(), rmCase.getAddressType());
     assertEquals(hhCase.getAddress().getAddressLine1(), rmCase.getAddress().getAddressLine1());
     assertEquals(hhCase.getAddress().getAddressLine2(), rmCase.getAddress().getAddressLine2());
@@ -111,7 +112,7 @@ public class CaseServiceImplTest {
     List<CollectionCase> nonHHCases =
         collectionCase
             .stream()
-            .filter(c -> !c.getAddress().getAddressType().equals(Product.CaseType.HH.name()))
+            .filter(c -> !c.getCaseType().equals(Product.CaseType.HH.name()))
             .collect(Collectors.toList());
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(nonHHCases);
@@ -161,6 +162,7 @@ public class CaseServiceImplTest {
 
     assertEquals(rmCase.getId(), caseDTO.getCaseId().toString());
     assertEquals(rmCase.getCaseRef(), caseDTO.getCaseRef());
+    assertEquals(rmCase.getCaseType(), caseDTO.getCaseType());
     assertEquals(rmCase.getAddress().getAddressType(), caseDTO.getAddressType());
     assertEquals(rmCase.getState(), caseDTO.getState());
     assertSame(addressChange.getAddress(), caseDTO.getAddress());
