@@ -4,10 +4,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
+import java.util.Date;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener;
@@ -37,25 +42,16 @@ public class UacEventReceiverImplIT_Test {
   @Autowired private SimpleMessageListenerContainer uacEventListenerContainer;
   @MockBean private RespondentDataRepositoryImpl respondentDataRepo;
 
+  @Before
+  public void initMocks() {
+    Mockito.reset(receiver);
+  }
+
   /** Test the receiver flow */
   @Test
   public void uacEventFlowTest() throws Exception {
 
-    // Construct UACEvent
-    UACEvent uacEvent = new UACEvent();
-    UACPayload uacPayload = uacEvent.getPayload();
-    UAC uac = uacPayload.getUac();
-    uac.setUacHash("999999999");
-    uac.setActive("true");
-    uac.setQuestionnaireId("1110000009");
-    uac.setCaseType("H");
-    uac.setRegion("E");
-    uac.setCaseId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
-    uac.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
-    Header header = new Header();
-    header.setType(EventType.UAC_UPDATED);
-    header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
-    uacEvent.setEvent(header);
+    UACEvent uacEvent = createUAC();
 
     // Construct message
     MessageProperties amqpMessageProperties = new MessageProperties();
@@ -72,5 +68,49 @@ public class UacEventReceiverImplIT_Test {
     ArgumentCaptor<UACEvent> captur = ArgumentCaptor.forClass(UACEvent.class);
     verify(receiver).acceptUACEvent(captur.capture());
     assertTrue(captur.getValue().getPayload().equals(uacEvent.getPayload()));
+  }
+
+  @Test
+  public void uacEventReceivedWithoutMillisecondsTest() throws Exception {
+
+    // Create a UAC with a timestamp. Note that that the milliseconds are not specified
+    UACEvent uacEvent = createUAC();
+    String uac = new ObjectMapper().writeValueAsString(uacEvent);
+    String uacWithTimestamp =
+        uac.replaceAll("\"dateTime\":\"[^\"]*", "\"dateTime\":\"2011-08-12T20:17:46Z");
+    assertTrue(uacWithTimestamp.contains("20:17:46Z"));
+
+    // Send message to container
+    ChannelAwareMessageListener listener =
+        (ChannelAwareMessageListener) uacEventListenerContainer.getMessageListener();
+    final Channel rabbitChannel = mock(Channel.class);
+    MessageProperties amqpMessageProperties = new MessageProperties();
+    listener.onMessage(
+        new Message(uacWithTimestamp.getBytes(), amqpMessageProperties), rabbitChannel);
+
+    // Capture and check Service Activator argument
+    ArgumentCaptor<UACEvent> captur = ArgumentCaptor.forClass(UACEvent.class);
+    verify(receiver).acceptUACEvent(captur.capture());
+    assertTrue(captur.getValue().getPayload().equals(uacEvent.getPayload()));
+  }
+
+  private UACEvent createUAC() {
+    // Construct UACEvent
+    UACEvent uacEvent = new UACEvent();
+    UACPayload uacPayload = uacEvent.getPayload();
+    UAC uac = uacPayload.getUac();
+    uac.setUacHash("999999999");
+    uac.setActive("true");
+    uac.setQuestionnaireId("1110000009");
+    uac.setCaseType("H");
+    uac.setRegion("E");
+    uac.setCaseId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
+    uac.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
+    Header header = new Header();
+    header.setType(EventType.UAC_UPDATED);
+    header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
+    header.setDateTime(new Date());
+    uacEvent.setEvent(header);
+    return uacEvent;
   }
 }

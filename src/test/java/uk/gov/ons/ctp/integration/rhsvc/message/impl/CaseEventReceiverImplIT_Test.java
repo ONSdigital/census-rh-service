@@ -4,10 +4,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
+import java.util.Date;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener;
@@ -39,11 +44,58 @@ public class CaseEventReceiverImplIT_Test {
   @Autowired private SimpleMessageListenerContainer caseEventListenerContainer;
   @MockBean private RespondentDataRepositoryImpl respondentDataRepo;
 
+  @Before
+  public void initMocks() {
+    Mockito.reset(receiver);
+  }
+
   /** Test the receiver flow */
   @Test
   public void caseEventFlowTest() throws Exception {
 
-    // Construct CaseEvent
+    CaseEvent caseEvent = createCaseEvent();
+
+    // Construct message
+    MessageProperties amqpMessageProperties = new MessageProperties();
+    org.springframework.amqp.core.Message amqpMessage =
+        new Jackson2JsonMessageConverter().toMessage(caseEvent, amqpMessageProperties);
+
+    // Send message to container
+    ChannelAwareMessageListener listener =
+        (ChannelAwareMessageListener) caseEventListenerContainer.getMessageListener();
+    final Channel rabbitChannel = mock(Channel.class);
+    listener.onMessage(amqpMessage, rabbitChannel);
+
+    // Capture and check Service Activator argument
+    ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
+    verify(receiver).acceptCaseEvent(captur.capture());
+    assertTrue(captur.getValue().getPayload().equals(caseEvent.getPayload()));
+  }
+
+  @Test
+  public void caseCaseReceivedWithoutMillisTest() throws Exception {
+
+    // Create a case with a timestamp. Note that that the milliseconds are not specified
+    CaseEvent caseEvent = createCaseEvent();
+    String caseAsJson = new ObjectMapper().writeValueAsString(caseEvent);
+    String caseWithoutMillis =
+        caseAsJson.replaceAll("\"dateTime\":\"[^\"]*", "\"dateTime\":\"2011-08-12T20:17:46Z");
+    assertTrue(caseWithoutMillis.contains("20:17:46Z"));
+
+    // Send message to container
+    ChannelAwareMessageListener listener =
+        (ChannelAwareMessageListener) caseEventListenerContainer.getMessageListener();
+    final Channel rabbitChannel = mock(Channel.class);
+    listener.onMessage(
+        new Message(caseWithoutMillis.getBytes(), new MessageProperties()), rabbitChannel);
+
+    // Capture and check Service Activator argument
+    ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
+    verify(receiver).acceptCaseEvent(captur.capture());
+    assertTrue(captur.getValue().getPayload().equals(caseEvent.getPayload()));
+  }
+
+  private CaseEvent createCaseEvent() {
     CaseEvent caseEvent = new CaseEvent();
     CasePayload casePayload = caseEvent.getPayload();
     CollectionCase collectionCase = casePayload.getCollectionCase();
@@ -77,23 +129,9 @@ public class CaseEventReceiverImplIT_Test {
 
     Header header = new Header();
     header.setType(EventType.CASE_UPDATED);
+    header.setDateTime(new Date());
     header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     caseEvent.setEvent(header);
-
-    // Construct message
-    MessageProperties amqpMessageProperties = new MessageProperties();
-    org.springframework.amqp.core.Message amqpMessage =
-        new Jackson2JsonMessageConverter().toMessage(caseEvent, amqpMessageProperties);
-
-    // Send message to container
-    ChannelAwareMessageListener listener =
-        (ChannelAwareMessageListener) caseEventListenerContainer.getMessageListener();
-    final Channel rabbitChannel = mock(Channel.class);
-    listener.onMessage(amqpMessage, rabbitChannel);
-
-    // Capture and check Service Activator argument
-    ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
-    verify(receiver).acceptCaseEvent(captur.capture());
-    assertTrue(captur.getValue().getPayload().equals(caseEvent.getPayload()));
+    return caseEvent;
   }
 }
