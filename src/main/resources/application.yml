@@ -113,6 +113,8 @@ queueconfig:
   uac-queue-DLQ: case.rh.uac.dlq
   uac-routing-key: event.uac.update
   response-authentication-routing-key: event.response.authentication
+  feedback-queue: website.feedback
+  feedback-routing-key: event.website.feedback
 
 messaging:
   backoffInitial: 5000

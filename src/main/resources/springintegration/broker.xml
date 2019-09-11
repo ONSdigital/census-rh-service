@@ -39,6 +39,8 @@
 
 	<rabbit:queue name="${queueconfig.uac-queue-DLQ}" durable="true" />
 
+	<rabbit:queue name="${queueconfig.feedback-queue}" durable="true" />
+
 	<!-- End of Queues -->
 
 	<!-- Start of Exchanges -->
@@ -47,6 +49,7 @@
 		<rabbit:bindings>
 			<rabbit:binding queue="${queueconfig.case-queue}" pattern="${queueconfig.case-routing-key}" />
 		    <rabbit:binding queue="${queueconfig.uac-queue}" pattern="${queueconfig.uac-routing-key}" />	
+		    <rabbit:binding queue="${queueconfig.feedback-queue}" pattern="${queueconfig.feedback-routing-key}" />
 		</rabbit:bindings>
 	</rabbit:topic-exchange>
 
