@@ -13,7 +13,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.FeedbackDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.FeedbackService;
 
-/** The REST endpoint controller for UAC requests. */
+/** The REST endpoint controller for recording website feedback. */
 @RestController
 @RequestMapping(value = "/", produces = "application/json")
 public class FeedbackEndpoint {
@@ -25,9 +25,9 @@ public class FeedbackEndpoint {
   /**
    * the POST end-point to receive user feedback.
    *
-   * @param feedbackDTO contains the feedback and data about the originating page.
-   * @return a response containing the id of the generated
-   * @throws CTPException something went wrong
+   * @param feedbackDTO contains the feedback and data about an originating page.
+   * @return a response containing the id of the generated feedback event.
+   * @throws CTPException something went wrong.
    */
   @RequestMapping(value = "/feedback", method = RequestMethod.POST)
   public ResponseEntity<String> submitFeedback(@Valid @RequestBody final FeedbackDTO feedbackDTO)

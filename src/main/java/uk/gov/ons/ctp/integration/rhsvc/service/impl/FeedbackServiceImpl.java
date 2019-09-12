@@ -11,6 +11,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.FeedbackDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.FeedbackService;
 
 @Service
+/** Service responsible for recording end-user feedback */
 public class FeedbackServiceImpl implements FeedbackService {
   @Autowired private EventPublisher eventPublisher;
 
