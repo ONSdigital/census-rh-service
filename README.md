@@ -5,6 +5,7 @@
 # Respondent Home Data Service
 This repository contains the Respondent Data service. This microservice is a RESTful web service implemented using [Spring Boot](http://projects.spring.io/spring-boot/). It manages respondent data, where a Respondent Data object represents an expected response from the Respondent Data service, which provides all the data that is required by Respondent Home in order for it to verify the respondent's UAC code and connect them to the relevant EQ questionnaire.
 
+
 ## Set Up
 Do the following steps to set up the code to run locally:
 * Install Java 11 locally
@@ -92,10 +93,10 @@ In the RabbitMQ console make sure that the following queues have been created an
 
 The following dead letter queues should be configured:
 
-      Exchange                      | Routing key        | Destination queue
-    --------------------------------+--------------------+---------------------
-       events.deadletter.exchange   | event.case.update  | case.rh.case.dlq
-       events.deadletter.exchange   | event.uac.update   | case.rh.uac.dlq
+      Exchange                      | Routing key                    | Destination queue
+    --------------------------------+--------------------------------+---------------------
+       events.deadletter.exchange   | event.case.update              | case.rh.case.dlq
+       events.deadletter.exchange   | event.uac.update               | case.rh.uac.dlq
 
 2) **UAC Data**
 
