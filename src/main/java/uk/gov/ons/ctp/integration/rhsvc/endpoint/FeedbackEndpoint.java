@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,7 @@ public class FeedbackEndpoint {
    * @throws CTPException something went wrong
    */
   @RequestMapping(value = "/feedback", method = RequestMethod.POST)
-  public ResponseEntity<String> submitFeedback(@RequestBody final FeedbackDTO feedbackDTO)
+  public ResponseEntity<String> submitFeedback(@Valid @RequestBody final FeedbackDTO feedbackDTO)
       throws CTPException {
 
     log.with("feedbackDTO", feedbackDTO).info("Entering POST submitFeedback");
