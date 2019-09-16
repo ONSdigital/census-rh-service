@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.rabbitmq.client.Channel;
 import org.mockito.Mockito;
+import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
@@ -42,5 +43,10 @@ public class EventReceiverConfiguration {
   @Bean
   public UACEventReceiverImpl uacEventReceiver() {
     return Mockito.spy(new UACEventReceiverImpl());
+  }
+
+  @Bean
+  public AmqpAdmin amqpAdmin() {
+    return mock(AmqpAdmin.class);
   }
 }
