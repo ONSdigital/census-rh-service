@@ -12,6 +12,7 @@
     
     <bean id="caseEventListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
         <property name="connectionFactory" ref="connectionFactory" />
+        <property name="mismatchedQueuesFatal" value="${messaging.mismatchedQueuesFatal}" />
         <property name="queueNames" value="${queueconfig.case-queue}" />
         <property name="adviceChain" ref="caseEventRetryAdvice" />
         <property name="concurrentConsumers" value="${messaging.consumingThreads}" />
