@@ -120,13 +120,8 @@ messaging:
   backoffMultiplier: 3
   backoffMax: 45000
   consumingThreads: 1
-  pubMaxAttempts: 3
   conMaxAttempts: 3
   prefetchCount: 1
-  txSize: 1
-
-report-settings:
-  cron-expression: "0 * * * * *"
 
 swagger-settings:
   swagger-ui-active: true
@@ -134,10 +129,6 @@ swagger-settings:
   title: RespondentHomeService
   description: API for ${project.artifactId}
   version: ${project.version}
-
-retries:
-  maxAttempts: 3
-  backoff: 5000
 
 googleStorage:
   caseSchemaName: case
