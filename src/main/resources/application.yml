@@ -115,6 +115,7 @@ queueconfig:
   response-authentication-routing-key: event.response.authentication
 
 messaging:
+  mismatchedQueuesFatal: true
   backoffInitial: 5000
   backoffMultiplier: 3
   backoffMax: 45000

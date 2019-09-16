@@ -12,6 +12,7 @@
     
     <bean id="uacEventListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
         <property name="connectionFactory" ref="connectionFactory" />
+        <property name="mismatchedQueuesFatal" value="${messaging.mismatchedQueuesFatal}" />
         <property name="queueNames" value="${queueconfig.uac-queue}" />
         <property name="adviceChain" ref="uacEventRetryAdvice" />
         <property name="concurrentConsumers" value="${messaging.consumingThreads}" />
