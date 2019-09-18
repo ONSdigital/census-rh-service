@@ -2,9 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.MapperFactory;
@@ -51,11 +48,11 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   }
 
   @Override
-  public UniqueAccessCodeDTO getAndAuthenticateUAC(String uac) throws CTPException {
+  public UniqueAccessCodeDTO getAndAuthenticateUAC(String uacHash) throws CTPException {
 
     UniqueAccessCodeDTO data = new UniqueAccessCodeDTO();
-    data.setUac(uac);
-    Optional<UAC> uacMatch = dataRepo.readUAC(getSha256Hash(uac));
+    data.setUacHash(uacHash);
+    Optional<UAC> uacMatch = dataRepo.readUAC(uacHash);
     if (uacMatch.isPresent()) {
       uacMapperFacade.map(uacMatch.get(), data);
       if (!StringUtils.isEmpty(data.getCaseId())) {
@@ -79,39 +76,6 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     }
 
     return data;
-  }
-
-  /**
-   * Create the SHA256 Hash of the UAC
-   *
-   * @param uac
-   * @return SHA256 Hash
-   * @throws CTPException
-   */
-  private String getSha256Hash(String uac) throws CTPException {
-
-    String uacHash = null;
-    try {
-      MessageDigest md = MessageDigest.getInstance("SHA-256");
-      byte[] hashInBytes = md.digest(uac.getBytes(StandardCharsets.UTF_8));
-
-      // bytes to hex
-      StringBuilder sb = new StringBuilder();
-      for (byte b : hashInBytes) {
-        sb.append(String.format("%02x", b));
-      }
-      uacHash = sb.toString();
-    } catch (NoSuchAlgorithmException ex) {
-      log.error("SHA256 Hashing error for UAC");
-      throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, ex.getMessage());
-    }
-
-    if (uacHash.length() != 64) {
-      log.error("SHA256 Hash length incorrect");
-      throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND);
-    }
-
-    return uacHash;
   }
 
   /** Send RespondentAuthenticated event */

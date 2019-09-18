@@ -24,16 +24,16 @@ public class UniqueAccessCodeEndpoint {
   /**
    * the GET end-point to get RH details for a claim
    *
-   * @param uac the UAC
+   * @param uacHash the hashed UAC
    * @return the claim details
    * @throws CTPException something went wrong
    */
-  @RequestMapping(value = "/{uac}", method = RequestMethod.GET)
+  @RequestMapping(value = "/{uacHash}", method = RequestMethod.GET)
   public ResponseEntity<UniqueAccessCodeDTO> getUACClaimContext(
-      @PathVariable("uac") final String uac) throws CTPException {
+      @PathVariable("uacHash") final String uacHash) throws CTPException {
 
     log.info("Entering GET getUACClaimContext");
-    UniqueAccessCodeDTO uacDTO = uacService.getAndAuthenticateUAC(uac);
+    UniqueAccessCodeDTO uacDTO = uacService.getAndAuthenticateUAC(uacHash);
 
     return ResponseEntity.ok(uacDTO);
   }
