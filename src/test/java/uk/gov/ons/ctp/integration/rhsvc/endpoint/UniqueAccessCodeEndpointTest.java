@@ -25,7 +25,8 @@ import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
 /** Unit Tests on endpoint for UAC resources */
 public class UniqueAccessCodeEndpointTest {
 
-  private static final String UAC = "w4nwwpphjjpt";
+  private static final String UAC_HASH =
+      "8a9d5db4bbee34fd16e40aa2aaae52cfbdf1842559023614c30edb480ec252b4";
   private static final String CASE_ID = "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4";
   private static final String POSTCODE = "UP103UP";
   private static final String ERROR_CODE = "RESOURCE_NOT_FOUND";
@@ -53,13 +54,13 @@ public class UniqueAccessCodeEndpointTest {
   /** Test returns valid JSON for valid UAC */
   @Test
   public void getUACClaimContextUACFound() throws Exception {
-    when(uacService.getAndAuthenticateUAC(UAC)).thenReturn(uacDTO.get(0));
+    when(uacService.getAndAuthenticateUAC(UAC_HASH)).thenReturn(uacDTO.get(0));
 
     mockMvc
-        .perform(get(String.format("/uacs/%s", UAC)))
+        .perform(get(String.format("/uacs/%s", UAC_HASH)))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json;charset=UTF-8"))
-        .andExpect(jsonPath("$.uac", is(UAC)))
+        .andExpect(jsonPath("$.uacHash", is(UAC_HASH)))
         .andExpect(jsonPath("$.caseId", is(CASE_ID)))
         .andExpect(jsonPath("$.address.postcode", is(POSTCODE)));
   }
@@ -67,11 +68,11 @@ public class UniqueAccessCodeEndpointTest {
   /** Test returns resource not found for invalid UAC */
   @Test
   public void getUACClaimContextUACNotFound() throws Exception {
-    when(uacService.getAndAuthenticateUAC(UAC))
+    when(uacService.getAndAuthenticateUAC(UAC_HASH))
         .thenThrow(new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, ERROR_MESSAGE));
 
     mockMvc
-        .perform(get("/uacs/{uac}", UAC))
+        .perform(get("/uacs/{uac}", UAC_HASH))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error.code", is(ERROR_CODE)))
         .andExpect(jsonPath("$.error.message", is(ERROR_MESSAGE)));

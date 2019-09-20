@@ -7,11 +7,11 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 public interface UniqueAccessCodeService {
 
   /**
-   * Retrieve the data for a UAC
+   * Retrieve the data for a hashed UAC
    *
-   * @param uac unique access code for which to retrieve data
+   * @param uacHash hashed unique access code for which to retrieve data
    * @return UniqueAccessCodeDTO representing data for UAC
    * @throws CTPException something wernt wrong
    */
-  UniqueAccessCodeDTO getAndAuthenticateUAC(String uac) throws CTPException;
+  UniqueAccessCodeDTO getAndAuthenticateUAC(String uacHash) throws CTPException;
 }

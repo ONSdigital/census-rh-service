@@ -174,9 +174,7 @@ Submit the case by sending the following to the 'events' exchange with the routi
 
 If you know the case id which matches the stored UAC hash then you can supply it in the UACS get request:
   
-       $ curl -s -H "Content-Type: application/json" "http://localhost:8071/uacs/w4nwwpphjjptp7fn"
- 
-If the case id is not known for the loaded UAC data then you can manually force execution through by running in the debugger and set a breakpoint in UniqueAccessCodeServiceImpl::getSha256Hash(), and then manually replacing the calculated SHA256 value with the uacHash value of an already loaded UAC.
+       $ curl -s -H "Content-Type: application/json" "http://localhost:8071/uacs/8a9d5db4bbee34fd16e40aa2aaae52cfbdf1842559023614c30edb480ec252b4"
 
 To calculate the sha256 value for a uac:
 
@@ -267,7 +265,7 @@ This example uses a case uuid of: f868fcfc-7280-40ea-ab01-b173ac245da3
     http --auth generator:hitmeup  get "http://localhost:8171/firestore/wait?collection=case&key=f868fcfc-7280-40ea-ab01-b173ac245da3&timeout=1s"
 
     # Make the UAC authenticated request
-    http --auth serco_cks:temporary get "http://localhost:8071/uacs/aaaabbbbccccdddd"
+    http --auth serco_cks:temporary get "http://localhost:8071/uacs/147eb9dcde0e090429c01dbf634fd9b69a7f141f005c387a9c00498908499dde"
 
     # Grab respondent authenticated event
     http --auth generator:hitmeup GET "http://localhost:8171/rabbit/get/event.response.authentication?timeout=500ms"
