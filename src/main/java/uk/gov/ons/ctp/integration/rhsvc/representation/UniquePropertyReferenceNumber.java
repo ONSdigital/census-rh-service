@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Data
 @EqualsAndHashCode
-@AllArgsConstructor
 public class UniquePropertyReferenceNumber {
 
   private static final long UPRN_MIN = 0L;
@@ -29,7 +28,7 @@ public class UniquePropertyReferenceNumber {
       try {
         Long uprn = Long.parseLong(str);
         if (uprn.longValue() >= UPRN_MIN && uprn.longValue() <= UPRN_MAX) {
-          this.value = uprn;
+          this.value = str;
         } else {
           throw new IllegalArgumentException("String '" + uprn + "' is not a valid UPRN");
         }
@@ -40,6 +39,5 @@ public class UniquePropertyReferenceNumber {
   }
 
   @JsonProperty("uprn")
-  @JsonSerialize(using = ToStringSerializer.class)
-  private long value;
+  private String value;
 }
