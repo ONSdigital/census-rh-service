@@ -11,6 +11,7 @@ import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
+import uk.gov.ons.ctp.integration.rhsvc.cloud.DataStoreContentionException;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 /**
@@ -32,9 +33,11 @@ public class UACEventReceiverImpl {
    *
    * @param uacEvent UACEvent message from Response Management
    * @throws CTPException something went wrong
+   * @throws DataStoreContentionException if the data store is overloaded and rejected the object
+   *     until the backoff was exhausted.
    */
   @ServiceActivator(inputChannel = "acceptUACEvent")
-  public void acceptUACEvent(UACEvent uacEvent) throws CTPException {
+  public void acceptUACEvent(UACEvent uacEvent) throws CTPException, DataStoreContentionException {
 
     UAC uac = uacEvent.getPayload().getUac();
     String uacTransactionId = uacEvent.getEvent().getTransactionId();

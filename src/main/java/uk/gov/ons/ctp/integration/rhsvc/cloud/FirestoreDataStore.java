@@ -43,10 +43,12 @@ public class FirestoreDataStore implements CloudDataStore {
    *     Firestore it must either have public fields or provide get/set methods that allow access to
    *     its contents.
    * @throws CTPException if any failure was detected interacting with Firestore.
+   * @throws DataStoreContentionException if the object was not stored but should be retried with an
+   *     exponential backoff.
    */
   @Override
   public void storeObject(final String schema, final String key, final Object value)
-      throws CTPException {
+      throws CTPException, DataStoreContentionException {
     log.with(schema).with(key).debug("Saving object to Firestore");
 
     // Store the object
@@ -57,6 +59,13 @@ public class FirestoreDataStore implements CloudDataStore {
       result.get();
       log.with(schema).with(key).debug("Firestore save completed");
     } catch (Exception e) {
+      if (e.getMessage().contains("Too much contention")) {
+        // Use Spring exponential backoff to force a retry
+        log.with("schema", schema).with("key", key).debug("Firestore contention detected", e);
+        throw new DataStoreContentionException(
+            "Firestore contention on schema '" + schema + "'", e);
+      }
+
       log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;

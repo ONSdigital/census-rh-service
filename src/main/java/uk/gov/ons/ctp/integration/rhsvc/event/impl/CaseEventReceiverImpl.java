@@ -11,6 +11,7 @@ import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.integration.rhsvc.cloud.DataStoreContentionException;
 import uk.gov.ons.ctp.integration.rhsvc.event.CaseEventReceiver;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
@@ -32,16 +33,18 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
    *
    * @param caseEvent CaseEvent message from Response Management
    * @throws CTPException something went wrong
+   * @throws DataStoreContentionException if the data store is overloaded and rejected the object
+   *     until the backoff was exhausted.
    */
   @ServiceActivator(inputChannel = "acceptCaseEvent")
-  public void acceptCaseEvent(CaseEvent caseEvent) throws CTPException {
+  public void acceptCaseEvent(CaseEvent caseEvent)
+      throws CTPException, DataStoreContentionException {
 
-    CollectionCase collectionCase;
     String caseTransactionId = caseEvent.getEvent().getTransactionId();
 
     log.with(caseTransactionId).info("Entering acceptCaseEvent");
 
-    collectionCase = caseEvent.getPayload().getCollectionCase();
+    CollectionCase collectionCase = caseEvent.getPayload().getCollectionCase();
 
     try {
       respondentDataRepo.writeCollectionCase(collectionCase);

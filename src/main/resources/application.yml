@@ -130,6 +130,10 @@ swagger-settings:
   description: API for ${project.artifactId}
   version: ${project.version}
 
-googleStorage:
+cloudStorage:
   caseSchemaName: case
   uacSchemaName: uac
+  backoffInitial: 100
+  backoffMultiplier: 1.2
+  backoffMax: 16000
+  backoffMaxAttempts: 30

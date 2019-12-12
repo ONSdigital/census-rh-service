@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.gax.rpc.AbortedException;
+import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldPath;
@@ -73,6 +75,29 @@ public class FirestoreDataStoreTest {
       exceptionCaught = true;
     }
     assertTrue(exceptionCaught);
+  }
+
+  @Test
+  public void testStoreObject_detectsContention() throws Exception {
+    // Load test data
+    CollectionCase case1 = loadCaseFromFile(0);
+
+    String exceptionMessage = "ABORTED: Too much contention on these documents. Please try again.";
+    Exception firestoreException =
+        new AbortedException(exceptionMessage, null, Mockito.mock(StatusCode.class), true);
+
+    mockFirestoreForExpectedStore(TEST_SCHEMA, case1.getId(), case1, firestoreException);
+
+    boolean exceptionCaught = false;
+    try {
+      firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
+    } catch (DataStoreContentionException e) {
+      assertTrue(e.getMessage(), e.getMessage().contains("contention on schema 'IT_TEST_SCHEMA'"));
+      assertTrue(
+          e.getCause().getMessage(), e.getCause().getMessage().contains("Too much contention"));
+      exceptionCaught = true;
+    }
+    assertTrue("Failed to detect datastore contention", exceptionCaught);
   }
 
   @Test

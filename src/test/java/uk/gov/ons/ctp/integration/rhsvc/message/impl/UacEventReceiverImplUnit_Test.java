@@ -9,6 +9,7 @@ import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
 import uk.gov.ons.ctp.common.event.model.UACPayload;
+import uk.gov.ons.ctp.integration.rhsvc.cloud.DataStoreContentionException;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
@@ -28,7 +29,7 @@ public class UacEventReceiverImplUnit_Test {
   }
 
   @Test
-  public void test_acceptUACEvent_success() throws CTPException {
+  public void test_acceptUACEvent_success() throws CTPException, DataStoreContentionException {
 
     // Construct UACEvent
     UACEvent uacEventFixture = new UACEvent();

@@ -1,28 +1,35 @@
 package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
+import uk.gov.ons.ctp.integration.rhsvc.cloud.DataStoreContentionException;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 /** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
 @Service
 public class RespondentDataRepositoryImpl implements RespondentDataRepository {
+  private static final Logger log = LoggerFactory.getLogger(FirestoreDataStore.class);
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
   String gcpProject;
 
-  @Value("${googleStorage.caseSchemaName}")
+  @Value("${cloudStorage.caseSchemaName}")
   String caseSchemaName;
 
-  @Value("${googleStorage.uacSchemaName}")
+  @Value("${cloudStorage.uacSchemaName}")
   String uacSchemaName;
 
   String caseSchema;
@@ -48,7 +55,17 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
-  public void writeUAC(final UAC uac) throws CTPException {
+  @Retryable(
+      label = "writeUAC",
+      include = DataStoreContentionException.class,
+      backoff =
+          @Backoff(
+              delayExpression = "#{${cloudStorage.backoffInitial}}",
+              multiplierExpression = "#{${cloudStorage.backoffMultiplier}}",
+              maxDelayExpression = "#{${cloudStorage.backoffMax}}"),
+      maxAttemptsExpression = "#{${cloudStorage.backoffMaxAttempts}}",
+      listeners = "rhRetryListener")
+  public void writeUAC(final UAC uac) throws CTPException, DataStoreContentionException {
     cloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac);
   }
 
@@ -71,7 +88,18 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
-  public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
+  @Retryable(
+      label = "writeCollectionCase",
+      include = DataStoreContentionException.class,
+      backoff =
+          @Backoff(
+              delayExpression = "#{${cloudStorage.backoffInitial}}",
+              multiplierExpression = "#{${cloudStorage.backoffMultiplier}}",
+              maxDelayExpression = "#{${cloudStorage.backoffMax}}"),
+      maxAttemptsExpression = "#{${cloudStorage.backoffMaxAttempts}}",
+      listeners = "rhRetryListener")
+  public void writeCollectionCase(final CollectionCase collectionCase)
+      throws CTPException, DataStoreContentionException {
     cloudDataStore.storeObject(caseSchema, collectionCase.getId(), collectionCase);
   }
 
@@ -105,7 +133,17 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     return searchResults;
   }
 
-  public void deleteJsonFromCloud(String schema, String key) throws CTPException {
-    cloudDataStore.deleteObject(schema, key);
+  /**
+   * When attempts to retry object storage have been exhausted this method is invoked and it can
+   * then throw the exception (triggering Rabbit retries). If this is not done then the message
+   * won't be eligible for another attempt or writing to the dead letter queue.
+   *
+   * @param e is the final exception in the storeObject retries.
+   * @throws Exception the exception which caused the final attempt to fail.
+   */
+  @Recover
+  public void doRecover(Exception e) throws Exception {
+    log.with(e.getMessage()).debug("Datastore recovery throwing exception");
+    throw e;
   }
 }
