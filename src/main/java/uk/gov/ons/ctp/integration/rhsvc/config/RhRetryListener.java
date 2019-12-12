@@ -34,7 +34,6 @@ public class RhRetryListener extends RetryListenerSupport {
         // On failure the retryCount actually holds the number of attempts
         int numAttempts = context.getRetryCount();
         log.warn(operationName + ": Transaction failed after " + numAttempts + " attempts");
-        log.warn("pmb Exception was: " + throwable.getClass().getName());
       }
     }
   }
