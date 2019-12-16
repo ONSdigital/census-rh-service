@@ -16,11 +16,13 @@ before_install:
   - export TZ=Europe/London
 
 script:
+  - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+  - echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, PR=$PR, BRANCH=$BRANCH"
   - travis_wait mvn verify
   - mvn clean install
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" != "master" ]; then
+  - if [ "$BRANCH" != "master" ]; then
       ./scripts/docker_push.sh;
     fi
   - bash <(curl -s https://codecov.io/bash)
