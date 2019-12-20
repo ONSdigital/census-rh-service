@@ -1,8 +1,14 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.api.core.ApiFuture;
+import com.google.api.gax.rpc.AbortedException;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldPath;
 import com.google.cloud.firestore.Firestore;
@@ -10,10 +16,7 @@ import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
+import io.grpc.Status;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 
@@ -58,14 +61,20 @@ public class FirestoreDataStore implements CloudDataStore {
     try {
       result.get();
       log.with(schema).with(key).debug("Firestore save completed");
-    } catch (Exception e) {
-      if (e.getMessage().contains("Too much contention")) {
-        // Use Spring exponential backoff to force a retry
+    } catch (AbortedException e) {
+      if (e.getMessage().contains(Status.ABORTED.getCode().name()) 
+          && e.getMessage().contains("Too much contention")) {
+        // Firestore is overloaded. Use Spring exponential backoff to force a retry
         log.with("schema", schema).with("key", key).debug("Firestore contention detected", e);
         throw new DataStoreContentionException(
             "Firestore contention on schema '" + schema + "'", e);
       }
 
+      log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
+      String failureMessage =
+          "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
+      throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
+    } catch (Exception e) {
       log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;

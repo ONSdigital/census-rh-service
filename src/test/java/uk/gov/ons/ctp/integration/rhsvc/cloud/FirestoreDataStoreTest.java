@@ -82,6 +82,7 @@ public class FirestoreDataStoreTest {
     // Load test data
     CollectionCase case1 = loadCaseFromFile(0);
 
+    // Create the forced exception which storeObject method will be throwing
     String exceptionMessage = "ABORTED: Too much contention on these documents. Please try again.";
     Exception firestoreException =
         new AbortedException(exceptionMessage, null, Mockito.mock(StatusCode.class), true);
