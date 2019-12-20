@@ -4,49 +4,21 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.cloud.DataStoreContentionException;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 /** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
 @Service
 public class RespondentDataRepositoryImpl implements RespondentDataRepository {
-  private static final Logger log = LoggerFactory.getLogger(FirestoreDataStore.class);
+  private static final Logger log = LoggerFactory.getLogger(RespondentDataRepositoryImpl.class);
 
-  @Value("${GOOGLE_CLOUD_PROJECT}")
-  String gcpProject;
-
-  @Value("${cloudStorage.caseSchemaName}")
-  String caseSchemaName;
-
-  @Value("${cloudStorage.uacSchemaName}")
-  String uacSchemaName;
-
-  String caseSchema;
-  String uacSchema;
-
-  private CloudDataStore cloudDataStore;
-
-  public RespondentDataRepositoryImpl() {
-    this.cloudDataStore = new FirestoreDataStore();
-    this.cloudDataStore.connect();
-  }
-
-  @PostConstruct
-  public void init() {
-    caseSchema = gcpProject + "-" + caseSchemaName.toLowerCase();
-    uacSchema = gcpProject + "-" + uacSchemaName.toLowerCase();
-  }
+  @Autowired private RetryableRespondentDataRepository retryableRespondentDataRepository;
 
   /**
    * Stores a UAC object into the cloud data store.
@@ -55,18 +27,14 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
-  @Retryable(
-      label = "writeUAC",
-      include = DataStoreContentionException.class,
-      backoff =
-          @Backoff(
-              delayExpression = "#{${cloudStorage.backoffInitial}}",
-              multiplierExpression = "#{${cloudStorage.backoffMultiplier}}",
-              maxDelayExpression = "#{${cloudStorage.backoffMax}}"),
-      maxAttemptsExpression = "#{${cloudStorage.backoffMaxAttempts}}",
-      listeners = "rhRetryListener")
-  public void writeUAC(final UAC uac) throws CTPException, DataStoreContentionException {
-    cloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac);
+  public void writeUAC(final UAC uac) throws CTPException {
+    try {
+      retryableRespondentDataRepository.writeUAC(uac);
+    } catch (DataStoreContentionException e) {
+      log.error("Retries exhausted for storage of UAC: " + uac.getCaseId());
+      throw new CTPException(
+          Fault.SYSTEM_ERROR, e, "Retries exhausted for storage of UAC: " + uac.getCaseId());
+    }
   }
 
   /**
@@ -78,7 +46,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public Optional<UAC> readUAC(final String universalAccessCode) throws CTPException {
-    return cloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCode);
+    return retryableRespondentDataRepository.readUAC(universalAccessCode);
   }
 
   /**
@@ -88,19 +56,14 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
-  @Retryable(
-      label = "writeCollectionCase",
-      include = DataStoreContentionException.class,
-      backoff =
-          @Backoff(
-              delayExpression = "#{${cloudStorage.backoffInitial}}",
-              multiplierExpression = "#{${cloudStorage.backoffMultiplier}}",
-              maxDelayExpression = "#{${cloudStorage.backoffMax}}"),
-      maxAttemptsExpression = "#{${cloudStorage.backoffMaxAttempts}}",
-      listeners = "rhRetryListener")
-  public void writeCollectionCase(final CollectionCase collectionCase)
-      throws CTPException, DataStoreContentionException {
-    cloudDataStore.storeObject(caseSchema, collectionCase.getId(), collectionCase);
+  public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
+    try {
+      retryableRespondentDataRepository.writeCollectionCase(collectionCase);
+    } catch (DataStoreContentionException e) {
+      log.error("Retries exhausted for storage of CollectionCase: " + collectionCase.getId());
+      throw new CTPException(
+          Fault.SYSTEM_ERROR, e, "Retries exhausted for storage of UAC: " + collectionCase.getId());
+    }
   }
 
   /**
@@ -112,7 +75,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public Optional<CollectionCase> readCollectionCase(final String caseId) throws CTPException {
-    return cloudDataStore.retrieveObject(CollectionCase.class, caseSchema, caseId);
+    return retryableRespondentDataRepository.readCollectionCase(caseId);
   }
 
   /**
@@ -125,25 +88,6 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException {
-    // Run search
-    String[] searchByUprnPath = new String[] {"address", "uprn"};
-    List<CollectionCase> searchResults =
-        cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
-
-    return searchResults;
-  }
-
-  /**
-   * When attempts to retry object storage have been exhausted this method is invoked and it can
-   * then throw the exception (triggering Rabbit retries). If this is not done then the message
-   * won't be eligible for another attempt or writing to the dead letter queue.
-   *
-   * @param e is the final exception in the storeObject retries.
-   * @throws Exception the exception which caused the final attempt to fail.
-   */
-  @Recover
-  public void doRecover(Exception e) throws Exception {
-    log.with(e.getMessage()).debug("Datastore recovery throwing exception");
-    throw e;
+    return retryableRespondentDataRepository.readCollectionCasesByUprn(uprn);
   }
 }

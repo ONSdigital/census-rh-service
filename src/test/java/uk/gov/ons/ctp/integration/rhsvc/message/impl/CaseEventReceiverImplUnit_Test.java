@@ -11,7 +11,6 @@ import uk.gov.ons.ctp.common.event.model.CasePayload;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.Header;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.DataStoreContentionException;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
@@ -31,7 +30,7 @@ public class CaseEventReceiverImplUnit_Test {
   }
 
   @Test
-  public void test_acceptCaseEvent_success() throws CTPException, DataStoreContentionException {
+  public void test_acceptCaseEvent_success() throws CTPException {
 
     // Construct CaseEvent
     CaseEvent caseEventFixture = new CaseEvent();
