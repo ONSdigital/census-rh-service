@@ -104,7 +104,6 @@ public class UniqueAccessCodeServiceImplTest {
   @Test
   public void getUniqueAccessCodeDataUACFoundWithCaseID() throws Exception {
     UAC uacTest = uac.get(0);
-    CollectionCase caseTest = collectionCase.get(0);
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
     when(dataRepo.readCollectionCase(CASE_ID)).thenReturn(Optional.empty());
 
