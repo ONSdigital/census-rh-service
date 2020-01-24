@@ -19,8 +19,6 @@ public class CaseDTO {
 
   private String addressType;
 
-  private String state;
-
   @JsonUnwrapped private AddressDTO address;
 
   private String region;
