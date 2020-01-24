@@ -92,7 +92,6 @@ public class CaseServiceImplTest {
     assertThat(caseDTO, hasSize(1));
     assertEquals(hhCase.getId(), rmCase.getCaseId().toString());
     assertEquals(hhCase.getCaseRef(), rmCase.getCaseRef());
-    assertEquals(hhCase.getState(), rmCase.getState());
     assertEquals(hhCase.getCaseType(), rmCase.getCaseType());
     assertEquals(hhCase.getAddress().getAddressType(), rmCase.getAddressType());
     assertEquals(hhCase.getAddress().getAddressLine1(), rmCase.getAddress().getAddressLine1());
@@ -164,7 +163,6 @@ public class CaseServiceImplTest {
     assertEquals(rmCase.getCaseRef(), caseDTO.getCaseRef());
     assertEquals(rmCase.getCaseType(), caseDTO.getCaseType());
     assertEquals(rmCase.getAddress().getAddressType(), caseDTO.getAddressType());
-    assertEquals(rmCase.getState(), caseDTO.getState());
     assertSame(addressChange.getAddress(), caseDTO.getAddress());
     assertEquals(rmCase.getAddress().getRegion(), caseDTO.getRegion());
 
