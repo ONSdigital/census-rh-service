@@ -1,9 +1,13 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -18,11 +22,23 @@ public class DynamoDBDataStore implements CloudDataStore {
   @Override
   public void connect() {
     dynamo = AmazonDynamoDBClientBuilder.defaultClient();
+
+    HashMap<String, AttributeValue> data = new HashMap<String, AttributeValue>();
+    data.put("name", new AttributeValue("John"));
+
+    try {
+      dynamo.putItem("testtable", data);
+    } catch (ResourceNotFoundException e) {
+      System.err.println(e.getMessage());
+    } catch (AmazonServiceException e) {
+      System.err.println(e.getMessage());
+    }
   }
 
   @Override
   public void storeObject(String schema, String key, Object value)
       throws CTPException, DataStoreContentionException {
+    log.with(schema).with(key).debug("Saving object to DynamoDB");
 
     // TODO Auto-generated method stub
   }
