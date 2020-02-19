@@ -10,6 +10,9 @@ import com.godaddy.logging.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.PreDestroy;
+
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 
@@ -60,5 +63,10 @@ public class DynamoDBDataStore implements CloudDataStore {
   @Override
   public void deleteObject(String schema, String key) throws CTPException {
     // TODO Auto-generated method stub
+  }
+
+  @PreDestroy
+  public void preDestroy() {
+    dynamo.shutdown();
   }
 }
