@@ -73,6 +73,7 @@ public class DynamoDBDataStore implements CloudDataStore {
 
   @PreDestroy
   public void preDestroy() {
+    log.debug("Shutting down DynamoDB client");
     dynamo.shutdown();
   }
 }
