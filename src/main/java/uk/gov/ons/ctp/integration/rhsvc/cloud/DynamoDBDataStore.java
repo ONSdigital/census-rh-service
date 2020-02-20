@@ -5,6 +5,8 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.List;
@@ -30,11 +32,10 @@ public class DynamoDBDataStore implements CloudDataStore {
   public void storeObject(String schema, String key, Object value)
       throws CTPException, DataStoreContentionException {
     log.with(schema).with(key).debug("Saving object to DynamoDB");
-    System.out.println(value.getClass().getName());
 
     DynamoDB documentAPI = new DynamoDB(dynamo);
     Table table = documentAPI.getTable(schema);
-    Item item = new Item().withJSON(key, "{" + value.toString() + "}");
+    Item item = new Item().withJSON(key, valueToJSON(value));
 
     try {
       table.putItem(item);
@@ -72,5 +73,18 @@ public class DynamoDBDataStore implements CloudDataStore {
   public void preDestroy() {
     log.debug("Shutting down DynamoDB client");
     dynamo.shutdown();
+  }
+
+  private String valueToJSON(final Object value) throws CTPException {
+    String json = null;
+
+    try {
+      json = new ObjectMapper().writeValueAsString(value);
+    } catch (JsonProcessingException e) {
+      log.with("value", value).error(e, "Failed to serialise object to JSON");
+      throw new CTPException(Fault.SYSTEM_ERROR, "Failed to serialise object to JSON");
+    }
+
+    return json;
   }
 }
