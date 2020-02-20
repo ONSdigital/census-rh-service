@@ -1,6 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -38,11 +37,14 @@ public class DynamoDBDataStore implements CloudDataStore {
 
     try {
       table.putItem(item);
-    } catch (AmazonServiceException e) {
-      log.with("schema", schema).with("key", key).error(e, "Failed to create object in DynamoDB");
+    } catch (Exception e) {
+      log.with("schema", schema)
+          .with("key", key)
+          .with("value", value)
+          .error(e, "Failed to create object in DynamoDB");
       throw new CTPException(
           Fault.SYSTEM_ERROR,
-          "Failed to create object in Firestore. Schema: " + schema + " with key " + key);
+          "Failed to create object in DynamoDB. Schema: " + schema + " with key " + key);
     }
   }
 
