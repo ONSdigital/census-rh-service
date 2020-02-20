@@ -3,11 +3,11 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PreDestroy;
@@ -30,20 +30,14 @@ public class DynamoDBDataStore implements CloudDataStore {
   @Override
   public void storeObject(String schema, String key, Object value)
       throws CTPException, DataStoreContentionException {
-    log.with(schema).with(key).with(value).debug("Saving object to DynamoDB");
+    log.with(schema).with(key).debug("Saving object to DynamoDB");
 
-    HashMap<String, AttributeValue> item = new HashMap<String, AttributeValue>();
-    item.put(key, new AttributeValue(value.toString()));
+    DynamoDB documentAPI = new DynamoDB(dynamo);
+    Table table = documentAPI.getTable(schema);
+    Item item = new Item().withJSON(key, value.toString());
 
     try {
-      dynamo.putItem(schema, item);
-    } catch (ResourceNotFoundException e) {
-      log.with("schema", schema)
-          .with("key", key)
-          .debug("DynamoDB table doesn't exist or is inactive", e);
-      throw new CTPException(
-          Fault.SYSTEM_ERROR,
-          "Failed to create object in Firestore. Schema: " + schema + " with key " + key);
+      table.putItem(item);
     } catch (AmazonServiceException e) {
       log.with("schema", schema).with("key", key).error(e, "Failed to create object in DynamoDB");
       throw new CTPException(
