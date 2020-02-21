@@ -111,7 +111,7 @@ Logging will show the arrival of the case/uac but there is no further logging if
 A warning is logged when the object is finally stored:
 
     2019-12-11 08:45:32.258  INFO  50306 --- [enerContainer-1] u.g.o.c.i.r.e.i.CaseEventReceiverImpl    : Entering acceptCaseEvent
-    2019-12-11 08:45:44.713  WARN  50087 --- [enerContainer-1] u.g.o.c.i.r.r.impl.CustomRetryListener   : writeCollectionCase: Transaction successful after 19 attempts
+    2019-12-11 08:45:44.713  WARN  50087 --- [enerContainer-1] u.g.o.c.i.r.r.impl.CustomRetryListener   : writeCollectionCase: Firestore contention: Transaction successful after 19 attempts
     
 There is no logging of the contention exceptions or for each retry.
 
@@ -121,7 +121,7 @@ If attempts to store the object result in continued contention and all retries a
 as a warning.
 
     2019-12-11 09:16:35.362  INFO  50306 --- [enerContainer-1] u.g.o.c.i.r.e.i.CaseEventReceiverImpl    : Entering acceptCaseEvent
-    2019-12-11 09:18:12.336  WARN  50306 --- [enerContainer-1] u.g.o.c.i.r.r.impl.CustomRetryListener   : writeCollectionCase: Transaction failed after 30 attempts
+    2019-12-11 09:18:12.336  WARN  50306 --- [enerContainer-1] u.g.o.c.i.r.r.impl.CustomRetryListener   : writeCollectionCase: Firestore contention: Transaction failed after 30 attempts
 
 If the Rabbit retries are exhausted then the root cause exception is logged:
 

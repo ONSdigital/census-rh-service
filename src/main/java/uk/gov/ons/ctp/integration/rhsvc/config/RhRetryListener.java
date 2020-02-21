@@ -15,7 +15,7 @@ public class RhRetryListener extends RetryListenerSupport {
   public <T, E extends Throwable> void onError(
       RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
     Object operationName = context.getAttribute(RetryContext.NAME);
-    log.debug(operationName + ": Retry failed");
+    log.debug(operationName + ": Firestore contention: Retry failed");
   }
 
   @Override
@@ -28,12 +28,12 @@ public class RhRetryListener extends RetryListenerSupport {
 
       if (throwable == null) {
         int numAttempts = context.getRetryCount() + 1;
-        log.warn(operationName + ": Transaction successful after " + numAttempts + " attempts");
+        log.warn(operationName + ": Firestore contention: Transaction successful after " + numAttempts + " attempts");
 
       } else {
         // On failure the retryCount actually holds the number of attempts
         int numAttempts = context.getRetryCount();
-        log.warn(operationName + ": Transaction failed after " + numAttempts + " attempts");
+        log.warn(operationName + ": Firestore contention: Transaction failed after " + numAttempts + " attempts");
       }
     }
   }

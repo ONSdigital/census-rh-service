@@ -31,9 +31,9 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     try {
       retryableRespondentDataRepository.writeUAC(uac);
     } catch (DataStoreContentionException e) {
-      log.error("Retries exhausted for storage of UAC: " + uac.getCaseId());
+      log.error("Firestore contention: Retries exhausted for storage of UAC: " + uac.getCaseId());
       throw new CTPException(
-          Fault.SYSTEM_ERROR, e, "Retries exhausted for storage of UAC: " + uac.getCaseId());
+          Fault.SYSTEM_ERROR, e, "Firestore contention: Retries exhausted for storage of UAC: " + uac.getCaseId());
     }
   }
 
