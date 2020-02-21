@@ -33,7 +33,9 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     } catch (DataStoreContentionException e) {
       log.error("Firestore contention: Retries exhausted for storage of UAC: " + uac.getCaseId());
       throw new CTPException(
-          Fault.SYSTEM_ERROR, e, "Firestore contention: Retries exhausted for storage of UAC: " + uac.getCaseId());
+          Fault.SYSTEM_ERROR,
+          e,
+          "Firestore contention: Retries exhausted for storage of UAC: " + uac.getCaseId());
     }
   }
 
@@ -60,9 +62,13 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     try {
       retryableRespondentDataRepository.writeCollectionCase(collectionCase);
     } catch (DataStoreContentionException e) {
-      log.error("Firestore contention: Retries exhausted for storage of CollectionCase: " + collectionCase.getId());
+      log.error(
+          "Firestore contention: Retries exhausted for storage of CollectionCase: "
+              + collectionCase.getId());
       throw new CTPException(
-          Fault.SYSTEM_ERROR, e, "Firestore contention: Retries exhausted for storage of UAC: " + collectionCase.getId());
+          Fault.SYSTEM_ERROR,
+          e,
+          "Firestore contention: Retries exhausted for storage of UAC: " + collectionCase.getId());
     }
   }
 

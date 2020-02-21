@@ -28,12 +28,20 @@ public class RhRetryListener extends RetryListenerSupport {
 
       if (throwable == null) {
         int numAttempts = context.getRetryCount() + 1;
-        log.warn(operationName + ": Firestore contention: Transaction successful after " + numAttempts + " attempts");
+        log.warn(
+            operationName
+                + ": Firestore contention: Transaction successful after "
+                + numAttempts
+                + " attempts");
 
       } else {
         // On failure the retryCount actually holds the number of attempts
         int numAttempts = context.getRetryCount();
-        log.warn(operationName + ": Firestore contention: Transaction failed after " + numAttempts + " attempts");
+        log.warn(
+            operationName
+                + ": Firestore contention: Transaction failed after "
+                + numAttempts
+                + " attempts");
       }
     }
   }
