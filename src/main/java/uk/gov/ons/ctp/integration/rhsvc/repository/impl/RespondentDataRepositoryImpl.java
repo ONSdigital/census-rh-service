@@ -60,9 +60,9 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     try {
       retryableRespondentDataRepository.writeCollectionCase(collectionCase);
     } catch (DataStoreContentionException e) {
-      log.error("Retries exhausted for storage of CollectionCase: " + collectionCase.getId());
+      log.error("Firestore contention: Retries exhausted for storage of CollectionCase: " + collectionCase.getId());
       throw new CTPException(
-          Fault.SYSTEM_ERROR, e, "Retries exhausted for storage of UAC: " + collectionCase.getId());
+          Fault.SYSTEM_ERROR, e, "Firestore contention: Retries exhausted for storage of UAC: " + collectionCase.getId());
     }
   }
 
