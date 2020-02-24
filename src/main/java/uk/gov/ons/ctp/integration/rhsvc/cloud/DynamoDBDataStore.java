@@ -77,11 +77,7 @@ public class DynamoDBDataStore implements CloudDataStore {
 
     Item item = table.getItem(hashKeyName, key);
     log.debug("Item is " + item.toJSON());
-    Optional<T> result = Optional.empty();
-
-    if (item != null) {
-      result = Optional.ofNullable(jsonToValue(item.toJSON(), target));
-    }
+    Optional<T> result = Optional.ofNullable(jsonToValue(item.toJSON(), target));
 
     return result;
   }
