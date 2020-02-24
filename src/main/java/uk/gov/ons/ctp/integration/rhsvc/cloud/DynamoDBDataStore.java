@@ -63,8 +63,27 @@ public class DynamoDBDataStore implements CloudDataStore {
   @Override
   public <T> Optional<T> retrieveObject(Class<T> target, String schema, String key)
       throws CTPException {
-    // TODO Auto-generated method stub
-    return null;
+    log.with("schema", schema).with("key", key).debug("Fetching object from DynamoDB");
+
+    DynamoDB documentAPI = new DynamoDB(dynamo);
+    Table table = documentAPI.getTable(schema);
+    String hashKeyName = null;
+
+    if (target == CollectionCase.class) {
+      hashKeyName = "id";
+    } else if (target == UAC.class) {
+      hashKeyName = "uacHash";
+    }
+
+    Item item = table.getItem(hashKeyName, key);
+    log.debug("Item is " + item.toJSON());
+    Optional<T> result = Optional.empty();
+
+    if (item != null) {
+      result = Optional.ofNullable(jsonToValue(item.toJSON(), target));
+    }
+
+    return result;
   }
 
   @Override
@@ -83,6 +102,18 @@ public class DynamoDBDataStore implements CloudDataStore {
   public void preDestroy() {
     log.debug("Shutting down DynamoDB client");
     dynamo.shutdown();
+  }
+
+  private <T> T jsonToValue(final String json, Class<T> target) throws CTPException {
+    T result = null;
+
+    try {
+      result = new ObjectMapper().readValue(json, target);
+    } catch (Exception e) {
+      throw new CTPException(Fault.SYSTEM_ERROR, "Failed to create object from JSON");
+    }
+
+    return result;
   }
 
   private String valueToJSON(final Object value) throws CTPException {
