@@ -35,7 +35,7 @@ public class DynamoDBDataStore implements CloudDataStore {
 
     DynamoDB documentAPI = new DynamoDB(dynamo);
     Table table = documentAPI.getTable(schema);
-    Item item = new Item().withPrimaryKey("id", key).withJSON(key, valueToJSON(value));
+    Item item = Item.fromJSON(valueToJSON(value)).withPrimaryKey("id", key);
 
     try {
       table.putItem(item);
