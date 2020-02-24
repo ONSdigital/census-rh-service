@@ -34,7 +34,7 @@ public class DynamoDBDataStore implements CloudDataStore {
   public void storeObject(String schema, String key, Object value)
       throws CTPException, DataStoreContentionException {
     log.with(schema).with(key).debug("Saving object to DynamoDB");
-    
+
     DynamoDB documentAPI = new DynamoDB(dynamo);
     Table table = documentAPI.getTable(schema);
     String hashKeyName = null;
