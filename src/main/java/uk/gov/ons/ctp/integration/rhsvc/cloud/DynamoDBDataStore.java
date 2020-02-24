@@ -15,6 +15,8 @@ import javax.annotation.PreDestroy;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
+import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.UAC;
 
 @Service
 public class DynamoDBDataStore implements CloudDataStore {
@@ -32,11 +34,18 @@ public class DynamoDBDataStore implements CloudDataStore {
   public void storeObject(String schema, String key, Object value)
       throws CTPException, DataStoreContentionException {
     log.with(schema).with(key).debug("Saving object to DynamoDB");
-    log.debug(value.getClass().getName());
-
+    
     DynamoDB documentAPI = new DynamoDB(dynamo);
     Table table = documentAPI.getTable(schema);
-    Item item = Item.fromJSON(valueToJSON(value)).withPrimaryKey("id", key);
+    String hashKeyName = null;
+
+    if (value instanceof CollectionCase) {
+      hashKeyName = "id";
+    } else if (value instanceof UAC) {
+      hashKeyName = "uacHash";
+    }
+
+    Item item = Item.fromJSON(valueToJSON(value)).withPrimaryKey(hashKeyName, key);
 
     try {
       table.putItem(item);
