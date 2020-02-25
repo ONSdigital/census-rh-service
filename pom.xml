@@ -7,7 +7,7 @@
   <parent>
     <groupId>uk.gov.ons.ctp.integration</groupId>
     <artifactId>census-int-common-config</artifactId>
-    <version>0.0.13</version>
+    <version>0.0.8</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -29,7 +29,43 @@
     <tag>rhsvc-0.1.2</tag>
   </scm>
 
+  <profiles>
+    <profile>
+      <id>artifactory</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
 
+      <repositories>
+        <repository>
+          <id>jcenter-repo</id>
+          <url>http://artifactory-sdc.onsdigital.uk/artifactory/jcenter-cache/</url>
+        </repository>
+        <repository>
+          <id>release-repo</id>
+          <name>libs-release</name>
+          <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-release-local</url>
+        </repository>
+        <repository>
+          <id>snapshot-repo</id>
+          <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-snapshot-local/</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-bom</artifactId>
+        <version>1.11.723</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement> 
+  
   <dependencies>
     <!-- Spring dependencies -->
 
@@ -113,26 +149,26 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.51</version>
+      <version>0.0.48</version>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>event-publisher</artifactId>
-      <version>0.0.23</version>
+      <version>0.0.17</version>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>test-framework</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.9</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>product-reference</artifactId>
-      <version>0.0.21</version>
+      <version>0.0.18</version>
     </dependency>
 
     <!-- ONS END -->
@@ -182,6 +218,12 @@
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-firestore</artifactId>
       <version>1.6.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-dynamodb</artifactId>
+      <!-- No version number necessary because of the AWS SDK Java BOM specified above. -->
     </dependency>
 
     <!-- Testing -->
