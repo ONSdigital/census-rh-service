@@ -76,7 +76,6 @@ public class DynamoDBDataStore implements CloudDataStore {
     }
 
     Item item = table.getItem(hashKeyName, key);
-    log.debug("Item is " + item.toJSON());
     Optional<T> result = Optional.empty();
 
     if (item != null) {
@@ -104,7 +103,7 @@ public class DynamoDBDataStore implements CloudDataStore {
     dynamo.shutdown();
   }
 
-  private <T> T jsonToValue(final String json, Class<T> target) throws CTPException {
+  private <T> T jsonToValue(final String json, final Class<T> target) throws CTPException {
     T result = null;
 
     try {
