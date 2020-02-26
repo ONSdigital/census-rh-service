@@ -14,6 +14,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -27,6 +28,8 @@ public class FirestoreDataStore implements CloudDataStore {
   public static final String FIRESTORE_PROJECT_ENV_NAME = "GOOGLE_CLOUD_PROJECT";
 
   private Firestore firestore;
+
+  private Random rnd = new Random();
 
   public void connect() {
     String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
@@ -53,6 +56,19 @@ public class FirestoreDataStore implements CloudDataStore {
       throws CTPException, DataStoreContentionException {
     log.with(schema).with(key).debug("Saving object to Firestore");
 
+    //    int actionNum = rnd.nextInt(100);
+    //    //    long throwException = System.currentTimeMillis() % 3;
+    //    if (actionNum < 20) {
+    //      log.warn("Action: Forcing CTPException");
+    //      throw new CTPException(Fault.SYSTEM_ERROR, "Forcing failure");
+    //    } else if (actionNum < 94) {
+    //      log.warn("Action: Forcing ContentionException");
+    //      throw new DataStoreContentionException("PMB forcing failure", new
+    // IllegalStateException());
+    //    } else {
+    //      log.warn("Action: Storing in Firestore: " + actionNum);
+    //    }
+
     // Store the object
     ApiFuture<WriteResult> result = firestore.collection(schema).document(key).set(value);
 
@@ -61,6 +77,10 @@ public class FirestoreDataStore implements CloudDataStore {
       result.get();
       log.with(schema).with(key).debug("Firestore save completed");
     } catch (AbortedException e) {
+      log.with("Aborted exception class", e.getClass().getName())
+          .with("Status code", e.getStatusCode().getCode())
+          .with("Aborted exception", e)
+          .warn("FDS. Aborted exception caught");
       if (e.getStatusCode().getCode() == StatusCode.Code.ABORTED) {
         // Firestore is overloaded. Use Spring exponential backoff to force a retry.
         // This is intended to catch 'Too much contention' exceptions, but will catch any aborted
@@ -71,11 +91,19 @@ public class FirestoreDataStore implements CloudDataStore {
             "Firestore contention on schema '" + schema + "'", e);
       }
 
-      log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
+      log.with("schema", schema)
+          .with("key", key)
+          .error(e, "Failed to create object in Firestore due to AbortedException");
       String failureMessage =
-          "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
+          "Failed to create object in Firestore due to AbortedException. Schema: "
+              + schema
+              + " with key "
+              + key;
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
     } catch (Exception e) {
+      log.with("Exception class", e.getClass().getName())
+          .with("Exception", e)
+          .warn("FDS. Non aborted exception caught");
       log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
