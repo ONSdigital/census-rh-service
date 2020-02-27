@@ -139,8 +139,7 @@ public class FirestoreDataStore implements CloudDataStore {
             .with("Status description", statusRuntimeException.getStatus().getDescription())
             .info("StatusRuntimeException found in exception heirarchy");
 
-        if (statusRuntimeException.getStatus().getCode().value()
-            == Status.ABORTED.getCode().value()) {
+        if (statusRuntimeException.getStatus().getCode() == Status.ABORTED.getCode()) {
           log.info("Contention detected");
           contentionDetected = true;
           break;
