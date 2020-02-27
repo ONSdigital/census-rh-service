@@ -27,7 +27,7 @@ public class RhRetryListener extends RetryListenerSupport {
       Object operationName = context.getAttribute(RetryContext.NAME);
 
       if (throwable == null) {
-        int numAttempts = context.getRetryCount() + 1;
+        int numAttempts = context.getRetryCount() + 1; // Add 1 to count the initial attempt
         log.warn(operationName + ": Transaction successful after " + numAttempts + " attempts");
 
       } else {

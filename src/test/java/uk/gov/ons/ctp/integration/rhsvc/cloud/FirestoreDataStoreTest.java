@@ -1,13 +1,12 @@
 package uk.gov.ons.ctp.integration.rhsvc.cloud;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 import com.google.api.core.ApiFuture;
-import com.google.api.gax.rpc.AbortedException;
-import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldPath;
@@ -16,6 +15,8 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -82,12 +83,11 @@ public class FirestoreDataStoreTest {
     // Load test data
     CollectionCase case1 = loadCaseFromFile(0);
 
-    // Create the forced exception which storeObject method will be throwing
-    String exceptionMessage = "ABORTED: Too much contention on these documents. Please try again.";
-    StatusCode abortedStatusCode = Mockito.mock(StatusCode.class);
-    Mockito.when(abortedStatusCode.getCode()).thenReturn(StatusCode.Code.ABORTED);
+    // Build chain of exceptions as per Firestore
+    Exception rootCauseException = new StatusRuntimeException(Status.ABORTED);
+    Exception causeException = new RuntimeException("e2", rootCauseException);
     Exception firestoreException =
-        new AbortedException(exceptionMessage, null, abortedStatusCode, true);
+        new java.util.concurrent.ExecutionException("e3", causeException);
 
     mockFirestoreForExpectedStore(TEST_SCHEMA, case1.getId(), case1, firestoreException);
 
@@ -96,11 +96,35 @@ public class FirestoreDataStoreTest {
       firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
     } catch (DataStoreContentionException e) {
       assertTrue(e.getMessage(), e.getMessage().contains("contention on schema 'IT_TEST_SCHEMA'"));
-      assertTrue(
-          e.getCause().getMessage(), e.getCause().getMessage().contains("Too much contention"));
       exceptionCaught = true;
     }
     assertTrue("Failed to detect datastore contention", exceptionCaught);
+  }
+
+  @Test
+  public void testStoreObject_doesNotIncorrectlyDetectContention() throws Exception {
+    // Load test data
+    CollectionCase case1 = loadCaseFromFile(0);
+
+    // Build chain of exceptions, but not with same values as Firestore uses for contention
+    Exception rootCauseException = new StatusRuntimeException(Status.ALREADY_EXISTS);
+    Exception causeException = new RuntimeException("e2", rootCauseException);
+    Exception firestoreException =
+        new java.util.concurrent.ExecutionException("e3", causeException);
+
+    mockFirestoreForExpectedStore(TEST_SCHEMA, case1.getId(), case1, firestoreException);
+
+    boolean contentionDetected = false;
+    boolean ctpExceptionCreated = false;
+    try {
+      firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
+    } catch (DataStoreContentionException e) {
+      contentionDetected = true;
+    } catch (CTPException e) {
+      ctpExceptionCreated = true;
+    }
+    assertFalse("Incorrectly diagnoised datastore contention", contentionDetected);
+    assertTrue(ctpExceptionCreated);
   }
 
   @Test

@@ -3,8 +3,6 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.api.core.ApiFuture;
-import com.google.api.gax.rpc.AbortedException;
-import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldPath;
 import com.google.cloud.firestore.Firestore;
@@ -12,6 +10,8 @@ import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -76,12 +76,15 @@ public class FirestoreDataStore implements CloudDataStore {
     try {
       result.get();
       log.with(schema).with(key).debug("Firestore save completed");
-    } catch (AbortedException e) {
-      log.with("Aborted exception class", e.getClass().getName())
-          .with("Status code", e.getStatusCode().getCode())
-          .with("Aborted exception", e)
-          .warn("FDS. Aborted exception caught");
-      if (e.getStatusCode().getCode() == StatusCode.Code.ABORTED) {
+
+    } catch (java.util.concurrent.ExecutionException e) {
+      log.with("Exception class", e.getClass().getName())
+          .with("Exception", e)
+          .with("schema", schema)
+          .with("key", key)
+          .error(e, "Failed to create object in Firestore. ExcecutionException caught");
+
+      if (isFirestoreContentionException(e)) {
         // Firestore is overloaded. Use Spring exponential backoff to force a retry.
         // This is intended to catch 'Too much contention' exceptions, but will catch any aborted
         // exception. Retrying on some currently unknown aborted condition is better than the risk
@@ -91,24 +94,62 @@ public class FirestoreDataStore implements CloudDataStore {
             "Firestore contention on schema '" + schema + "'", e);
       }
 
-      log.with("schema", schema)
-          .with("key", key)
-          .error(e, "Failed to create object in Firestore due to AbortedException");
       String failureMessage =
-          "Failed to create object in Firestore due to AbortedException. Schema: "
-              + schema
-              + " with key "
-              + key;
+          "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
+
     } catch (Exception e) {
       log.with("Exception class", e.getClass().getName())
           .with("Exception", e)
-          .warn("FDS. Non aborted exception caught");
-      log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
+          .with("schema", schema)
+          .with("key", key)
+          .error(e, "Failed to create object in Firestore");
+
+      if (isFirestoreContentionException(e)) {
+        // Firestore is overloaded. Use Spring exponential backoff to force a retry.
+        // This is intended to catch 'Too much contention' exceptions, but will catch any aborted
+        // exception. Retrying on some currently unknown aborted condition is better than the risk
+        // of missing actual firestore overloading.
+        log.with("schema", schema).with("key", key).debug("Firestore contention detected", e);
+        throw new DataStoreContentionException(
+            "Firestore contention on schema '" + schema + "'", e);
+      }
+
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
     }
+  }
+
+  private boolean isFirestoreContentionException(Exception e) {
+    log.info("Examining Exception to for Firestore contention");
+
+    boolean contentionDetected = false;
+
+    Throwable t = e;
+    while (t != null) {
+      log.with("Exception class", t.getClass().getName())
+          .with("Message", t.getMessage())
+          .info("Checking throwable");
+
+      if (t instanceof StatusRuntimeException) {
+        StatusRuntimeException statusRuntimeException = (StatusRuntimeException) t;
+        log.with("Status", statusRuntimeException.getStatus())
+            .with("Status code", statusRuntimeException.getStatus().getCode())
+            .with("Status description", statusRuntimeException.getStatus().getDescription())
+            .info("StatusRuntimeException found in exception heirarchy");
+
+        if (statusRuntimeException.getStatus() == Status.ABORTED) {
+          log.info("Contention detected");
+          contentionDetected = true;
+          break;
+        }
+      }
+
+      t = t.getCause();
+    }
+
+    return contentionDetected;
   }
 
   /**
