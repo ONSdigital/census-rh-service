@@ -15,7 +15,6 @@ import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -29,8 +28,6 @@ public class FirestoreDataStore implements CloudDataStore {
   public static final String FIRESTORE_PROJECT_ENV_NAME = "GOOGLE_CLOUD_PROJECT";
 
   private Firestore firestore;
-
-  private Random rnd = new Random();
 
   public void connect() {
     String googleProjectName = System.getenv(FirestoreDataStore.FIRESTORE_PROJECT_ENV_NAME);
@@ -57,19 +54,6 @@ public class FirestoreDataStore implements CloudDataStore {
       throws CTPException, DataStoreContentionException {
     log.with(schema).with(key).debug("Saving object to Firestore");
 
-    //    int actionNum = rnd.nextInt(100);
-    //    //    long throwException = System.currentTimeMillis() % 3;
-    //    if (actionNum < 20) {
-    //      log.warn("Action: Forcing CTPException");
-    //      throw new CTPException(Fault.SYSTEM_ERROR, "Forcing failure");
-    //    } else if (actionNum < 94) {
-    //      log.warn("Action: Forcing ContentionException");
-    //      throw new DataStoreContentionException("PMB forcing failure", new
-    // IllegalStateException());
-    //    } else {
-    //      log.warn("Action: Storing in Firestore: " + actionNum);
-    //    }
-
     // Store the object
     ApiFuture<WriteResult> result = firestore.collection(schema).document(key).set(value);
 
@@ -88,7 +72,7 @@ public class FirestoreDataStore implements CloudDataStore {
         // Firestore is overloaded. Use Spring exponential backoff to force a retry.
         // This is intended to catch 'Too much contention' exceptions and any other
         // Firestore exception where it is worth retrying.
-        log.with("schema", schema).with("key", key).info("Firestore contention detected", e);
+        log.with("schema", schema).with("key", key).info("Firestore contention detected");
         throw new DataStoreContentionException(
             "Firestore contention on schema '" + schema + "'", e);
       }
