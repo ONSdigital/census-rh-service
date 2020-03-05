@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.getJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
@@ -51,7 +52,8 @@ public final class FulfilmentsEndpointUnitTest {
   @Test
   public void fulfilmentsReqestNoParameters() throws Exception {
     List<Product> emptyList = new ArrayList<>();
-    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any())).thenReturn(emptyList);
+    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), anyBoolean()))
+        .thenReturn(emptyList);
 
     mockMvc.perform(getJson("/fulfilments")).andExpect(status().isOk());
   }
@@ -59,10 +61,11 @@ public final class FulfilmentsEndpointUnitTest {
   @Test
   public void fulfilmentsReqestAllParameters() throws Exception {
     List<Product> emptyList = new ArrayList<>();
-    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any())).thenReturn(emptyList);
+    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), anyBoolean()))
+        .thenReturn(emptyList);
 
     mockMvc
-        .perform(getJson("/fulfilments?caseType=HI&region=E&deliveryChannel=SMS"))
+        .perform(getJson("/fulfilments?caseType=HH&region=E&deliveryChannel=SMS"))
         .andExpect(status().isOk());
   }
 

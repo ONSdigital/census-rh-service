@@ -219,7 +219,7 @@ public class CaseServiceImpl implements CaseService {
     // Create the event payload request
     FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
     fulfilmentRequest.setCaseId(caseDetails.getId());
-    if (product.getCaseType().equals(Product.CaseType.HI)) {
+    if (product.getCaseTypes().contains(Product.CaseType.HH) && product.isIndividual()) {
       fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
     }
     fulfilmentRequest.setFulfilmentCode(product.getFulfilmentCode());

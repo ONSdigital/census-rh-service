@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -47,16 +48,19 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
   public ResponseEntity<List<Product>> getFulfilments(
       @RequestParam(required = false) CaseType caseType,
       @RequestParam(required = false) Region region,
-      @RequestParam(required = false) DeliveryChannel deliveryChannel)
+      @RequestParam(required = false) DeliveryChannel deliveryChannel,
+      @RequestParam(required = false) Boolean individual)
       throws CTPException {
 
     log.with("requestParam.caseType", caseType)
         .with("requestParam.region", region)
         .with("requestParam.deliveryChannel", deliveryChannel)
+        .with("requestParam.individual", individual)
         .info("Entering GET getFulfilments");
-
+    List<CaseType> caseTypes = caseType == null ? Collections.emptyList() : caseType.toList();
+    individual = (individual == null ? true : individual);
     List<Product> fulfilments =
-        fulfilmentsService.getFulfilments(caseType, region, deliveryChannel);
+        fulfilmentsService.getFulfilments(caseTypes, region, deliveryChannel, individual);
 
     log.with("size", fulfilments.size()).info("Found fulfilment(s)");
 

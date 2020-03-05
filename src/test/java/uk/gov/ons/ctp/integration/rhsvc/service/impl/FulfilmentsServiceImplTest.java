@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.util.ArrayList;
@@ -42,7 +41,8 @@ public class FulfilmentsServiceImplTest {
 
     // Invoke the method under test
     List<Product> products =
-        fulfilmentsService.getFulfilments(CaseType.HI, Region.E, DeliveryChannel.SMS);
+        fulfilmentsService.getFulfilments(
+            CaseType.HH.toList(), Region.E, DeliveryChannel.SMS, false);
 
     // Get hold of the example product used in the search
     Mockito.verify(productReference).searchProducts(exampleProductCaptor.capture());
@@ -53,7 +53,7 @@ public class FulfilmentsServiceImplTest {
     assertEquals(RequestChannel.RH, capturedExampleProduct.getRequestChannels().get(0));
 
     // Verify the parameters are used in the product search
-    assertEquals(CaseType.HI, capturedExampleProduct.getCaseType());
+    assertTrue(capturedExampleProduct.getCaseTypes().contains(CaseType.HH));
     assertEquals(1, capturedExampleProduct.getRegions().size());
     assertEquals(Region.E, capturedExampleProduct.getRegions().get(0));
     assertEquals(DeliveryChannel.SMS, capturedExampleProduct.getDeliveryChannel());

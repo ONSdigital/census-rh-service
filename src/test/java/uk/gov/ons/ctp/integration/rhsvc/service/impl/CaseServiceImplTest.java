@@ -238,7 +238,9 @@ public class CaseServiceImplTest {
 
   @Test
   public void testFulfilmentRequestBySMS_Household() throws Exception {
-    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HH);
+    Boolean b;
+    FulfilmentRequest actualFulfilmentRequest =
+        doFulfilmentRequestBySMS(Product.CaseType.HH, false);
 
     // Individual case id field should not be set for non-individual
     assertNull(actualFulfilmentRequest.getIndividualCaseId());
@@ -246,7 +248,7 @@ public class CaseServiceImplTest {
 
   @Test
   public void testFulfilmentRequestBySMS_Individual() throws Exception {
-    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HI);
+    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HH, true);
 
     // Individual case id field should be populated as case+product is for an individual
     String individualUuid = actualFulfilmentRequest.getIndividualCaseId();
@@ -255,6 +257,11 @@ public class CaseServiceImplTest {
   }
 
   private FulfilmentRequest doFulfilmentRequestBySMS(Product.CaseType caseType) throws Exception {
+    return doFulfilmentRequestBySMS(caseType, false);
+  }
+
+  private FulfilmentRequest doFulfilmentRequestBySMS(Product.CaseType caseType, boolean individual)
+      throws Exception {
     // Setup case data with required case type
     CollectionCase caseDetails = collectionCase.get(0);
     caseDetails.getAddress().setAddressType(caseType.toString());
@@ -269,12 +276,13 @@ public class CaseServiceImplTest {
     expectedSearchProduct.setRegions(Arrays.asList(Product.Region.E));
     expectedSearchProduct.setDeliveryChannel(DeliveryChannel.SMS);
     expectedSearchProduct.setFulfilmentCode("F1");
+    expectedSearchProduct.setIndividual(individual);
 
     // Simulate the behaviour of the ProductReference
     Product product = new Product();
-    product.setCaseType(Product.CaseType.HH);
     product.setFulfilmentCode("F1");
-    product.setCaseType(caseType);
+    product.setCaseTypes(caseType.toList());
+    product.setIndividual(individual);
     List<Product> foundProducts = new ArrayList<>();
     foundProducts.add(product);
     when(productReference.searchProducts(eq(expectedSearchProduct))).thenReturn(foundProducts);

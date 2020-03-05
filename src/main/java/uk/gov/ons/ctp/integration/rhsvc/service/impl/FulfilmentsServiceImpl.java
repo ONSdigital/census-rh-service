@@ -15,17 +15,20 @@ import uk.gov.ons.ctp.integration.rhsvc.service.FulfilmentsService;
 
 @Service
 public class FulfilmentsServiceImpl implements FulfilmentsService {
+
   @Autowired ProductReference productReference;
 
   @Override
   public List<Product> getFulfilments(
-      CaseType caseType, Region region, DeliveryChannel deliveryChannel) throws CTPException {
+      List<CaseType> caseTypes, Region region, DeliveryChannel deliveryChannel, boolean individual)
+      throws CTPException {
 
     Product example = new Product();
     example.setRequestChannels(Arrays.asList(RequestChannel.RH));
-    example.setCaseType(caseType);
+    example.setCaseTypes(caseTypes);
     example.setRegions(region == null ? null : Arrays.asList(region));
     example.setDeliveryChannel(deliveryChannel);
+    example.setIndividual(individual);
 
     List<Product> products = productReference.searchProducts(example);
 
