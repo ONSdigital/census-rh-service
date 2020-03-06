@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +58,7 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
         .with("requestParam.deliveryChannel", deliveryChannel)
         .with("requestParam.individual", individual)
         .info("Entering GET getFulfilments");
-    List<CaseType> caseTypes = caseType == null ? Collections.emptyList() : caseType.toList();
-    individual = (individual == null ? true : individual);
+    List<CaseType> caseTypes = caseType == null ? Collections.emptyList() : Arrays.asList(caseType);
     List<Product> fulfilments =
         fulfilmentsService.getFulfilments(caseTypes, region, deliveryChannel, individual);
 

@@ -65,7 +65,7 @@ public final class FulfilmentsEndpointUnitTest {
         .thenReturn(emptyList);
 
     mockMvc
-        .perform(getJson("/fulfilments?caseType=HH&region=E&deliveryChannel=SMS"))
+        .perform(getJson("/fulfilments?caseType=HH&region=E&deliveryChannel=SMS&individual=false"))
         .andExpect(status().isOk());
   }
 

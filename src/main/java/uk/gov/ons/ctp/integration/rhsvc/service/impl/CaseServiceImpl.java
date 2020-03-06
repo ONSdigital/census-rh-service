@@ -169,8 +169,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     // Attempt to find the requested product
-    Product product =
-        findProduct(caseDetails.get(), requestBodyDTO.getFulfilmentCode(), DeliveryChannel.SMS);
+    Product product = findProduct(caseDetails.get(), requestBodyDTO, DeliveryChannel.SMS);
     if (product == null) {
       log.info("fulfilmentRequestBySMS can't find compatible product");
       throw new CTPException(Fault.BAD_REQUEST, "Compatible product cannot be found");
@@ -188,14 +187,17 @@ public class CaseServiceImpl implements CaseService {
 
   // Search the ProductReference for the specified product
   private Product findProduct(
-      CollectionCase caseDetails, String fulfilmentCode, Product.DeliveryChannel deliveryChannel)
+      CollectionCase caseDetails,
+      SMSFulfilmentRequestDTO requestBodyDTO,
+      DeliveryChannel deliveryChannel)
       throws CTPException {
 
     Region region = Region.valueOf(caseDetails.getAddress().getRegion());
 
     log.with("region", region)
         .with("deliveryChannel", deliveryChannel)
-        .with("fulfilmentCode", fulfilmentCode)
+        .with("fulfilmentCode", requestBodyDTO.getFulfilmentCode())
+        //        .with("individual", requestBodyDTO.getIndividual())
         .debug("Attempting to find product.");
 
     // Build search criteria base on the cases details and the requested fulfilmentCode
@@ -203,7 +205,8 @@ public class CaseServiceImpl implements CaseService {
     searchCriteria.setRequestChannels(Arrays.asList(Product.RequestChannel.RH));
     searchCriteria.setRegions(Arrays.asList(region));
     searchCriteria.setDeliveryChannel(deliveryChannel);
-    searchCriteria.setFulfilmentCode(fulfilmentCode);
+    searchCriteria.setFulfilmentCode(requestBodyDTO.getFulfilmentCode());
+    //    searchCriteria.setIndividual(requestBodyDTO.getIndividual());
 
     // Attempt to find matching product
     List<Product> products = productReference.searchProducts(searchCriteria);
@@ -219,7 +222,12 @@ public class CaseServiceImpl implements CaseService {
     // Create the event payload request
     FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
     fulfilmentRequest.setCaseId(caseDetails.getId());
-    if (product.getCaseTypes().contains(Product.CaseType.HH) && product.isIndividual()) {
+    boolean isIndividual = true;
+    if (product.getIndividual() != null) {
+      isIndividual = product.getIndividual();
+    }
+
+    if (product.getCaseTypes().contains(Product.CaseType.HH) && isIndividual) {
       fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
     }
     fulfilmentRequest.setFulfilmentCode(product.getFulfilmentCode());

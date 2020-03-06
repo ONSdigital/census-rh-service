@@ -20,7 +20,7 @@ public class FulfilmentsServiceImpl implements FulfilmentsService {
 
   @Override
   public List<Product> getFulfilments(
-      List<CaseType> caseTypes, Region region, DeliveryChannel deliveryChannel, boolean individual)
+      List<CaseType> caseTypes, Region region, DeliveryChannel deliveryChannel, Boolean individual)
       throws CTPException {
 
     Product example = new Product();
