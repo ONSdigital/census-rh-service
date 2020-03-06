@@ -18,4 +18,5 @@ public class ProductDTO {
   private Product.DeliveryChannel deliveryChannel;
   private List<Product.RequestChannel> requestChannels;
   private Product.Handler handler;
+  
 }
