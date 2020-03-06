@@ -20,7 +20,11 @@ public class FulfilmentsServiceImpl implements FulfilmentsService {
 
   @Override
   public List<Product> getFulfilments(
-      List<CaseType> caseTypes, Region region, DeliveryChannel deliveryChannel, Boolean individual)
+      List<CaseType> caseTypes,
+      Region region,
+      DeliveryChannel deliveryChannel,
+      Product.ProductGroup productGroup,
+      Boolean individual)
       throws CTPException {
 
     Product example = new Product();
@@ -29,6 +33,7 @@ public class FulfilmentsServiceImpl implements FulfilmentsService {
     example.setRegions(region == null ? null : Arrays.asList(region));
     example.setDeliveryChannel(deliveryChannel);
     example.setIndividual(individual);
+    example.setProductGroup(productGroup);
 
     List<Product> products = productReference.searchProducts(example);
 

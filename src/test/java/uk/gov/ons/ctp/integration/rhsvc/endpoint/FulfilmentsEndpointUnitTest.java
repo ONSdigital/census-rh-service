@@ -52,7 +52,7 @@ public final class FulfilmentsEndpointUnitTest {
   @Test
   public void fulfilmentsReqestNoParameters() throws Exception {
     List<Product> emptyList = new ArrayList<>();
-    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), anyBoolean()))
+    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), any(), anyBoolean()))
         .thenReturn(emptyList);
 
     mockMvc.perform(getJson("/fulfilments")).andExpect(status().isOk());
@@ -61,11 +61,13 @@ public final class FulfilmentsEndpointUnitTest {
   @Test
   public void fulfilmentsReqestAllParameters() throws Exception {
     List<Product> emptyList = new ArrayList<>();
-    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), anyBoolean()))
+    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), any(), anyBoolean()))
         .thenReturn(emptyList);
 
     mockMvc
-        .perform(getJson("/fulfilments?caseType=HH&region=E&deliveryChannel=SMS&individual=false"))
+        .perform(
+            getJson(
+                "/fulfilments?caseType=HH&region=E&deliveryChannel=SMS&individual=false&productGroup=UAC"))
         .andExpect(status().isOk());
   }
 
@@ -82,5 +84,10 @@ public final class FulfilmentsEndpointUnitTest {
   @Test
   public void fulfilmentsReqestWithInvalidDeliveryChannel() throws Exception {
     mockMvc.perform(getJson("/fulfilments?deliveryChannel=X")).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void fulfilmentsRequestWithInvalidProductGroup() throws Exception {
+    mockMvc.perform(getJson("/fulfilments?productGroup=XXX")).andExpect(status().isBadRequest());
   }
 }

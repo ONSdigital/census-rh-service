@@ -42,7 +42,7 @@ public class FulfilmentsServiceImplTest {
     // Invoke the method under test
     List<Product> products =
         fulfilmentsService.getFulfilments(
-            CaseType.HH.toList(), Region.E, DeliveryChannel.SMS, false);
+            CaseType.HH.toList(), Region.E, DeliveryChannel.SMS, Product.ProductGroup.UAC, true);
 
     // Get hold of the example product used in the search
     Mockito.verify(productReference).searchProducts(exampleProductCaptor.capture());
@@ -57,6 +57,8 @@ public class FulfilmentsServiceImplTest {
     assertEquals(1, capturedExampleProduct.getRegions().size());
     assertEquals(Region.E, capturedExampleProduct.getRegions().get(0));
     assertEquals(DeliveryChannel.SMS, capturedExampleProduct.getDeliveryChannel());
+    assertTrue(capturedExampleProduct.getIndividual());
+    assertEquals(Product.ProductGroup.UAC, capturedExampleProduct.getProductGroup());
 
     // Verify that nothing else was specified in the product search
     assertNull(capturedExampleProduct.getFulfilmentCode());

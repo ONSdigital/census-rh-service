@@ -10,6 +10,10 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 public interface FulfilmentsService {
 
   List<Product> getFulfilments(
-      List<CaseType> caseType, Region region, DeliveryChannel deliveryChannel, Boolean individual)
+      List<CaseType> caseType,
+      Region region,
+      DeliveryChannel deliveryChannel,
+      Product.ProductGroup productGroup,
+      Boolean individual)
       throws CTPException;
 }

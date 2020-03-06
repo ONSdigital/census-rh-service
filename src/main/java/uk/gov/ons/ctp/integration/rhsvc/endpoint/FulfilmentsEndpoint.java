@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,10 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
    *
    * @param caseType is an optional parameter to specify the case type, eg, 'HI' or 'HH'
    * @param region is an optional parameter to specify the region, eg, 'E' for England.
-   * @param deliveryChannel is an optional parameter to specify the delivery channel, eg, 'POST'.
+   * @param deliveryChannel is an optional parameter to specify the delivery channel, eg, 'POST'
+   * @param individual is an optional parameter to specify whether this is a query about an
+   *     individual or a household
+   * @param productGroup is an optional parameter to specify the product group, eg 'UAC'
    * @return A list of matching products. The list will be empty if there are no matching products.
    * @throws CTPException if something went wrong.
    */
@@ -50,17 +52,20 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
       @RequestParam(required = false) CaseType caseType,
       @RequestParam(required = false) Region region,
       @RequestParam(required = false) DeliveryChannel deliveryChannel,
-      @RequestParam(required = false) Boolean individual)
+      @RequestParam(required = false) Boolean individual,
+      @RequestParam(required = false) Product.ProductGroup productGroup)
       throws CTPException {
 
     log.with("requestParam.caseType", caseType)
         .with("requestParam.region", region)
         .with("requestParam.deliveryChannel", deliveryChannel)
         .with("requestParam.individual", individual)
+        .with("requestParam.productGroup", productGroup)
         .info("Entering GET getFulfilments");
-    List<CaseType> caseTypes = caseType == null ? Collections.emptyList() : Arrays.asList(caseType);
+    List<CaseType> caseTypes = caseType == null ? Collections.emptyList() : caseType.toList();
     List<Product> fulfilments =
-        fulfilmentsService.getFulfilments(caseTypes, region, deliveryChannel, individual);
+        fulfilmentsService.getFulfilments(
+            caseTypes, region, deliveryChannel, productGroup, individual);
 
     log.with("size", fulfilments.size()).info("Found fulfilment(s)");
 
