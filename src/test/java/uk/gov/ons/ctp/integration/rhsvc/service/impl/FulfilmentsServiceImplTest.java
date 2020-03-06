@@ -19,6 +19,7 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.CaseType;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
+import uk.gov.ons.ctp.integration.rhsvc.representation.ProductDTO;
 
 public class FulfilmentsServiceImplTest {
 
@@ -40,7 +41,7 @@ public class FulfilmentsServiceImplTest {
     Mockito.when(productReference.searchProducts(any())).thenReturn(mockedResults);
 
     // Invoke the method under test
-    List<Product> products =
+    List<ProductDTO> products =
         fulfilmentsService.getFulfilments(
             CaseType.HH.toList(), Region.E, DeliveryChannel.SMS, Product.ProductGroup.UAC, true);
 

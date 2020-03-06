@@ -16,6 +16,7 @@ import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.CaseType;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
+import uk.gov.ons.ctp.integration.rhsvc.representation.ProductDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.FulfilmentsService;
 
 /** The REST controller for the RH Fulfilment end points */
@@ -48,7 +49,7 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
    * @throws CTPException if something went wrong.
    */
   @RequestMapping(value = "/fulfilments", method = RequestMethod.GET)
-  public ResponseEntity<List<Product>> getFulfilments(
+  public ResponseEntity<List<ProductDTO>> getFulfilments(
       @RequestParam(required = false) CaseType caseType,
       @RequestParam(required = false) Region region,
       @RequestParam(required = false) DeliveryChannel deliveryChannel,
@@ -63,7 +64,7 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
         .with("requestParam.productGroup", productGroup)
         .info("Entering GET getFulfilments");
     List<CaseType> caseTypes = caseType == null ? Collections.emptyList() : caseType.toList();
-    List<Product> fulfilments =
+    List<ProductDTO> fulfilments =
         fulfilmentsService.getFulfilments(
             caseTypes, region, deliveryChannel, productGroup, individual);
 

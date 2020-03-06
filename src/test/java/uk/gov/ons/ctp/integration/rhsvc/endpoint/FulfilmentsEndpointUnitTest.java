@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
-import uk.gov.ons.ctp.integration.common.product.model.Product;
+import uk.gov.ons.ctp.integration.rhsvc.representation.ProductDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.FulfilmentsService;
 
 /**
@@ -51,7 +51,7 @@ public final class FulfilmentsEndpointUnitTest {
 
   @Test
   public void fulfilmentsReqestNoParameters() throws Exception {
-    List<Product> emptyList = new ArrayList<>();
+    List<ProductDTO> emptyList = new ArrayList<>();
     Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), any(), anyBoolean()))
         .thenReturn(emptyList);
 
@@ -60,7 +60,7 @@ public final class FulfilmentsEndpointUnitTest {
 
   @Test
   public void fulfilmentsReqestAllParameters() throws Exception {
-    List<Product> emptyList = new ArrayList<>();
+    List<ProductDTO> emptyList = new ArrayList<>();
     Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), any(), anyBoolean()))
         .thenReturn(emptyList);
 

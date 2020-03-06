@@ -6,10 +6,11 @@ import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.CaseType;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
+import uk.gov.ons.ctp.integration.rhsvc.representation.ProductDTO;
 
 public interface FulfilmentsService {
 
-  List<Product> getFulfilments(
+  List<ProductDTO> getFulfilments(
       List<CaseType> caseType,
       Region region,
       DeliveryChannel deliveryChannel,

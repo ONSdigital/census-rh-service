@@ -2,6 +2,8 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -11,6 +13,7 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.CaseType;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
+import uk.gov.ons.ctp.integration.rhsvc.representation.ProductDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.FulfilmentsService;
 
 @Service
@@ -18,8 +21,10 @@ public class FulfilmentsServiceImpl implements FulfilmentsService {
 
   @Autowired ProductReference productReference;
 
+  @Autowired private MapperFacade mapperFacade;
+
   @Override
-  public List<Product> getFulfilments(
+  public List<ProductDTO> getFulfilments(
       List<CaseType> caseTypes,
       Region region,
       DeliveryChannel deliveryChannel,
@@ -37,6 +42,14 @@ public class FulfilmentsServiceImpl implements FulfilmentsService {
 
     List<Product> products = productReference.searchProducts(example);
 
-    return products;
+    return products
+        .stream()
+        .map(
+            p -> {
+              ProductDTO dto = new ProductDTO();
+              mapperFacade.map(p, dto);
+              return dto;
+            })
+        .collect(Collectors.toList());
   }
 }
