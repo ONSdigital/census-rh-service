@@ -9,3 +9,4 @@ coverage:
 ignore:
 - "src/tests/"
 - "migration/"
+- "src/main/**/*DTO.java"
