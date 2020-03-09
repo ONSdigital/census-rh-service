@@ -197,7 +197,6 @@ public class CaseServiceImpl implements CaseService {
     log.with("region", region)
         .with("deliveryChannel", deliveryChannel)
         .with("fulfilmentCode", requestBodyDTO.getFulfilmentCode())
-        //        .with("individual", requestBodyDTO.getIndividual())
         .debug("Attempting to find product.");
 
     // Build search criteria base on the cases details and the requested fulfilmentCode
@@ -206,7 +205,6 @@ public class CaseServiceImpl implements CaseService {
     searchCriteria.setRegions(Arrays.asList(region));
     searchCriteria.setDeliveryChannel(deliveryChannel);
     searchCriteria.setFulfilmentCode(requestBodyDTO.getFulfilmentCode());
-    //    searchCriteria.setIndividual(requestBodyDTO.getIndividual());
 
     // Attempt to find matching product
     List<Product> products = productReference.searchProducts(searchCriteria);
