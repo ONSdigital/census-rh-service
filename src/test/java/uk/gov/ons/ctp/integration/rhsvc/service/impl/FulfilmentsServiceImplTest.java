@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,11 @@ public class FulfilmentsServiceImplTest {
     // Invoke the method under test
     List<ProductDTO> products =
         fulfilmentsService.getFulfilments(
-            CaseType.HH.toList(), Region.E, DeliveryChannel.SMS, Product.ProductGroup.UAC, true);
+            Arrays.asList(CaseType.HH),
+            Region.E,
+            DeliveryChannel.SMS,
+            Product.ProductGroup.UAC,
+            true);
 
     // Get hold of the example product used in the search
     Mockito.verify(productReference).searchProducts(exampleProductCaptor.capture());

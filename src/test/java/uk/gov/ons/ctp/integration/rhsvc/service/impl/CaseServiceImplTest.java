@@ -288,7 +288,7 @@ public class CaseServiceImplTest {
     // Simulate the behaviour of the ProductReference
     Product productToReturn = new Product();
     productToReturn.setFulfilmentCode("F1");
-    productToReturn.setCaseTypes(caseType.toList());
+    productToReturn.setCaseTypes(Arrays.asList(caseType));
     productToReturn.setIndividual(individual);
     List<Product> foundProducts = new ArrayList<>();
     foundProducts.add(productToReturn);
