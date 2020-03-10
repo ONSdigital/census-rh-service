@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.getJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
@@ -18,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
-import uk.gov.ons.ctp.integration.common.product.model.Product;
+import uk.gov.ons.ctp.integration.rhsvc.representation.ProductDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.FulfilmentsService;
 
 /**
@@ -50,19 +51,23 @@ public final class FulfilmentsEndpointUnitTest {
 
   @Test
   public void fulfilmentsReqestNoParameters() throws Exception {
-    List<Product> emptyList = new ArrayList<>();
-    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any())).thenReturn(emptyList);
+    List<ProductDTO> emptyList = new ArrayList<>();
+    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), any(), anyBoolean()))
+        .thenReturn(emptyList);
 
     mockMvc.perform(getJson("/fulfilments")).andExpect(status().isOk());
   }
 
   @Test
   public void fulfilmentsReqestAllParameters() throws Exception {
-    List<Product> emptyList = new ArrayList<>();
-    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any())).thenReturn(emptyList);
+    List<ProductDTO> emptyList = new ArrayList<>();
+    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), any(), anyBoolean()))
+        .thenReturn(emptyList);
 
     mockMvc
-        .perform(getJson("/fulfilments?caseType=HI&region=E&deliveryChannel=SMS"))
+        .perform(
+            getJson(
+                "/fulfilments?caseType=HH&region=E&deliveryChannel=SMS&individual=false&productGroup=UAC"))
         .andExpect(status().isOk());
   }
 
@@ -79,5 +84,10 @@ public final class FulfilmentsEndpointUnitTest {
   @Test
   public void fulfilmentsReqestWithInvalidDeliveryChannel() throws Exception {
     mockMvc.perform(getJson("/fulfilments?deliveryChannel=X")).andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void fulfilmentsRequestWithInvalidProductGroup() throws Exception {
+    mockMvc.perform(getJson("/fulfilments?productGroup=XXX")).andExpect(status().isBadRequest());
   }
 }

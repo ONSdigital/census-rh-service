@@ -238,7 +238,15 @@ public class CaseServiceImplTest {
 
   @Test
   public void testFulfilmentRequestBySMS_Household() throws Exception {
-    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HH);
+    FulfilmentRequest actualFulfilmentRequest =
+        doFulfilmentRequestBySMS(Product.CaseType.HH, false);
+
+    /*
+       I am unsure how to proceed here. The removal of CaseType.HI means that
+       the *individual* flag needs to permeate into the CaseEndpoint, its related
+       services and DTOs. Which was not mentioned on the ticket. Probably what's intended
+       but I'm not going to change these APIs without consulting someone else
+    */
 
     // Individual case id field should not be set for non-individual
     assertNull(actualFulfilmentRequest.getIndividualCaseId());
@@ -246,17 +254,24 @@ public class CaseServiceImplTest {
 
   @Test
   public void testFulfilmentRequestBySMS_Individual() throws Exception {
-    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HI);
+    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HH, true);
 
     // Individual case id field should be populated as case+product is for an individual
     String individualUuid = actualFulfilmentRequest.getIndividualCaseId();
     assertNotNull(individualUuid);
-    assertNotNull(UUID.fromString(individualUuid.toString())); // must be valid UUID
+    assertNotNull(UUID.fromString(individualUuid)); // must be valid UUID
   }
 
-  private FulfilmentRequest doFulfilmentRequestBySMS(Product.CaseType caseType) throws Exception {
+  private FulfilmentRequest doFulfilmentRequestBySMS(Product.CaseType caseType, boolean individual)
+      throws Exception {
     // Setup case data with required case type
-    CollectionCase caseDetails = collectionCase.get(0);
+    String caseTypeToSearch = individual ? "HI" : "HH";
+    CollectionCase caseDetails =
+        collectionCase
+            .stream()
+            .filter(c -> c.getCaseType().equals(caseTypeToSearch))
+            .findFirst()
+            .get();
     caseDetails.getAddress().setAddressType(caseType.toString());
     UUID caseId = UUID.fromString(caseDetails.getId());
 
@@ -271,12 +286,12 @@ public class CaseServiceImplTest {
     expectedSearchProduct.setFulfilmentCode("F1");
 
     // Simulate the behaviour of the ProductReference
-    Product product = new Product();
-    product.setCaseType(Product.CaseType.HH);
-    product.setFulfilmentCode("F1");
-    product.setCaseType(caseType);
+    Product productToReturn = new Product();
+    productToReturn.setFulfilmentCode("F1");
+    productToReturn.setCaseTypes(Arrays.asList(caseType));
+    productToReturn.setIndividual(individual);
     List<Product> foundProducts = new ArrayList<>();
-    foundProducts.add(product);
+    foundProducts.add(productToReturn);
     when(productReference.searchProducts(eq(expectedSearchProduct))).thenReturn(foundProducts);
 
     // Build request body
