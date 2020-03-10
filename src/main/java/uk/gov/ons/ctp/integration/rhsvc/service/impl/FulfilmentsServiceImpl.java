@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ public class FulfilmentsServiceImpl implements FulfilmentsService {
 
   @Autowired ProductReference productReference;
 
-  @Autowired private MapperFacade mapperFacade;
+  @Autowired MapperFacade mapperFacade;
 
   @Override
   public List<ProductDTO> getFulfilments(
@@ -41,15 +40,6 @@ public class FulfilmentsServiceImpl implements FulfilmentsService {
     example.setProductGroup(productGroup);
 
     List<Product> products = productReference.searchProducts(example);
-
-    return products
-        .stream()
-        .map(
-            p -> {
-              ProductDTO dto = new ProductDTO();
-              mapperFacade.map(p, dto);
-              return dto;
-            })
-        .collect(Collectors.toList());
+    return mapperFacade.mapAsList(products, ProductDTO.class);
   }
 }

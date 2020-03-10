@@ -16,6 +16,5 @@ public class ProductDTO {
   private Boolean individual;
   private List<Product.Region> regions;
   private Product.DeliveryChannel deliveryChannel;
-  private List<Product.RequestChannel> requestChannels;
   private Product.Handler handler;
 }

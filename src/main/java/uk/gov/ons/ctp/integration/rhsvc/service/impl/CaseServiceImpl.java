@@ -220,7 +220,7 @@ public class CaseServiceImpl implements CaseService {
     // Create the event payload request
     FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
     fulfilmentRequest.setCaseId(caseDetails.getId());
-    boolean isIndividual = true;
+    boolean isIndividual = false;
     if (product.getIndividual() != null) {
       isIndividual = product.getIndividual();
     }
