@@ -136,6 +136,26 @@ If the Rabbit retries are exhausted then the root cause exception is logged:
     
 #### Contention backoff times
 
+The retry of Firestore puts is controlled by the following properties:
+
+**backoffInitial** Is the number of milliseconds that the initial backoff will wait for.
+
+**backoffMultiplier** This controls the increase in the wait time for each subsequent failure and retry.
+
+**backoffMax** Is the maximum amount of time that we want to wait before retrying.
+
+**backoffMaxAttempts** This limits the number of times we are going to attempt the opertation before throwing an exception.
+
+The default values for these properties has been set to give a very slow rate escalation. This should mean that the
+number of successful Firestore transactions is just a fraction below the actual maximum possible rate. The shallow
+escalation also means that we will try many times, and combined with a relatively high maximum wait, will mean 
+that we should hopefully never see a transaction (which is failing due to contention) going back to Rabbit. 
+
+Under extreme contention RH should slow down to the extent that each RH thread is only doing one Firestore add per
+minute. This should mean that RH is submitting requests 100's of times slower than Firestore can handle.
+
+#### Contention backoff times
+
 To help tune the contention backoff configuration (see 'cloudStorage' section of application properties) here is a noddy program to help:
 
     public class RetryTimes {

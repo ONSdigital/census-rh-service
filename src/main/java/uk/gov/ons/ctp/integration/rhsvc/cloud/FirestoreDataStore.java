@@ -3,8 +3,6 @@ package uk.gov.ons.ctp.integration.rhsvc.cloud;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.api.core.ApiFuture;
-import com.google.api.gax.rpc.AbortedException;
-import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldPath;
 import com.google.cloud.firestore.Firestore;
@@ -12,6 +10,9 @@ import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
+import io.grpc.Status;
+import io.grpc.Status.Code;
+import io.grpc.StatusRuntimeException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,27 +61,72 @@ public class FirestoreDataStore implements CloudDataStore {
     try {
       result.get();
       log.with(schema).with(key).debug("Firestore save completed");
-    } catch (AbortedException e) {
-      if (e.getStatusCode().getCode() == StatusCode.Code.ABORTED) {
+
+    } catch (Exception e) {
+      log.with("schema", schema)
+          .with("key", key)
+          .with("Exception chain", describeExceptionChain(e))
+          .error(e, "Failed to create object in Firestore");
+
+      if (isRetryableFirestoreException(e)) {
         // Firestore is overloaded. Use Spring exponential backoff to force a retry.
-        // This is intended to catch 'Too much contention' exceptions, but will catch any aborted
-        // exception. Retrying on some currently unknown aborted condition is better than the risk
-        // of missing actual firestore overloading.
-        log.with("schema", schema).with("key", key).debug("Firestore contention detected", e);
+        // This is intended to catch 'Too much contention' exceptions and any other
+        // Firestore exception where it is worth retrying.
+        log.with("schema", schema).with("key", key).info("Firestore contention detected");
         throw new DataStoreContentionException(
             "Firestore contention on schema '" + schema + "'", e);
       }
 
-      log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
-      String failureMessage =
-          "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
-      throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
-    } catch (Exception e) {
-      log.with("schema", schema).with("key", key).error(e, "Failed to create object in Firestore");
       String failureMessage =
           "Failed to create object in Firestore. Schema: " + schema + " with key " + key;
       throw new CTPException(Fault.SYSTEM_ERROR, e, failureMessage);
     }
+  }
+
+  // This method supports logging which aims to protect against future unexpected changes in
+  // how google throw exceptions for retryable operations. If Google change Firestore behaviour
+  // and we don't detect a retryable operation then we want our logging to be good enough to
+  // allow a code fix.
+  private String describeExceptionChain(Throwable e) {
+    StringBuilder builder = new StringBuilder();
+
+    while (e != null) {
+      builder.append("caused by " + e.getClass().getName() + " ");
+      e = e.getCause();
+    }
+
+    return builder.toString().trim();
+  }
+
+  private boolean isRetryableFirestoreException(Exception e) {
+    boolean retryable = false;
+
+    // Traverse the exception chain looking for a StatusRuntimeException
+    Throwable t = e;
+    while (t != null) {
+      if (t instanceof StatusRuntimeException) {
+        StatusRuntimeException statusRuntimeException = (StatusRuntimeException) t;
+        Code failureCode = statusRuntimeException.getStatus().getCode();
+
+        if (failureCode == Status.ABORTED.getCode()
+            || failureCode == Status.DEADLINE_EXCEEDED.getCode()
+            || failureCode == Status.UNAVAILABLE.getCode()) {
+          retryable = true;
+          break;
+        } else {
+          log.with("Status", statusRuntimeException.getStatus())
+              .with("Status code", failureCode)
+              .with("Status description", statusRuntimeException.getStatus().getDescription())
+              .info(
+                  "StatusRuntimeException found in exception heirarchy"
+                      + ", but it's not a retryable code");
+        }
+      }
+
+      t = t.getCause();
+    }
+
+    return retryable;
   }
 
   /**

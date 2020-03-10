@@ -36,11 +36,12 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   public void acceptCaseEvent(CaseEvent caseEvent) throws CTPException {
 
+    CollectionCase collectionCase = caseEvent.getPayload().getCollectionCase();
     String caseTransactionId = caseEvent.getEvent().getTransactionId();
 
-    log.with(caseTransactionId).info("Entering acceptCaseEvent");
-
-    CollectionCase collectionCase = caseEvent.getPayload().getCollectionCase();
+    log.with("transactionId", caseTransactionId)
+        .with("caseId", collectionCase.getId())
+        .info("Entering acceptCaseEvent");
 
     try {
       respondentDataRepo.writeCollectionCase(collectionCase);
