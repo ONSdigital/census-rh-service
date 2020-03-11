@@ -86,6 +86,7 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(uacTest.getQuestionnaireId(), uacDTO.getQuestionnaireId());
     assertEquals(uacTest.getCaseType(), uacDTO.getCaseType());
     assertEquals(uacTest.getRegion(), uacDTO.getRegion());
+    assertEquals(uacTest.getFormType(), uacDTO.getFormType());
 
     assertEquals(caseTest.getAddress().getAddressLine1(), uacDTO.getAddress().getAddressLine1());
     assertEquals(caseTest.getAddress().getAddressLine2(), uacDTO.getAddress().getAddressLine2());

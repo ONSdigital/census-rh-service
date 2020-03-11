@@ -34,13 +34,7 @@ public class UacEventReceiverImplUnit_Test {
     UACEvent uacEventFixture = new UACEvent();
     UACPayload uacPayloadFixture = uacEventFixture.getPayload();
     UAC uacFixture = uacPayloadFixture.getUac();
-    uacFixture.setUacHash("999999999");
-    uacFixture.setActive("true");
-    uacFixture.setQuestionnaireId("1110000009");
-    uacFixture.setCaseType("H");
-    uacFixture.setRegion("E");
-    uacFixture.setCaseId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
-    uacFixture.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
+
     Header headerFixture = new Header();
     headerFixture.setType(EventType.UAC_UPDATED);
     headerFixture.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
