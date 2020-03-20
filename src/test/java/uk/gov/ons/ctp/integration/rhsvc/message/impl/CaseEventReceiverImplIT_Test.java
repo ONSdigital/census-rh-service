@@ -123,7 +123,6 @@ public class CaseEventReceiverImplIT_Test {
     contact.setTitle("Ms");
     contact.setForename("jo");
     contact.setSurname("smith");
-    contact.setEmail("me@example.com");
     contact.setTelNo("+447890000000");
 
     Header header = new Header();

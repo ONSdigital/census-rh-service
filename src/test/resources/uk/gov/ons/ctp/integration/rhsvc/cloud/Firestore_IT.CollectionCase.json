@@ -22,7 +22,6 @@
 		"title": "Ms",
 		"forename": "jo",
 		"surname": "smith",
-		"email": "me@example.com",
 		"telNo": "+447890000000"
 	},
 	"actionableFrom": "2011-08-12T20:17:46.384Z"
@@ -50,7 +49,6 @@
 		"title": "Mr",
 		"forename": "Iain",
 		"surname": "Jones",
-		"email": "Iain@somewhere.com",
 		"telNo": "+447890023444"
 	},
 	"actionableFrom": "2011-08-12T20:17:46.384Z"
