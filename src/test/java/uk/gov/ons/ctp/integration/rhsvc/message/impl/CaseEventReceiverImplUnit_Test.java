@@ -58,7 +58,6 @@ public class CaseEventReceiverImplUnit_Test {
     contactFixture.setTitle("Ms");
     contactFixture.setForename("jo");
     contactFixture.setSurname("smith");
-    contactFixture.setEmail("me@example.com");
     contactFixture.setTelNo("+447890000000");
     Header headerFixture = new Header();
     headerFixture.setType(EventType.CASE_UPDATED);
