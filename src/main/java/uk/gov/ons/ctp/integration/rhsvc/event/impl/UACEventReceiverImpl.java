@@ -2,10 +2,12 @@ package uk.gov.ons.ctp.integration.rhsvc.event.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -26,6 +28,9 @@ public class UACEventReceiverImpl {
   @Autowired private RespondentDataRepository respondentDataRepo;
   private static final Logger log = LoggerFactory.getLogger(UACEventReceiverImpl.class);
 
+  @Value("#{'${queueconfig.qid-filter-prefixes}'.split(',')}")
+  private List<String> qidFilterPrefixes;
+
   /**
    * Message end point for events from Response Management. At present sends straight to publisher
    * to prove messaging setup.
@@ -43,11 +48,24 @@ public class UACEventReceiverImpl {
         .with("caseId", uac.getCaseId())
         .info("Entering acceptUACEvent");
 
+    String qid = uac.getQuestionnaireId();
+    if (isFilteredByQid(qid)) {
+      log.with("transactionId", uacTransactionId)
+          .with("caseId", uac.getCaseId())
+          .with("questionnaireId", qid)
+          .info("Filtering UAC Event because of questionnaire ID prefix");
+      return;
+    }
+
     try {
       respondentDataRepo.writeUAC(uac);
     } catch (CTPException ctpEx) {
       log.with(uacTransactionId).with(ctpEx.getMessage()).error("UAC Event processing failed");
       throw new CTPException(ctpEx.getFault());
     }
+  }
+
+  private boolean isFilteredByQid(String qid) {
+    return qid != null && qid.length() > 2 && qidFilterPrefixes.contains(qid.substring(0, 2));
   }
 }
