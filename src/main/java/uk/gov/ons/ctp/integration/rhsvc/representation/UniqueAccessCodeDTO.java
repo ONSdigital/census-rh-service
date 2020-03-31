@@ -24,4 +24,5 @@ public class UniqueAccessCodeDTO {
   private UUID collectionExerciseId;
   private AddressDTO address;
   private String formType;
+  private boolean handDelivery;
 }

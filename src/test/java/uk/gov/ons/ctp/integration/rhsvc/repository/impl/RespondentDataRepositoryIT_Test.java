@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
 import org.junit.Before;
@@ -63,6 +64,7 @@ public class RespondentDataRepositoryIT_Test {
     collectionCase.setAddress(address);
     collectionCase.setContact(contact);
     collectionCase.setActionableFrom(actionableFrom);
+    collectionCase.setHandDelivery(true);
 
     uac = new UAC();
     uac.setUacHash(uacHash);
@@ -103,5 +105,6 @@ public class RespondentDataRepositoryIT_Test {
     assertEquals(collectionCase.getAddress(), collectionCase2.getAddress());
     assertEquals(collectionCase.getContact(), collectionCase2.getContact());
     assertEquals(collectionCase.getActionableFrom(), collectionCase2.getActionableFrom());
+    assertTrue(collectionCase.isHandDelivery());
   }
 }
