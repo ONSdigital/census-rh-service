@@ -13,4 +13,5 @@ import org.springframework.retry.annotation.EnableRetry;
 public class AppConfig {
   private SwaggerSettings swaggerSettings;
   private Logging logging;
+  private QueueConfig queueConfig;
 }

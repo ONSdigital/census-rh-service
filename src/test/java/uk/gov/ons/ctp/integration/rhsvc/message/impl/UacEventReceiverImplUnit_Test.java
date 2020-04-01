@@ -4,7 +4,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -15,6 +16,8 @@ import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
 import uk.gov.ons.ctp.common.event.model.UACPayload;
 import uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
+import uk.gov.ons.ctp.integration.rhsvc.config.QueueConfig;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
@@ -25,12 +28,15 @@ public class UacEventReceiverImplUnit_Test {
   private UACEventReceiverImpl target;
   private UACEvent uacEventFixture;
   private UAC uacFixture;
+  private AppConfig appConfig = new AppConfig();
 
   @Before
   public void setUp() {
     target = new UACEventReceiverImpl();
-    ReflectionTestUtils.setField(
-        target, "qidFilterPrefixes", Arrays.asList("11", "12", "13", "14"));
+    QueueConfig queueConfig = new QueueConfig();
+    queueConfig.setQidFilterPrefixes(Stream.of("11", "12", "13", "14").collect(Collectors.toSet()));
+    appConfig.setQueueConfig(queueConfig);
+    ReflectionTestUtils.setField(target, "appConfig", appConfig);
     mockRespondentDataRepo = mock(RespondentDataRepositoryImpl.class);
     target.setRespondentDataRepo(mockRespondentDataRepo);
   }

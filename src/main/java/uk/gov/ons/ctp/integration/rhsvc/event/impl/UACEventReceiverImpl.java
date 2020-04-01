@@ -2,17 +2,16 @@ package uk.gov.ons.ctp.integration.rhsvc.event.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 /**
@@ -28,8 +27,7 @@ public class UACEventReceiverImpl {
   @Autowired private RespondentDataRepository respondentDataRepo;
   private static final Logger log = LoggerFactory.getLogger(UACEventReceiverImpl.class);
 
-  @Value("#{'${queueconfig.qid-filter-prefixes}'.split(',')}")
-  private List<String> qidFilterPrefixes;
+  @Autowired private AppConfig appConfig;
 
   /**
    * Message end point for events from Response Management. At present sends straight to publisher
@@ -66,6 +64,8 @@ public class UACEventReceiverImpl {
   }
 
   private boolean isFilteredByQid(String qid) {
-    return qid != null && qid.length() > 2 && qidFilterPrefixes.contains(qid.substring(0, 2));
+    return qid != null
+        && qid.length() > 2
+        && appConfig.getQueueConfig().getQidFilterPrefixes().contains(qid.substring(0, 2));
   }
 }

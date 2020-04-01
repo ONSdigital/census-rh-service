@@ -20,6 +20,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
@@ -31,12 +32,14 @@ import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
 import uk.gov.ons.ctp.common.event.model.UACPayload;
 import uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
 
 /** Spring Integration test of flow received from Response Management */
 @SpringBootTest
-@ContextConfiguration("/uacEventReceiverImpl.xml")
+@EnableConfigurationProperties
+@ContextConfiguration(value = "/uacEventReceiverImpl.xml", classes = AppConfig.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("mocked-connection-factory")
 public class UacEventReceiverImplIT_Test {
