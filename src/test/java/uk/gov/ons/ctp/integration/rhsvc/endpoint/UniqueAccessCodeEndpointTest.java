@@ -62,7 +62,8 @@ public class UniqueAccessCodeEndpointTest {
         .andExpect(content().contentType("application/json;charset=UTF-8"))
         .andExpect(jsonPath("$.uacHash", is(UAC_HASH)))
         .andExpect(jsonPath("$.caseId", is(CASE_ID)))
-        .andExpect(jsonPath("$.address.postcode", is(POSTCODE)));
+        .andExpect(jsonPath("$.address.postcode", is(POSTCODE)))
+        .andExpect(jsonPath("$.handDelivery", is(true)));
   }
 
   /** Test returns resource not found for invalid UAC */
