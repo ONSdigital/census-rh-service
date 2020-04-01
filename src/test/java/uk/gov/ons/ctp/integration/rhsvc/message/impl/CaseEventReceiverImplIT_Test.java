@@ -104,6 +104,7 @@ public class CaseEventReceiverImplIT_Test {
     collectionCase.setSurvey("Census");
     collectionCase.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
     collectionCase.setActionableFrom("2011-08-12T20:17:46.384Z");
+    collectionCase.setHandDelivery(true);
 
     Address address = collectionCase.getAddress();
     address.setAddressLine1("1 main street");
@@ -130,6 +131,7 @@ public class CaseEventReceiverImplIT_Test {
     header.setDateTime(new Date());
     header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     caseEvent.setEvent(header);
+
     return caseEvent;
   }
 }
