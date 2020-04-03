@@ -24,8 +24,9 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 @MessageEndpoint
 public class UACEventReceiverImpl {
 
-  @Autowired private RespondentDataRepository respondentDataRepo;
   private static final Logger log = LoggerFactory.getLogger(UACEventReceiverImpl.class);
+
+  @Autowired private RespondentDataRepository respondentDataRepo;
 
   @Autowired private AppConfig appConfig;
 
