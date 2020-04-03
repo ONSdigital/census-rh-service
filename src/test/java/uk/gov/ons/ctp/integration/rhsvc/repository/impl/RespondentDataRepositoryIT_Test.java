@@ -11,6 +11,7 @@ import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 // import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
@@ -34,7 +35,7 @@ public class RespondentDataRepositoryIT_Test {
     String collectionExerciseId = "n66de4dc-3c3b-11e9-b210-d663bd873d93";
     String actionableFrom = "2011-08-12T20:17:46.384Z";
     String active = "true";
-    String questionnaireId = "1110000009";
+    String questionnaireId = RespondentHomeFixture.A_QID;
     String caseType = "H";
     String region = "E";
     Address address = new Address();

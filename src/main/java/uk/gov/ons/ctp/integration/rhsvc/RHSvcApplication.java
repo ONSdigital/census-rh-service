@@ -29,16 +29,12 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 @ImportResource("springintegration/main.xml")
 public class RHSvcApplication {
 
-  @Value("${queueconfig.event-exchange}")
-  private String eventExchange;
-
   /**
    * The main entry point for this application.
    *
    * @param args runtime command line args
    */
   public static void main(final String[] args) {
-
     SpringApplication.run(RHSvcApplication.class, args);
   }
 

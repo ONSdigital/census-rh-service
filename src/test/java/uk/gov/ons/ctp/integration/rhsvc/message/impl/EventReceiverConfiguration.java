@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
 
@@ -41,8 +43,10 @@ public class EventReceiverConfiguration {
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public UACEventReceiverImpl uacEventReceiver() {
-    return Mockito.spy(new UACEventReceiverImpl());
+  public UACEventReceiverImpl uacEventReceiver(AppConfig appConfig) {
+    UACEventReceiverImpl receiver = new UACEventReceiverImpl();
+    ReflectionTestUtils.setField(receiver, "appConfig", appConfig);
+    return Mockito.spy(receiver);
   }
 
   @Bean

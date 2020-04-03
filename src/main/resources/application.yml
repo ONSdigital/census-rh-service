@@ -113,6 +113,11 @@ queueconfig:
   uac-queue-DLQ: case.rh.uac.dlq
   uac-routing-key: event.uac.update
   response-authentication-routing-key: event.response.authentication
+  qid-filter-prefixes:
+     - 11
+     - 12
+     - 13
+     - 14
 
 messaging:
   mismatchedQueuesFatal: true

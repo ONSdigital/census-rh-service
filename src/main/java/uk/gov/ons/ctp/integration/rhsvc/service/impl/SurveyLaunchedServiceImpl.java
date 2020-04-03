@@ -3,7 +3,6 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -21,9 +20,6 @@ public class SurveyLaunchedServiceImpl implements SurveyLaunchedService {
   private static final Logger log = LoggerFactory.getLogger(SurveyLaunchedServiceImpl.class);
 
   @Autowired private EventPublisher eventPublisher;
-
-  @Value("${queueconfig.response-authentication-routing-key}")
-  private String routingKey;
 
   @Override
   public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) throws CTPException {
