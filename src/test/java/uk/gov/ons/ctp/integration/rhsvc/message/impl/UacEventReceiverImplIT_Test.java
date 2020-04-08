@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
+import lombok.SneakyThrows;
 import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,11 +54,9 @@ public class UacEventReceiverImplIT_Test {
     Mockito.reset(receiver);
   }
 
-  /** Test the receiver flow */
-  @Test
-  public void uacEventFlowTest() throws Exception {
-
-    UACEvent uacEvent = createUAC(RespondentHomeFixture.A_QID);
+  @SneakyThrows
+  private void uacEventFlow(EventType type) {
+    UACEvent uacEvent = createUAC(RespondentHomeFixture.A_QID, type);
 
     // Construct message
     MessageProperties amqpMessageProperties = new MessageProperties();
@@ -77,10 +76,22 @@ public class UacEventReceiverImplIT_Test {
     verify(respondentDataRepo).writeUAC(any());
   }
 
+  /** Test the receiver flow for UAC created */
+  @Test
+  public void uacCreatedEventFlow() {
+    uacEventFlow(EventType.UAC_CREATED);
+  }
+
+  /** Test the receiver flow for UAC updated */
+  @Test
+  public void uacUpdatedEventFlow() {
+    uacEventFlow(EventType.UAC_UPDATED);
+  }
+
   @Test
   public void shouldFilterUacEventWithContinuationFormQid() throws Exception {
 
-    UACEvent uacEvent = createUAC(RespondentHomeFixture.QID_12);
+    UACEvent uacEvent = createUAC(RespondentHomeFixture.QID_12, EventType.UAC_UPDATED);
 
     // Construct message
     MessageProperties amqpMessageProperties = new MessageProperties();
@@ -104,7 +115,7 @@ public class UacEventReceiverImplIT_Test {
   public void uacEventReceivedWithoutMillisecondsTest() throws Exception {
 
     // Create a UAC with a timestamp. Note that that the milliseconds are not specified
-    UACEvent uacEvent = createUAC(RespondentHomeFixture.A_QID);
+    UACEvent uacEvent = createUAC(RespondentHomeFixture.A_QID, EventType.UAC_UPDATED);
     String uac = new ObjectMapper().writeValueAsString(uacEvent);
     String uacWithTimestamp =
         uac.replaceAll("\"dateTime\":\"[^\"]*", "\"dateTime\":\"2011-08-12T20:17:46Z");
@@ -125,7 +136,7 @@ public class UacEventReceiverImplIT_Test {
     verify(respondentDataRepo).writeUAC(any());
   }
 
-  private UACEvent createUAC(String qid) {
+  private UACEvent createUAC(String qid, EventType type) {
     // Construct UACEvent
     UACEvent uacEvent = new UACEvent();
     UACPayload uacPayload = uacEvent.getPayload();
@@ -138,7 +149,7 @@ public class UacEventReceiverImplIT_Test {
     uac.setCaseId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     uac.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
     Header header = new Header();
-    header.setType(EventType.UAC_UPDATED);
+    header.setType(type);
     header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     header.setDateTime(new Date());
     uacEvent.setEvent(header);
