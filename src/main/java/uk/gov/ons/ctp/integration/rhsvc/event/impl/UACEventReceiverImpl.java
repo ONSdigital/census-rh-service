@@ -34,7 +34,7 @@ public class UACEventReceiverImpl {
    * Message end point for events from Response Management. At present sends straight to publisher
    * to prove messaging setup.
    *
-   * @param uacEvent UACEvent message from Response Management
+   * @param uacEvent UACEvent message (either created or updated type)from Response Management
    * @throws CTPException something went wrong
    */
   @ServiceActivator(inputChannel = "acceptUACEvent")

@@ -6,10 +6,10 @@ import static org.mockito.Mockito.verify;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.SneakyThrows;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -41,7 +41,8 @@ public class UacEventReceiverImplUnit_Test {
     target.setRespondentDataRepo(mockRespondentDataRepo);
   }
 
-  private void prepareAndAcceptEvent(String qid) throws CTPException {
+  @SneakyThrows
+  private void prepareAndAcceptEvent(String qid, EventType type) {
     // Construct UACEvent
     uacEventFixture = new UACEvent();
     UACPayload uacPayloadFixture = uacEventFixture.getPayload();
@@ -49,7 +50,7 @@ public class UacEventReceiverImplUnit_Test {
     uacFixture.setQuestionnaireId(qid);
 
     Header headerFixture = new Header();
-    headerFixture.setType(EventType.UAC_UPDATED);
+    headerFixture.setType(type);
     headerFixture.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
     uacEventFixture.setEvent(headerFixture);
 
@@ -57,48 +58,60 @@ public class UacEventReceiverImplUnit_Test {
     target.acceptUACEvent(uacEventFixture);
   }
 
-  private void acceptUacEvent(String qid) throws CTPException {
-    prepareAndAcceptEvent(qid);
+  @SneakyThrows
+  private void acceptUacEvent(String qid) {
+    acceptUacEvent(qid, EventType.UAC_UPDATED);
+  }
+
+  @SneakyThrows
+  private void acceptUacEvent(String qid, EventType type) {
+    prepareAndAcceptEvent(qid, type);
     verify(mockRespondentDataRepo).writeUAC(uacFixture);
   }
 
-  private void filterUacEvent(String qid) throws CTPException {
-    prepareAndAcceptEvent(qid);
+  @SneakyThrows
+  private void filterUacEvent(String qid) {
+    prepareAndAcceptEvent(qid, EventType.UAC_UPDATED);
     verify(mockRespondentDataRepo, never()).writeUAC(uacFixture);
   }
 
   @Test
-  public void shouldAcceptUacEventPrefix01() throws CTPException {
+  public void shouldAcceptUacEventPrefix01() {
     acceptUacEvent(RespondentHomeFixture.QID_01);
   }
 
   @Test
-  public void shouldAcceptUacEventPrefix21() throws CTPException {
+  public void shouldAcceptUacEventPrefix21() {
     acceptUacEvent(RespondentHomeFixture.QID_21);
   }
 
   @Test
-  public void shouldAcceptUacEventPrefix31() throws CTPException {
+  public void shouldAcceptUacEventPrefix31() {
     acceptUacEvent(RespondentHomeFixture.QID_31);
   }
 
   @Test
-  public void shouldFilterUacEventPrefix11() throws CTPException {
+  public void shouldFilterUacEventPrefix11() {
     filterUacEvent(RespondentHomeFixture.QID_11);
   }
 
   @Test
-  public void shouldFilterUacEventPrefix12() throws CTPException {
+  public void shouldFilterUacEventPrefix12() {
     filterUacEvent(RespondentHomeFixture.QID_12);
   }
 
   @Test
-  public void shouldFilterUacEventPrefix13() throws CTPException {
+  public void shouldFilterUacEventPrefix13() {
     filterUacEvent(RespondentHomeFixture.QID_13);
   }
 
   @Test
-  public void shouldFilterUacEventPrefix14() throws CTPException {
+  public void shouldFilterUacEventPrefix14() {
     filterUacEvent(RespondentHomeFixture.QID_14);
+  }
+
+  @Test
+  public void shouldAcceptUacCreatedEvent() {
+    acceptUacEvent(RespondentHomeFixture.QID_01, EventType.UAC_CREATED);
   }
 }

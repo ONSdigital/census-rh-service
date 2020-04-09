@@ -56,6 +56,7 @@ public class RetryableRespondentDataRepository {
    *
    * @param uac - object to be stored in the cloud
    * @throws CTPException - if a cloud exception was detected.
+   * @throws DataStoreContentionException - on contention
    */
   @Retryable(
       label = "writeUAC",
@@ -87,6 +88,7 @@ public class RetryableRespondentDataRepository {
    *
    * @param collectionCase - is the case to be stored in the cloud.
    * @throws CTPException - if a cloud exception was detected.
+   * @throws DataStoreContentionException - on contention
    */
   @Retryable(
       label = "writeCollectionCase",
