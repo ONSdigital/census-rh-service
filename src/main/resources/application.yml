@@ -81,6 +81,8 @@ management:
 
 server:
   port: 8071
+  undertow.worker-threads: 200
+  undertow.io-threads: 20
 
 spring:
   mvc:
