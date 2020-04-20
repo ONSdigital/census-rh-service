@@ -80,7 +80,6 @@ public class FulfilmentsServiceImplTest {
     assertNull(capturedExampleProduct.getReminderContactCode());
     assertNull(capturedExampleProduct.getFieldDistributionCode());
     assertNull(capturedExampleProduct.getDescription());
-    assertNull(capturedExampleProduct.getLanguage());
     assertNull(capturedExampleProduct.getHandler());
 
     // ACTUALLY verify that getFulfilments() returns the value it got from the ProductReference
@@ -93,7 +92,6 @@ public class FulfilmentsServiceImplTest {
     assertEquals(product.getDeliveryChannel(), theResult.getDeliveryChannel());
     assertEquals(product.getDescription(), theResult.getDescription());
     assertEquals(product.getFulfilmentCode(), theResult.getFulfilmentCode());
-    assertEquals(product.getLanguage(), theResult.getLanguage());
     assertEquals(product.getProductGroup(), theResult.getProductGroup());
     assertEquals(product.getRegions(), theResult.getRegions());
     assertEquals(product.getHandler(), theResult.getHandler());
