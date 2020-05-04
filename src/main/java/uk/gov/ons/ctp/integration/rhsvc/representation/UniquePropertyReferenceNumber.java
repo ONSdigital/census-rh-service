@@ -42,4 +42,8 @@ public class UniquePropertyReferenceNumber {
   @JsonProperty("uprn")
   @JsonSerialize(using = ToStringSerializer.class)
   private long value;
+
+  public String asString() {
+    return Long.toString(value);
+  }
 }
