@@ -19,7 +19,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import com.google.protobuf.DescriptorProtos.FieldOptions.CType;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -193,7 +192,7 @@ public class UniqueAccessCodeServiceImplTest {
   }
 
   @Test
-  public void linkUACtoCaseFor() throws Exception {
+  public void linkUACtoExistingCase() throws Exception {
     UAC uacTest = uac.get(0);
     uacTest.setCaseId(null);
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
@@ -207,6 +206,7 @@ public class UniqueAccessCodeServiceImplTest {
     List<CollectionCase> cases = Stream.of(hiCase1, hiCase2, hhCase).collect(Collectors.toList());
     when(dataRepo.readCollectionCasesByUprn(eq(linkRequest.getUprn().asString()))).thenReturn(cases);
 
+    // Attempt linking
     uacSvc.linkUACCase(UAC_HASH, linkRequest);
   }
 
@@ -225,6 +225,7 @@ public class UniqueAccessCodeServiceImplTest {
 
   @Test
   public void attemptToLinkUACtoUnknownCase() throws Exception {
+    
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.empty());
     
     try {
@@ -241,6 +242,7 @@ public class UniqueAccessCodeServiceImplTest {
     UAC uacTest = uac.get(0);
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
     
+    // Setup cases which Firestore will return, but _without_ a HH case
     CollectionCase hiCase1 = collectionCase.get(0);
     hiCase1.setCaseType(CaseType.HI.name());
     CollectionCase hiCase2 = collectionCase.get(0);
@@ -303,16 +305,19 @@ public class UniqueAccessCodeServiceImplTest {
   }
 
   private void doLinkingTest(FormType uacFormType, CaseType uacCaseType, CaseType caseCaseType, LinkingExpectation linkAllowed) throws CTPException {
+    // Setup fake UAC
     UAC uacTest = uac.get(0);
     uacTest.setFormType(uacFormType.name());
     uacTest.setCaseType(uacCaseType.name());    
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
     
+    // Setup fake Case
     CollectionCase caseToLinkTo = collectionCase.get(0);
     caseToLinkTo.setCaseType(caseCaseType.name());
     List<CollectionCase> cases = Stream.of(caseToLinkTo).collect(Collectors.toList());
     when(dataRepo.readCollectionCasesByUprn(eq(linkRequest.getUprn().asString()))).thenReturn(cases);
 
+    // Invoke code under test and decide if it threw an incompatible UAC/Case exception
     boolean incompatibleUACandCase;
     try {
       uacSvc.linkUACCase(UAC_HASH, linkRequest);
@@ -325,6 +330,7 @@ public class UniqueAccessCodeServiceImplTest {
       }
     }
     
+    // Decide if code under test behaved correctly 
     if (linkAllowed == LinkingExpectation.OK && incompatibleUACandCase) {
       fail();
     } else if (linkAllowed == LinkingExpectation.INVALID && !incompatibleUACandCase) {
