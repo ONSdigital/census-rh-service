@@ -1,18 +1,18 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
@@ -118,11 +118,11 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         if (caseMatch.isPresent()) {
           caseMapperFacade.map(caseMatch.get(), data);
           data.setCaseStatus(CaseStatus.OK);
-          sendRespondentAuthenticatedEvent(data);
         } else {
           log.warn("Failed to retrieve Case for UAC from storage");
           data.setCaseStatus(CaseStatus.NOT_FOUND);
         }
+        sendRespondentAuthenticatedEvent(data);
       } else {
         log.warn("Retrieved UAC CaseId not present");
         data.setCaseStatus(CaseStatus.UNKNOWN);
@@ -192,7 +192,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     // if the uac indicates that it for an HI, we need to link the UAC to a new HI case instead of
     // the HH case
-    if (uac.getFormType().equals(FormType.I.name()) && uac.getCaseType().equals(CaseType.HH.name())) {
+    if (uac.getFormType().equals(FormType.I.name())
+        && uac.getCaseType().equals(CaseType.HH.name())) {
       CollectionCase individualCase = createCase(CaseType.HI.name(), uac, request);
 
       individualCaseId = individualCase.getId();
@@ -210,11 +211,12 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     // so NOW persist it
     dataRepo.writeUAC(uac);
 
-    sendQuestionnaireLinkedEvent(uac.getQuestionnaireId(), collectionCase.getId(), individualCaseId);
+    sendQuestionnaireLinkedEvent(
+        uac.getQuestionnaireId(), collectionCase.getId(), individualCaseId);
 
     UniqueAccessCodeDTO uniqueAccessCodeDTO = createUniqueAccessCodeDTO(uac, collectionCase);
     sendRespondentAuthenticatedEvent(uniqueAccessCodeDTO);
-    
+
     return uniqueAccessCodeDTO;
   }
 
@@ -318,7 +320,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     } else {
       address.setAddressType(caseType.name());
     }
-       
+
     Optional<EstabType> requestEstabType = EstabType.forCode(request.getEstabType());
     AddressLevel estabType = null;
 
@@ -353,8 +355,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         LinkingCombination.lookup(uacFormType, uacCaseType, caseCaseType);
 
     if (linkCombo.isEmpty()) {
-      String failureDetails =
-          uacFormType + ", " + uacCaseType + ", " + caseCaseType;
+      String failureDetails = uacFormType + ", " + uacCaseType + ", " + caseCaseType;
       log.warn("Failed to link UAC to case. Incompatible combination: " + failureDetails);
       throw new CTPException(
           CTPException.Fault.BAD_REQUEST, "Case and UAC incompatible: " + failureDetails);

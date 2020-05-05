@@ -104,7 +104,7 @@ public class UniqueAccessCodeEndpointTest {
     ObjectNode json = FixtureHelper.loadClassObjectNode("UACLinkRequestDTO");
 
     when(uacService.linkUACCase(eq(UAC_HASH), any()))
-     .thenThrow(new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, ERROR_MESSAGE));
+        .thenThrow(new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, ERROR_MESSAGE));
 
     mockMvc
         .perform(postJson("/uacs/" + UAC_HASH + "/link", json.toString()))
