@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
+import static uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture.EXPECTED_JSON_CONTENT_TYPE;
 
 import java.util.List;
 import org.junit.Before;
@@ -59,7 +60,7 @@ public class UniqueAccessCodeEndpointTest {
     mockMvc
         .perform(get(String.format("/uacs/%s", UAC_HASH)))
         .andExpect(status().isOk())
-        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(content().contentType(EXPECTED_JSON_CONTENT_TYPE))
         .andExpect(jsonPath("$.uacHash", is(UAC_HASH)))
         .andExpect(jsonPath("$.caseId", is(CASE_ID)))
         .andExpect(jsonPath("$.address.postcode", is(POSTCODE)))
