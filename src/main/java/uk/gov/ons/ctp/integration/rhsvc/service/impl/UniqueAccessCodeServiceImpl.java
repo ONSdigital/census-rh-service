@@ -187,15 +187,14 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     String caseId = collectionCase.getId();
     uac.setCaseId(caseId);
     
-    String individualCaseId = null; // PMB: Remove
+    String individualCaseId = null;
     CollectionCase individualCase = null;
     
     // if the uac indicates that the UAC is for a HI, we need to link the UAC to a new HI case instead of
     // the HH case
     if (uac.getCaseType().equals(CaseType.HH.name())
-        && uac.getFormType().equals(FormType.I.name())) {
+        && uac.getFormType().equals(FormType.I.name())) {  // TODO PMB: Check if this if statement is correct
       individualCase = createCase(CaseType.HI.name(), uac, request);
-
       individualCaseId = individualCase.getId();
 
       dataRepo.writeCollectionCase(individualCase);

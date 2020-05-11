@@ -224,6 +224,8 @@ public class UniqueAccessCodeServiceImplTest {
   public void linkUAC_toExistingCase_noHICaseCreated() throws Exception {
     UAC uacTest = uac.get(0);
     uacTest.setCaseId(null);
+    uacTest.setCaseType(CaseType.CE.name());
+    uacTest.setFormType(FormType.I.name());
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
 
     List<CollectionCase> cases = Stream.of(hiCase1, hiCase2, hhCase).collect(Collectors.toList());
@@ -245,7 +247,7 @@ public class UniqueAccessCodeServiceImplTest {
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
 
-    grabRepoWriteCollectionCaseValues(0);
+    grabRepoWriteCollectionCaseValues(0); // No cases created
 
     verifyUACUpdated(UAC_HASH, hhCase.getId());
 
@@ -255,12 +257,12 @@ public class UniqueAccessCodeServiceImplTest {
 
     verifyTotalNumberEventsSent(2);
     
-    verifyLinkingResult(uniqueAccessCodeDTO, hhCase.getId(), CaseType.HH, uacTest, hhCase.getAddress());
+    verifyLinkingResult(uniqueAccessCodeDTO, hhCase.getId(), CaseType.CE, uacTest, hhCase.getAddress());
   }
 
-  // Happy path test for linking when the UAC links to an existing case. No new case is created
+  // Happy path test for linking when the UAC links to an existing case. As the UAC is HI a new HI case is created.
   @Test
-  public void linkUAC_toExistingCase_HICaseCreated() throws Exception {
+  public void linkUAC_toExistingCase_withHICaseCreated() throws Exception {
     UAC uacTest = uac.get(0);
     uacTest.setCaseId(null);
     uacTest.setCaseType(CaseType.HH.name());
@@ -286,10 +288,13 @@ public class UniqueAccessCodeServiceImplTest {
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
 
+    // Build expectation for the the address that will have been created
+    Address expectedAddress = createAddressFromLinkRequest(request);
+
     // Verify that new HI case has been created
     List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
     CollectionCase newHiCase = newCases.get(0);
-//PMB    validateCase(newHiCase, CaseType.HI, uacTest, expectedAddress);
+    validateCase(newHiCase, CaseType.HI.name(), uacTest, expectedAddress);
 
     verifyUACUpdated(UAC_HASH, newHiCase.getId());
 
@@ -302,11 +307,14 @@ public class UniqueAccessCodeServiceImplTest {
     verifyLinkingResult(uniqueAccessCodeDTO, newHiCase.getId(), CaseType.HH, uacTest, hhCase.getAddress());
   }
 
-  // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be created
+  // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be created.
+  // UAC is not HI so no new HI case is created.
   @Test
-  public void linkUACtoNewCase() throws Exception {
+  public void linkUAC_toNewCase_withNoHICaseCreated() throws Exception {
     UAC uacTest = uac.get(0);
     uacTest.setCaseId(null);
+    uacTest.setCaseType(CaseType.HH.name());
+    uacTest.setFormType(FormType.H.name());
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
 
     // Don't find any cases when searching by UPRN
@@ -349,9 +357,10 @@ public class UniqueAccessCodeServiceImplTest {
     verifyLinkingResult(uniqueAccessCodeDTO, newCase.getId(), CaseType.HH, uacTest, newCase.getAddress());
   }
 
-  // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be created
+  // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be created.
+  // As the UAC is HI a new HI case is also created.
   @Test
-  public void linkHiUACtoNewCase() throws Exception {
+  public void linkUAC_toNewCase_withHICaseCreated() throws Exception {
     UAC uacTest = uac.get(0);
     uacTest.setCaseId(null);
     uacTest.setCaseType(CaseType.HH.name());
@@ -431,7 +440,7 @@ public class UniqueAccessCodeServiceImplTest {
 
   // Test that we get a failure when multiple cases are found for the UPRN but none of them are HH cases
   @Test
-  public void linkUACtoCaseButNoHHCaseFound() throws Exception {
+  public void attemptLinkUACButNoHHCaseFound() throws Exception {
     UAC uacTest = uac.get(0);
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
 
