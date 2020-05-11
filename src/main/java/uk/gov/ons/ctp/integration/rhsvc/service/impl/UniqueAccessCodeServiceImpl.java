@@ -136,8 +136,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   @Override
   public UniqueAccessCodeDTO linkUACCase(String uacHash, UACLinkRequestDTO request)
       throws CTPException {
-
-    assertAddressTypeIsValid(request.getAddressType());
+    log.with(uacHash).with(request).debug("Enter linkUACCase()");
 
     // First get UAC from firestore
     Optional<UAC> uacOptional = dataRepo.readUAC(uacHash);
@@ -172,6 +171,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       // No case for the UPRN. Create a new case
       CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
       collectionCase = createCase(primaryCaseType, uac, request);
+      log.with(primaryCaseType).with(collectionCase.getId()).debug("Created new case");
       validateUACCase(uac, collectionCase); // will abort here if invalid combo
 
       // Store new case in Firestore
@@ -180,6 +180,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       // tell RM we have created a case for the selected (HH|CE|SPG) address
       sendNewAddressEvent(collectionCase);
     } else {
+      log.with(collectionCase.getId()).debug("Found existing case");
       validateUACCase(uac, collectionCase); // will abort here if invalid combo
     }
 
@@ -197,6 +198,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         && uac.getFormType().equals(FormType.I.name())) {
       individualCase = createCase(CaseType.HI, uac, request);
       individualCaseId = individualCase.getId();
+      log.with(individualCaseId).debug("Created individual case");
 
       dataRepo.writeCollectionCase(individualCase);
 
@@ -218,6 +220,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         createUniqueAccessCodeDTO(uac, individualCase != null ? individualCase : collectionCase);
     sendRespondentAuthenticatedEvent(uniqueAccessCodeDTO);
 
+    log.with(uacHash).with(uniqueAccessCodeDTO).debug("Exit linkUACCase()");
     return uniqueAccessCodeDTO;
   }
 
@@ -347,6 +350,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     newCase.setAddress(address);
 
+    log.with(newCase.getId()).with(caseType).debug("Created new case");
+    
     return newCase;
   }
 
@@ -386,16 +391,5 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     uniqueAccessCodeDTO.setCaseStatus(CaseStatus.OK);
 
     return uniqueAccessCodeDTO;
-  }
-
-  // Throws exception for unknown address type
-  private void assertAddressTypeIsValid(String addressType) throws CTPException {
-    try {
-      AddressType.valueOf(addressType);
-    } catch (Exception e) {
-      log.warn("Request contains invalid addressType: " + addressType);
-      throw new CTPException(
-          CTPException.Fault.BAD_REQUEST, "Invalid address type: " + addressType);
-    }
   }
 }

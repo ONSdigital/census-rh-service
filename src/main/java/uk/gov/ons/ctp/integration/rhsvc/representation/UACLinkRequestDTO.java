@@ -21,5 +21,5 @@ public class UACLinkRequestDTO {
 
   @NotNull private String estabType;
 
-  @NotNull private String addressType;
+  private String addressType;
 }

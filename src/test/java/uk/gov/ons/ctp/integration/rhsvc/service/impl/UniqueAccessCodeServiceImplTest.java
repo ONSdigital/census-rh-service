@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -272,7 +271,7 @@ public class UniqueAccessCodeServiceImplTest {
     uacTest.setFormType(FormType.I.name());
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
 
-    List<CollectionCase> cases = Stream.of(hiCase1, hiCase2, hhCase).collect(Collectors.toList());
+    List<CollectionCase> cases = Stream.of(hhCase).collect(Collectors.toList());
     when(dataRepo.readCollectionCasesByUprn(eq(linkRequest.getUprn().asString())))
         .thenReturn(cases);
 
@@ -368,7 +367,7 @@ public class UniqueAccessCodeServiceImplTest {
   // created.
   // As the UAC is HI a new HI case is also created.
   @Test
-  public void linkUAC_toNewCase_withHICaseCreated() throws Exception {
+  public void linkUAC_toNewCase_withIndividualCaseCreated() throws Exception {
     UAC uacTest = uac.get(0);
     uacTest.setCaseId(null);
     uacTest.setCaseType(CaseType.HH.name());
@@ -388,8 +387,8 @@ public class UniqueAccessCodeServiceImplTest {
     request.setRegion("W");
     request.setPostcode("AA1 2BB");
     request.setUprn(new UniquePropertyReferenceNumber(UPRN));
-    request.setEstabType(EstabType.RESIDENTIAL_CARAVAN.getCode());
-    request.setAddressType(AddressType.HH.name());
+    request.setEstabType(EstabType.RESIDENTIAL_CARAVAN.getCode()); // CaseType == HH
+    request.setAddressType(AddressType.CE.name());
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -420,19 +419,77 @@ public class UniqueAccessCodeServiceImplTest {
         uniqueAccessCodeDTO, newHiCase.getId(), CaseType.HH, uacTest, newCase.getAddress());
   }
 
-  // Test that we get an error when the request contains an AddressType which is not a valid enum
-  // name
+  // Test variation to verify that new case is created using a case type based on the address type.
   @Test
-  public void attemptToLinkUACButWithInvalidAddressType() throws Exception {
-    linkRequest.setAddressType("x");
+  public void linkUAC_toNewCaseOfCaseTypeFromRequestAddressType() throws Exception {
+    UAC uacTest = uac.get(0);
+    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
 
-    try {
-      uacSvc.linkUACCase(UAC_HASH, linkRequest);
-      fail("Should have failed on address type validation");
-    } catch (CTPException e) {
-      assertEquals(Fault.BAD_REQUEST, e.getFault());
-      assertTrue(e.getMessage(), e.getMessage().contains("address"));
-    }
+    // Don't find any cases when searching by UPRN
+    when(dataRepo.readCollectionCasesByUprn(eq(linkRequest.getUprn().asString())))
+        .thenReturn(new ArrayList<CollectionCase>());
+
+    // Build request object. Mostly empty as we will be using the existing case
+    UACLinkRequestDTO request = new UACLinkRequestDTO();
+    request.setAddressLine1("Newton Manor");
+    request.setAddressLine2("1 New Street");
+    request.setAddressLine3("Bumble");
+    request.setTownName("Newton");
+    request.setRegion("W");
+    request.setPostcode("AA1 2BB");
+    request.setUprn(new UniquePropertyReferenceNumber(UPRN));
+    request.setEstabType("Unknown estab description"); // Not known, to force use of address type
+    request.setAddressType(AddressType.CE.name());
+
+    // Run code under test: Attempt linking
+    uacSvc.linkUACCase(UAC_HASH, request);
+
+    // Build expectation for the the address that will have been created
+    Address expectedAddressCE = createAddressFromLinkRequest(request, CaseType.CE);
+
+    // Verify that new case created with case type based on the requests address type
+    List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
+    CollectionCase newCase = newCases.get(0);
+    validateCase(newCase, CaseType.CE, uacTest, expectedAddressCE);
+  }
+
+  // Test variation to verify that new case is created using a case type from the UAC.
+  // To force the correct choice the request is created from an unknown estab description and 
+  // the request doesn't specify an address type.
+  @Test
+  public void linkUAC_toNewCaseOfCaseTypeFromUAC() throws Exception {
+    UAC uacTest = uac.get(0);
+    uacTest.setFormType(FormType.CE1.name());
+    uacTest.setCaseType(CaseType.CE.name()); // Will be used for the newly created case
+    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
+
+    // Don't find any cases when searching by UPRN
+    when(dataRepo.readCollectionCasesByUprn(eq(linkRequest.getUprn().asString())))
+        .thenReturn(new ArrayList<CollectionCase>());
+
+    // Build request object. Mostly empty as we will be using the existing case
+    UACLinkRequestDTO request = new UACLinkRequestDTO();
+    request.setAddressLine1("Newton Manor");
+    request.setAddressLine2("1 New Street");
+    request.setAddressLine3("Bumble");
+    request.setTownName("Newton");
+    request.setRegion("W");
+    request.setPostcode("AA1 2BB");
+    request.setUprn(new UniquePropertyReferenceNumber(UPRN));
+    request.setEstabType("Unknown estab description"); // Not known, to force use of address type
+    request.setAddressType(null); // Not set, to force usage of uac.caseType
+
+    // Run code under test: Attempt linking
+    uacSvc.linkUACCase(UAC_HASH, request);
+
+    // Build expectation for the the address that will have been created
+    Address expectedAddress = createAddressFromLinkRequest(request, CaseType.CE);
+    expectedAddress.setAddressLevel(AddressLevel.E.name());
+    
+    // Verify that new case created with case type based on the requests address type
+    List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
+    CollectionCase newCase = newCases.get(0);
+    validateCase(newCase, CaseType.CE, uacTest, expectedAddress);
   }
 
   // Test that linking fails when the UAC is not found in Firestore
