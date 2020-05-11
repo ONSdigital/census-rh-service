@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.AddressLevel;
+import uk.gov.ons.ctp.common.domain.AddressType;
+import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.EstabType;
+import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -36,11 +42,6 @@ import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.QuestionnaireLinkedDetails;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
-import uk.gov.ons.ctp.common.model.AddressLevel;
-import uk.gov.ons.ctp.common.model.AddressType;
-import uk.gov.ons.ctp.common.model.CaseType;
-import uk.gov.ons.ctp.common.model.EstabType;
-import uk.gov.ons.ctp.common.model.FormType;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UACLinkRequestDTO;
@@ -55,7 +56,7 @@ public class UniqueAccessCodeServiceImplTest {
       "8a9d5db4bbee34fd16e40aa2aaae52cfbdf1842559023614c30edb480ec252b4";
   private static final String CASE_ID = "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4";
   private static final String UPRN = "305634838282";
-  
+
   @InjectMocks private UniqueAccessCodeServiceImpl uacSvc;
 
   @Mock private RespondentDataRepository dataRepo;
@@ -63,7 +64,7 @@ public class UniqueAccessCodeServiceImplTest {
   @Mock private EventPublisher eventPublisher;
 
   private List<UAC> uac;
-  
+
   private List<CollectionCase> collectionCase;
   CollectionCase hhCase;
   CollectionCase hiCase1;
@@ -75,9 +76,9 @@ public class UniqueAccessCodeServiceImplTest {
   @Before
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
-    
+
     this.uac = FixtureHelper.loadClassFixtures(UAC[].class);
-    
+
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
     this.hhCase = collectionCase.get(0);
     this.hiCase1 = collectionCase.get(1);
@@ -243,7 +244,7 @@ public class UniqueAccessCodeServiceImplTest {
     request.setUprn(new UniquePropertyReferenceNumber(UPRN));
     request.setEstabType(EstabType.RESIDENTIAL_CARAVAN.name());
     request.setAddressType(AddressType.HH.name());
-    
+
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
 
@@ -252,15 +253,17 @@ public class UniqueAccessCodeServiceImplTest {
     verifyUACUpdated(UAC_HASH, hhCase.getId());
 
     VerifyQuestionnaireLinkedEventSent(uacTest.getQuestionnaireId(), hhCase.getId(), null);
-    
+
     verifyRespondentAuthenticatedEventSent(uacTest.getQuestionnaireId(), hhCase.getId());
 
     verifyTotalNumberEventsSent(2);
-    
-    verifyLinkingResult(uniqueAccessCodeDTO, hhCase.getId(), CaseType.CE, uacTest, hhCase.getAddress());
+
+    verifyLinkingResult(
+        uniqueAccessCodeDTO, hhCase.getId(), CaseType.CE, uacTest, hhCase.getAddress());
   }
 
-  // Happy path test for linking when the UAC links to an existing case. As the UAC is HI a new HI case is created.
+  // Happy path test for linking when the UAC links to an existing case. As the UAC is HI a new HI
+  // case is created.
   @Test
   public void linkUAC_toExistingCase_withHICaseCreated() throws Exception {
     UAC uacTest = uac.get(0);
@@ -284,30 +287,33 @@ public class UniqueAccessCodeServiceImplTest {
     request.setUprn(new UniquePropertyReferenceNumber(UPRN));
     request.setEstabType(EstabType.RESIDENTIAL_CARAVAN.name());
     request.setAddressType(AddressType.HH.name());
-    
-    // Run code under test: Attempt linking
+
+    // ** Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
 
     // Build expectation for the the address that will have been created
-    Address expectedAddress = createAddressFromLinkRequest(request);
+    Address expectedAddress = createAddressFromLinkRequest(request, CaseType.HI);
 
-    // Verify that new HI case has been created
+    // Verify that new individual case has been created
     List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
     CollectionCase newHiCase = newCases.get(0);
-    validateCase(newHiCase, CaseType.HI.name(), uacTest, expectedAddress);
+    validateCase(newHiCase, CaseType.HI, uacTest, expectedAddress);
 
     verifyUACUpdated(UAC_HASH, newHiCase.getId());
 
-    VerifyQuestionnaireLinkedEventSent(uacTest.getQuestionnaireId(), hhCase.getId(), newHiCase.getId());
-    
+    VerifyQuestionnaireLinkedEventSent(
+        uacTest.getQuestionnaireId(), hhCase.getId(), newHiCase.getId());
+
     verifyRespondentAuthenticatedEventSent(uacTest.getQuestionnaireId(), newHiCase.getId());
 
     verifyTotalNumberEventsSent(2);
-    
-    verifyLinkingResult(uniqueAccessCodeDTO, newHiCase.getId(), CaseType.HH, uacTest, hhCase.getAddress());
+
+    verifyLinkingResult(
+        uniqueAccessCodeDTO, newHiCase.getId(), CaseType.HH, uacTest, expectedAddress);
   }
 
-  // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be created.
+  // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be
+  // created.
   // UAC is not HI so no new HI case is created.
   @Test
   public void linkUAC_toNewCase_withNoHICaseCreated() throws Exception {
@@ -332,32 +338,34 @@ public class UniqueAccessCodeServiceImplTest {
     request.setUprn(new UniquePropertyReferenceNumber(UPRN));
     request.setEstabType(EstabType.RESIDENTIAL_CARAVAN.getCode());
     request.setAddressType(AddressType.HH.name());
-    
+
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
 
     // Build expectation for the the address that will have been created
-    Address expectedAddress = createAddressFromLinkRequest(request);
+    Address expectedAddress = createAddressFromLinkRequest(request, CaseType.HH);
 
     // Verify that a new case has been created
     List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
     CollectionCase newCase = newCases.get(0);
-    validateCase(newCase, CaseType.HH.name(), uacTest, expectedAddress);
-    
+    validateCase(newCase, CaseType.HH, uacTest, expectedAddress);
+
     verifyNewAddressEventSent(CaseType.HH, uacTest.getCollectionExerciseId(), expectedAddress);
 
     verifyUACUpdated(UAC_HASH, newCase.getId());
 
     VerifyQuestionnaireLinkedEventSent(uacTest.getQuestionnaireId(), newCase.getId(), null);
-    
+
     verifyRespondentAuthenticatedEventSent(uacTest.getQuestionnaireId(), newCase.getId());
 
     verifyTotalNumberEventsSent(3);
-    
-    verifyLinkingResult(uniqueAccessCodeDTO, newCase.getId(), CaseType.HH, uacTest, newCase.getAddress());
+
+    verifyLinkingResult(
+        uniqueAccessCodeDTO, newCase.getId(), CaseType.HH, uacTest, newCase.getAddress());
   }
 
-  // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be created.
+  // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be
+  // created.
   // As the UAC is HI a new HI case is also created.
   @Test
   public void linkUAC_toNewCase_withHICaseCreated() throws Exception {
@@ -382,34 +390,38 @@ public class UniqueAccessCodeServiceImplTest {
     request.setUprn(new UniquePropertyReferenceNumber(UPRN));
     request.setEstabType(EstabType.RESIDENTIAL_CARAVAN.getCode());
     request.setAddressType(AddressType.HH.name());
-    
+
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
 
     // Build expectation for the the address that will have been created
-    Address expectedAddress = createAddressFromLinkRequest(request);
+    Address expectedAddressHH = createAddressFromLinkRequest(request, CaseType.HH);
+    Address expectedAddressHI = createAddressFromLinkRequest(request, CaseType.HI);
 
     // Verify that 2 new cases have been created
     List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(2);
     CollectionCase newCase = newCases.get(0);
     CollectionCase newHiCase = newCases.get(1);
-    validateCase(newCase, CaseType.HH.name(), uacTest, expectedAddress);
-    validateCase(newHiCase, request.getAddressType(), uacTest, expectedAddress);
+    validateCase(newCase, CaseType.HH, uacTest, expectedAddressHH);
+    validateCase(newHiCase, CaseType.HI, uacTest, expectedAddressHI);
 
-    verifyNewAddressEventSent(CaseType.HH, uacTest.getCollectionExerciseId(), expectedAddress);
+    verifyNewAddressEventSent(CaseType.HH, uacTest.getCollectionExerciseId(), expectedAddressHH);
 
     verifyUACUpdated(UAC_HASH, newHiCase.getId());
 
-    VerifyQuestionnaireLinkedEventSent(uacTest.getQuestionnaireId(), newCase.getId(), newHiCase.getId());
+    VerifyQuestionnaireLinkedEventSent(
+        uacTest.getQuestionnaireId(), newCase.getId(), newHiCase.getId());
 
     verifyRespondentAuthenticatedEventSent(uacTest.getQuestionnaireId(), newHiCase.getId());
 
     verifyTotalNumberEventsSent(3);
-    
-    verifyLinkingResult(uniqueAccessCodeDTO, newHiCase.getId(), CaseType.HH, uacTest, newCase.getAddress());
+
+    verifyLinkingResult(
+        uniqueAccessCodeDTO, newHiCase.getId(), CaseType.HH, uacTest, newCase.getAddress());
   }
 
-  // Test that we get an error when the request contains an AddressType which is not a valid enum name
+  // Test that we get an error when the request contains an AddressType which is not a valid enum
+  // name
   @Test
   public void attemptToLinkUACButWithInvalidAddressType() throws Exception {
     linkRequest.setAddressType("x");
@@ -438,7 +450,8 @@ public class UniqueAccessCodeServiceImplTest {
     }
   }
 
-  // Test that we get a failure when multiple cases are found for the UPRN but none of them are HH cases
+  // Test that we get a failure when multiple cases are found for the UPRN but none of them are HH
+  // cases
   @Test
   public void attemptLinkUACButNoHHCaseFound() throws Exception {
     UAC uacTest = uac.get(0);
@@ -478,46 +491,46 @@ public class UniqueAccessCodeServiceImplTest {
   }
 
   /**
-   * This test calls the Link UAC endpoint with the UAC form type and case type permutations
-   * listed in the unlinked authentication wiki page. 
-   * 
-   * The code is based on the permutations listed in:
+   * This test calls the Link UAC endpoint with the UAC form type and case type permutations listed
+   * in the unlinked authentication wiki page.
+   *
+   * <p>The code is based on the permutations listed in:
    * https://collaborate2.ons.gov.uk/confluence/display/SDC/Auth.05+-+Unlinked+Authentication#Matrix
    *
    * @throws CTPException
    */
-//  @Test
-//  public void testLinkingMatrix() throws CTPException {
-//    doLinkingTest(FormType.H, CaseType.HH, CaseType.HH, LinkingExpectation.OK);
-//    doLinkingTest(FormType.H, CaseType.HH, CaseType.SPG, LinkingExpectation.OK);
-//    doLinkingTest(FormType.H, CaseType.HH, CaseType.CE, LinkingExpectation.OK);
-//    doLinkingTest(FormType.H, CaseType.SPG, CaseType.HH, LinkingExpectation.OK);
-//    doLinkingTest(FormType.H, CaseType.SPG, CaseType.SPG, LinkingExpectation.OK);
-//    doLinkingTest(FormType.H, CaseType.SPG, CaseType.CE, LinkingExpectation.OK);
-//    doLinkingTest(FormType.H, CaseType.CE, CaseType.HH, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.H, CaseType.CE, CaseType.SPG, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.H, CaseType.CE, CaseType.CE, LinkingExpectation.INVALID);
-//
-//    doLinkingTest(FormType.I, CaseType.HH, CaseType.HH, LinkingExpectation.OK);
-//    doLinkingTest(FormType.I, CaseType.HH, CaseType.SPG, LinkingExpectation.OK);
-//    doLinkingTest(FormType.I, CaseType.HH, CaseType.CE, LinkingExpectation.OK);
-//    doLinkingTest(FormType.I, CaseType.SPG, CaseType.HH, LinkingExpectation.OK);
-//    doLinkingTest(FormType.I, CaseType.SPG, CaseType.SPG, LinkingExpectation.OK);
-//    doLinkingTest(FormType.I, CaseType.SPG, CaseType.CE, LinkingExpectation.OK);
-//    doLinkingTest(FormType.I, CaseType.CE, CaseType.HH, LinkingExpectation.OK);
-//    doLinkingTest(FormType.I, CaseType.CE, CaseType.SPG, LinkingExpectation.OK);
-//    doLinkingTest(FormType.I, CaseType.CE, CaseType.CE, LinkingExpectation.OK);
-//
-//    doLinkingTest(FormType.CE1, CaseType.HH, CaseType.HH, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.CE1, CaseType.HH, CaseType.SPG, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.CE1, CaseType.HH, CaseType.CE, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.CE1, CaseType.SPG, CaseType.HH, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.CE1, CaseType.SPG, CaseType.SPG, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.CE1, CaseType.SPG, CaseType.CE, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.CE1, CaseType.CE, CaseType.HH, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.CE1, CaseType.CE, CaseType.SPG, LinkingExpectation.INVALID);
-//    doLinkingTest(FormType.CE1, CaseType.CE, CaseType.CE, LinkingExpectation.OK);
-//  }
+  @Test
+  public void testLinkingMatrix() throws CTPException {
+    doLinkingTest(FormType.H, CaseType.HH, CaseType.HH, LinkingExpectation.OK);
+    doLinkingTest(FormType.H, CaseType.HH, CaseType.SPG, LinkingExpectation.OK);
+    doLinkingTest(FormType.H, CaseType.HH, CaseType.CE, LinkingExpectation.OK);
+    doLinkingTest(FormType.H, CaseType.SPG, CaseType.HH, LinkingExpectation.OK);
+    doLinkingTest(FormType.H, CaseType.SPG, CaseType.SPG, LinkingExpectation.OK);
+    doLinkingTest(FormType.H, CaseType.SPG, CaseType.CE, LinkingExpectation.OK);
+    doLinkingTest(FormType.H, CaseType.CE, CaseType.HH, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.H, CaseType.CE, CaseType.SPG, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.H, CaseType.CE, CaseType.CE, LinkingExpectation.INVALID);
+
+    doLinkingTest(FormType.I, CaseType.HH, CaseType.HH, LinkingExpectation.OK);
+    doLinkingTest(FormType.I, CaseType.HH, CaseType.SPG, LinkingExpectation.OK);
+    doLinkingTest(FormType.I, CaseType.HH, CaseType.CE, LinkingExpectation.OK);
+    doLinkingTest(FormType.I, CaseType.SPG, CaseType.HH, LinkingExpectation.OK);
+    doLinkingTest(FormType.I, CaseType.SPG, CaseType.SPG, LinkingExpectation.OK);
+    doLinkingTest(FormType.I, CaseType.SPG, CaseType.CE, LinkingExpectation.OK);
+    doLinkingTest(FormType.I, CaseType.CE, CaseType.HH, LinkingExpectation.OK);
+    doLinkingTest(FormType.I, CaseType.CE, CaseType.SPG, LinkingExpectation.OK);
+    doLinkingTest(FormType.I, CaseType.CE, CaseType.CE, LinkingExpectation.OK);
+
+    doLinkingTest(FormType.CE1, CaseType.HH, CaseType.HH, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.CE1, CaseType.HH, CaseType.SPG, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.CE1, CaseType.HH, CaseType.CE, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.CE1, CaseType.SPG, CaseType.HH, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.CE1, CaseType.SPG, CaseType.SPG, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.CE1, CaseType.SPG, CaseType.CE, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.CE1, CaseType.CE, CaseType.HH, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.CE1, CaseType.CE, CaseType.SPG, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.CE1, CaseType.CE, CaseType.CE, LinkingExpectation.OK);
+  }
 
   private void doLinkingTest(
       FormType uacFormType,
@@ -558,10 +571,10 @@ public class UniqueAccessCodeServiceImplTest {
       fail();
     }
   }
-  
-  private Address createAddressFromLinkRequest(UACLinkRequestDTO request) {
+
+  private Address createAddressFromLinkRequest(UACLinkRequestDTO request, CaseType caseType) {
     Address expectedAddress = new Address();
-   
+
     expectedAddress.setAddressLine1(request.getAddressLine1());
     expectedAddress.setAddressLine2(request.getAddressLine2());
     expectedAddress.setAddressLine3(request.getAddressLine3());
@@ -569,41 +582,58 @@ public class UniqueAccessCodeServiceImplTest {
     expectedAddress.setPostcode(request.getPostcode());
     expectedAddress.setRegion(request.getRegion());
     expectedAddress.setUprn(request.getUprn().asString());
-    expectedAddress.setAddressType(request.getAddressType());
+    expectedAddress.setAddressType(caseType.name());
     expectedAddress.setAddressLevel(AddressLevel.U.name());
     expectedAddress.setEstabType(request.getEstabType());
 
     return expectedAddress;
   }
 
-  // Support method to get the newly created cases from dataRepo.writeCollectionCase and return the cases
-  private List<CollectionCase> grabRepoWriteCollectionCaseValues(int expectedNumberCasesCreated) throws CTPException {
+  // Support method to get the newly created cases from dataRepo.writeCollectionCase and return the
+  // cases
+  private List<CollectionCase> grabRepoWriteCollectionCaseValues(int expectedNumberCasesCreated)
+      throws CTPException {
     ArgumentCaptor<CollectionCase> caseCapture = ArgumentCaptor.forClass(CollectionCase.class);
     verify(dataRepo, times(expectedNumberCasesCreated)).writeCollectionCase(caseCapture.capture());
 
     return caseCapture.getAllValues();
   }
 
-  private void validateCase(CollectionCase newCase, String expectedCaseType, UAC uac, Address expectedAddress) {
+  private void validateCase(
+      CollectionCase newCase, CaseType expectedCaseType, UAC uac, Address expectedAddress) {
     assertEquals(null, newCase.getCaseRef());
-    assertEquals(expectedCaseType, newCase.getCaseType());
+    assertEquals(expectedCaseType.name(), newCase.getCaseType());
     assertEquals("CENSUS", newCase.getSurvey());
     assertEquals(uac.getCollectionExerciseId(), newCase.getCollectionExerciseId());
-    assertEquals(expectedAddress, newCase.getAddress());
     assertEquals(new Contact(), newCase.getContact());
     assertEquals(null, newCase.getActionableFrom());
     assertFalse(newCase.isHandDelivery());
+
+    Address actualAddress = newCase.getAddress();
+    assertEquals(expectedAddress.getAddressLine1(), actualAddress.getAddressLine1());
+    assertEquals(expectedAddress.getAddressLine2(), actualAddress.getAddressLine2());
+    assertEquals(expectedAddress.getAddressLine3(), actualAddress.getAddressLine3());
+    assertEquals(expectedAddress.getTownName(), actualAddress.getTownName());
+    assertEquals(expectedAddress.getRegion(), actualAddress.getRegion());
+    assertEquals(expectedAddress.getPostcode(), actualAddress.getPostcode());
+    assertEquals(expectedAddress.getUprn(), actualAddress.getUprn());
+    assertEquals(expectedAddress.getAddressType(), actualAddress.getAddressType());
+    assertEquals(expectedAddress.getEstabType(), actualAddress.getEstabType());
+    assertEquals(expectedAddress.getAddressLevel(), actualAddress.getAddressLevel());
+    assertEquals(expectedAddress, actualAddress);
   }
-  
-  private void verifyNewAddressEventSent(CaseType hh, String collectionExerciseId, Address expectedAddress) {
-    ArgumentCaptor<CollectionCaseNewAddress> newAddressCapture = ArgumentCaptor.forClass(CollectionCaseNewAddress.class);
+
+  private void verifyNewAddressEventSent(
+      CaseType hh, String collectionExerciseId, Address expectedAddress) {
+    ArgumentCaptor<CollectionCaseNewAddress> newAddressCapture =
+        ArgumentCaptor.forClass(CollectionCaseNewAddress.class);
     verify(eventPublisher, times(1))
-      .sendEvent(
-        eq(EventType.NEW_ADDRESS_REPORTED),
-        eq(Source.RESPONDENT_HOME),
-        eq(Channel.RH),
-        newAddressCapture.capture());
-    
+        .sendEvent(
+            eq(EventType.NEW_ADDRESS_REPORTED),
+            eq(Source.RESPONDENT_HOME),
+            eq(Channel.RH),
+            newAddressCapture.capture());
+
     CollectionCaseNewAddress newAddress = newAddressCapture.getValue();
     assertEquals(CaseType.HH.name(), newAddress.getCaseType());
     assertEquals("CENSUS", newAddress.getSurvey());
@@ -616,21 +646,22 @@ public class UniqueAccessCodeServiceImplTest {
   private void verifyUACUpdated(String uacHash, String expectedCaseId) throws CTPException {
     ArgumentCaptor<UAC> uacUpdateCapture = ArgumentCaptor.forClass(UAC.class);
     verify(dataRepo, times(1)).writeUAC(uacUpdateCapture.capture());
-    
+
     UAC uacUpdated = uacUpdateCapture.getValue();
     assertEquals(UAC_HASH, uacUpdated.getUacHash());
     assertEquals(expectedCaseId, uacUpdated.getCaseId());
   }
 
-  private void VerifyQuestionnaireLinkedEventSent(String questionnaireId, String caseId, String individualCaseId) {
+  private void VerifyQuestionnaireLinkedEventSent(
+      String questionnaireId, String caseId, String individualCaseId) {
     ArgumentCaptor<QuestionnaireLinkedDetails> questionnaireLinkedCapture =
         ArgumentCaptor.forClass(QuestionnaireLinkedDetails.class);
     verify(eventPublisher, times(1))
-      .sendEvent(
-        eq(EventType.QUESTIONNAIRE_LINKED),
-        eq(Source.RESPONDENT_HOME),
-        eq(Channel.RH),
-        questionnaireLinkedCapture.capture());
+        .sendEvent(
+            eq(EventType.QUESTIONNAIRE_LINKED),
+            eq(Source.RESPONDENT_HOME),
+            eq(Channel.RH),
+            questionnaireLinkedCapture.capture());
 
     QuestionnaireLinkedDetails questionnaireLinked = questionnaireLinkedCapture.getValue();
     assertEquals(questionnaireId, questionnaireLinked.getQuestionnaireId());
@@ -646,11 +677,11 @@ public class UniqueAccessCodeServiceImplTest {
     ArgumentCaptor<RespondentAuthenticatedResponse> payloadCapture =
         ArgumentCaptor.forClass(RespondentAuthenticatedResponse.class);
     verify(eventPublisher, times(1))
-      .sendEvent(
-        eq(EventType.RESPONDENT_AUTHENTICATED),
-        eq(Source.RESPONDENT_HOME),
-        eq(Channel.RH),
-        payloadCapture.capture());
+        .sendEvent(
+            eq(EventType.RESPONDENT_AUTHENTICATED),
+            eq(Source.RESPONDENT_HOME),
+            eq(Channel.RH),
+            payloadCapture.capture());
 
     RespondentAuthenticatedResponse respondentAuthenticated = payloadCapture.getValue();
     assertEquals(questionnaireId, respondentAuthenticated.getQuestionnaireId());
@@ -661,7 +692,12 @@ public class UniqueAccessCodeServiceImplTest {
     verify(eventPublisher, times(expectedNumEventsSent)).sendEvent(any(), any(), any(), any());
   }
 
-  private void verifyLinkingResult(UniqueAccessCodeDTO uniqueAccessCodeDTO, String expectedCaseId, CaseType expectedCaseType, UAC uacTest, Address address) {
+  private void verifyLinkingResult(
+      UniqueAccessCodeDTO uniqueAccessCodeDTO,
+      String expectedCaseId,
+      CaseType expectedCaseType,
+      UAC uacTest,
+      Address address) {
     assertEquals(UAC_HASH, uniqueAccessCodeDTO.getUacHash());
     assertEquals(true, uniqueAccessCodeDTO.isActive());
     assertEquals(CaseStatus.OK, uniqueAccessCodeDTO.getCaseStatus());
@@ -669,7 +705,9 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(expectedCaseType.name(), uniqueAccessCodeDTO.getCaseType());
     assertEquals(uacTest.getRegion(), uniqueAccessCodeDTO.getRegion());
     assertEquals(expectedCaseId, uniqueAccessCodeDTO.getCaseId().toString());
-    assertEquals(uacTest.getCollectionExerciseId(), uniqueAccessCodeDTO.getCollectionExerciseId().toString());
+    assertEquals(
+        uacTest.getCollectionExerciseId(),
+        uniqueAccessCodeDTO.getCollectionExerciseId().toString());
     assertAddressesEqual(address, uniqueAccessCodeDTO.getAddress());
     assertEquals(uacTest.getFormType(), uniqueAccessCodeDTO.getFormType());
     assertEquals(false, uniqueAccessCodeDTO.isHandDelivery());

@@ -1,18 +1,23 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import uk.gov.ons.ctp.common.domain.AddressLevel;
+import uk.gov.ons.ctp.common.domain.AddressType;
+import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.EstabType;
+import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
@@ -24,11 +29,6 @@ import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.QuestionnaireLinkedDetails;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
-import uk.gov.ons.ctp.common.model.AddressLevel;
-import uk.gov.ons.ctp.common.model.AddressType;
-import uk.gov.ons.ctp.common.model.CaseType;
-import uk.gov.ons.ctp.common.model.EstabType;
-import uk.gov.ons.ctp.common.model.FormType;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UACLinkRequestDTO;
@@ -153,14 +153,14 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     CollectionCase collectionCase = null;
     if (cases.size() == 1) {
-      collectionCase = cases.get(0); // May be a HH or CE case
+      collectionCase = cases.get(0); // Will be a HH or CE case
     } else if (cases.size() > 1) {
       // Should only be more than one case if HH and HI found at same UPRN
       // Use the HH case
       Optional<CollectionCase> householdCase =
           cases.stream().filter(c -> c.getCaseType().equals(CaseType.HH.name())).findFirst();
       if (householdCase.isEmpty()) {
-        log.warn("Failed to find HH case for UPRN: " + uprnAsString);
+        log.with("UACHash", uacHash).with("UPRN", uprnAsString).warn("Failed to find HH case");
         throw new CTPException(
             CTPException.Fault.SYSTEM_ERROR, "Cannot find Household case for UPRN:" + uprnAsString);
       }
@@ -170,7 +170,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     // Create a new case if not found for the UPRN in Firestore
     if (collectionCase == null) {
       // No case for the UPRN. Create a new case
-      collectionCase = createCase(request.getAddressType(), uac, request);
+      CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
+      collectionCase = createCase(primaryCaseType, uac, request);
       validateUACCase(uac, collectionCase); // will abort here if invalid combo
 
       // Store new case in Firestore
@@ -186,15 +187,15 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     // we created
     String caseId = collectionCase.getId();
     uac.setCaseId(caseId);
-    
+
     String individualCaseId = null;
     CollectionCase individualCase = null;
-    
-    // if the uac indicates that the UAC is for a HI, we need to link the UAC to a new HI case instead of
-    // the HH case
+
+    // if the uac indicates that the UAC is for a HI, we need to link the UAC to a new HI case
+    // instead of the HH case
     if (uac.getCaseType().equals(CaseType.HH.name())
-        && uac.getFormType().equals(FormType.I.name())) {  // TODO PMB: Check if this if statement is correct
-      individualCase = createCase(CaseType.HI.name(), uac, request);
+        && uac.getFormType().equals(FormType.I.name())) {
+      individualCase = createCase(CaseType.HI, uac, request);
       individualCaseId = individualCase.getId();
 
       dataRepo.writeCollectionCase(individualCase);
@@ -213,7 +214,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     sendQuestionnaireLinkedEvent(
         uac.getQuestionnaireId(), collectionCase.getId(), individualCaseId);
 
-    UniqueAccessCodeDTO uniqueAccessCodeDTO = createUniqueAccessCodeDTO(uac, collectionCase != null ? collectionCase : individualCase);
+    UniqueAccessCodeDTO uniqueAccessCodeDTO =
+        createUniqueAccessCodeDTO(uac, individualCase != null ? individualCase : collectionCase);
     sendRespondentAuthenticatedEvent(uniqueAccessCodeDTO);
 
     return uniqueAccessCodeDTO;
@@ -287,15 +289,42 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         .debug("QuestionnaireLinked event published");
   }
 
+  private CaseType determinePrimaryCaseType(UACLinkRequestDTO request, UAC uac) {
+    String caseTypeStr = null;
+
+    EstabType estabType = EstabType.forCode(request.getEstabType());
+    Optional<AddressType> addressTypeForEstab = estabType.getAddressType();
+    if (addressTypeForEstab.isPresent()) {
+      // 1st choice. Set based on the establishment description
+      caseTypeStr = addressTypeForEstab.get().name(); // ie the equivalent
+    } else {
+      String addressType = request.getAddressType();
+      if (addressType != null
+          && (addressType.equals(CaseType.HH.name())
+              || addressType.equals(CaseType.CE.name())
+              || addressType.equals(CaseType.SPG.name()))) {
+        // 2nd choice. Use a case type based on the address type in the request
+        caseTypeStr = request.getAddressType(); // again the equivalent
+      } else {
+        // 3rd choice. Use the case type from the UAC
+        caseTypeStr = uac.getCaseType();
+      }
+    }
+
+    CaseType caseType = CaseType.valueOf(caseTypeStr);
+
+    return caseType;
+  }
+
   // Build a new case to store and send to RM via the NewAddressReported event.
-  private CollectionCase createCase(String caseTypeString, UAC uac, UACLinkRequestDTO request) {
+  private CollectionCase createCase(CaseType caseType, UAC uac, UACLinkRequestDTO request) {
     CollectionCase newCase = new CollectionCase();
 
     newCase.setId(UUID.randomUUID().toString());
     newCase.setCollectionExerciseId(uac.getCollectionExerciseId());
     newCase.setHandDelivery(false);
     newCase.setSurvey("CENSUS");
-    newCase.setCaseType(request.getAddressType());
+    newCase.setCaseType(caseType.name());
 
     Address address = new Address();
     address.setAddressLine1(request.getAddressLine1());
@@ -305,33 +334,16 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     address.setRegion(request.getRegion());
     address.setPostcode(request.getPostcode());
     address.setUprn(request.getUprn().asString());
+    address.setAddressType(caseType.name());
     address.setEstabType(request.getEstabType());
 
-    CaseType caseType = CaseType.valueOf(caseTypeString);
-    if (caseType == CaseType.HI) {
-      address.setAddressType(CaseType.HH.name());
-    } else {
-      address.setAddressType(caseType.name() );
-    }
-
-    // Work out which type of address the request is for
-    AddressType addressType = null;
-    Optional<EstabType> requestEstabType = EstabType.forCode(request.getEstabType());
-    if (requestEstabType.isPresent()) {
-      // Use best source, as lookup by estab name worked
-      addressType = requestEstabType.get().getAddressType();
-    } else {
-      addressType = AddressType.valueOf(request.getAddressType());
-    }
-      
     // Set address level for case
-    AddressLevel estabType = null;
-    if (addressType == AddressType.HH || addressType == AddressType.SPG) {
-      estabType = AddressLevel.U;
+    if ((caseType == CaseType.CE || caseType == CaseType.SPG)
+        && uac.getFormType().equals(FormType.CE1.name())) {
+      address.setAddressLevel(AddressLevel.E.name());
     } else {
-      estabType = AddressLevel.E;
+      address.setAddressLevel(AddressLevel.U.name());
     }
-    address.setAddressLevel(estabType.name());
 
     newCase.setAddress(address);
 
