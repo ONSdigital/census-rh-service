@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -454,7 +455,7 @@ public class UniqueAccessCodeServiceImplTest {
   }
 
   // Test variation to verify that new case is created using a case type from the UAC.
-  // To force the correct choice the request is created from an unknown estab description and 
+  // To force the correct choice the request is created from an unknown estab description and
   // the request doesn't specify an address type.
   @Test
   public void linkUAC_toNewCaseOfCaseTypeFromUAC() throws Exception {
@@ -485,7 +486,7 @@ public class UniqueAccessCodeServiceImplTest {
     // Build expectation for the the address that will have been created
     Address expectedAddress = createAddressFromLinkRequest(request, CaseType.CE);
     expectedAddress.setAddressLevel(AddressLevel.E.name());
-    
+
     // Verify that new case created with case type based on the requests address type
     List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
     CollectionCase newCase = newCases.get(0);

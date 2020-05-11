@@ -351,7 +351,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     newCase.setAddress(address);
 
     log.with(newCase.getId()).with(caseType).debug("Created new case");
-    
+
     return newCase;
   }
 
