@@ -26,6 +26,7 @@ import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
+import uk.gov.ons.ctp.common.event.model.NewAddress;
 import uk.gov.ons.ctp.common.event.model.QuestionnaireLinkedDetails;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -171,7 +172,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       // No case for the UPRN. Create a new case
       CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
       collectionCase = createCase(primaryCaseType, uac, request);
-      log.with(primaryCaseType).with(collectionCase.getId()).debug("Created new case");
+      log.with("caseId", collectionCase.getId())
+          .with("primaryCaseType", primaryCaseType)
+          .debug("Created new case");
       validateUACCase(uac, collectionCase); // will abort here if invalid combo
 
       // Store new case in Firestore
@@ -252,12 +255,16 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     String caseId = collectionCase.getId();
     log.with("caseId", caseId).info("Generating NewAddressReported event");
 
-    CollectionCaseNewAddress newAddress = new CollectionCaseNewAddress();
-    newAddress.setId(caseId);
-    newAddress.setCaseType(collectionCase.getCaseType());
-    newAddress.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
-    newAddress.setSurvey("CENSUS");
-    newAddress.setAddress(collectionCase.getAddress());
+    CollectionCaseNewAddress caseNewAddress = new CollectionCaseNewAddress();
+    caseNewAddress.setId(caseId);
+    caseNewAddress.setCaseType(collectionCase.getCaseType());
+    caseNewAddress.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
+    caseNewAddress.setSurvey("CENSUS");
+    caseNewAddress.setAddress(collectionCase.getAddress());
+
+    NewAddress newAddress = new NewAddress();
+    newAddress.setSourceCaseId(caseId);
+    newAddress.setCollectionCase(caseNewAddress);
 
     String transactionId =
         eventPublisher.sendEvent(
@@ -350,7 +357,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     newCase.setAddress(address);
 
-    log.with(newCase.getId()).with(caseType).debug("Created new case");
+    log.with("caseId", newCase.getId())
+        .with("caseType", caseType)
+        .debug("Have populated CollectionCase object");
 
     return newCase;
   }

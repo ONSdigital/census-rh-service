@@ -39,6 +39,7 @@ import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.Contact;
+import uk.gov.ons.ctp.common.event.model.NewAddress;
 import uk.gov.ons.ctp.common.event.model.QuestionnaireLinkedDetails;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -350,7 +351,8 @@ public class UniqueAccessCodeServiceImplTest {
     CollectionCase newCase = newCases.get(0);
     validateCase(newCase, CaseType.HH, uacTest, expectedAddress);
 
-    verifyNewAddressEventSent(CaseType.HH, uacTest.getCollectionExerciseId(), expectedAddress);
+    verifyNewAddressEventSent(
+        newCase.getId(), CaseType.HH, uacTest.getCollectionExerciseId(), expectedAddress);
 
     verifyUACUpdated(UAC_HASH, newCase.getId());
 
@@ -405,7 +407,8 @@ public class UniqueAccessCodeServiceImplTest {
     validateCase(newCase, CaseType.HH, uacTest, expectedAddressHH);
     validateCase(newHiCase, CaseType.HI, uacTest, expectedAddressHI);
 
-    verifyNewAddressEventSent(CaseType.HH, uacTest.getCollectionExerciseId(), expectedAddressHH);
+    verifyNewAddressEventSent(
+        newCase.getId(), CaseType.HH, uacTest.getCollectionExerciseId(), expectedAddressHH);
 
     verifyUACUpdated(UAC_HASH, newHiCase.getId());
 
@@ -682,9 +685,8 @@ public class UniqueAccessCodeServiceImplTest {
   }
 
   private void verifyNewAddressEventSent(
-      CaseType hh, String collectionExerciseId, Address expectedAddress) {
-    ArgumentCaptor<CollectionCaseNewAddress> newAddressCapture =
-        ArgumentCaptor.forClass(CollectionCaseNewAddress.class);
+      String caseId, CaseType hh, String collectionExerciseId, Address expectedAddress) {
+    ArgumentCaptor<NewAddress> newAddressCapture = ArgumentCaptor.forClass(NewAddress.class);
     verify(eventPublisher, times(1))
         .sendEvent(
             eq(EventType.NEW_ADDRESS_REPORTED),
@@ -692,13 +694,16 @@ public class UniqueAccessCodeServiceImplTest {
             eq(Channel.RH),
             newAddressCapture.capture());
 
-    CollectionCaseNewAddress newAddress = newAddressCapture.getValue();
-    assertEquals(CaseType.HH.name(), newAddress.getCaseType());
-    assertEquals("CENSUS", newAddress.getSurvey());
-    assertEquals(collectionExerciseId, newAddress.getCollectionExerciseId());
-    assertEquals(null, newAddress.getFieldCoordinatorId());
-    assertEquals(null, newAddress.getFieldOfficerId());
-    assertEquals(expectedAddress, newAddress.getAddress());
+    NewAddress newAddress = newAddressCapture.getValue();
+    assertEquals(caseId, newAddress.getSourceCaseId());
+
+    CollectionCaseNewAddress caseNewAddress = newAddress.getCollectionCase();
+    assertEquals(CaseType.HH.name(), caseNewAddress.getCaseType());
+    assertEquals("CENSUS", caseNewAddress.getSurvey());
+    assertEquals(collectionExerciseId, caseNewAddress.getCollectionExerciseId());
+    assertEquals(null, caseNewAddress.getFieldCoordinatorId());
+    assertEquals(null, caseNewAddress.getFieldOfficerId());
+    assertEquals(expectedAddress, caseNewAddress.getAddress());
   }
 
   private void verifyUACUpdated(String uacHash, String expectedCaseId) throws CTPException {
