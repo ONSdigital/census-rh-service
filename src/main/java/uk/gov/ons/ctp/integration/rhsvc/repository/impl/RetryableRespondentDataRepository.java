@@ -5,6 +5,7 @@ import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -27,7 +28,10 @@ public class RetryableRespondentDataRepository {
       LoggerFactory.getLogger(RetryableRespondentDataRepository.class);
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
-  String gcpProject;
+  String localProject;
+
+  @Value("${FIRESTORE_PROJECT}")
+  String firestoreProject;
 
   @Value("${cloudStorage.caseSchemaName}")
   String caseSchemaName;
@@ -47,6 +51,7 @@ public class RetryableRespondentDataRepository {
 
   @PostConstruct
   public void init() {
+    String gcpProject = StringUtils.isBlank(firestoreProject) ? localProject : firestoreProject;
     caseSchema = gcpProject + "-" + caseSchemaName.toLowerCase();
     uacSchema = gcpProject + "-" + uacSchemaName.toLowerCase();
   }
