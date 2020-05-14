@@ -221,6 +221,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     UniqueAccessCodeDTO uniqueAccessCodeDTO =
         createUniqueAccessCodeDTO(uac, individualCase != null ? individualCase : collectionCase);
+    
     sendRespondentAuthenticatedEvent(uniqueAccessCodeDTO);
 
     log.with(uacHash).with(uniqueAccessCodeDTO).debug("Exit linkUACCase()");
