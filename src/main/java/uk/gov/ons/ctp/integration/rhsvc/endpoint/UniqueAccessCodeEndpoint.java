@@ -35,6 +35,8 @@ public class UniqueAccessCodeEndpoint {
     log.info("Entering GET getUACClaimContext");
     UniqueAccessCodeDTO uacDTO = uacService.getAndAuthenticateUAC(uacHash);
 
+    log.debug("Exit GET getUACClaimContext");
+
     return ResponseEntity.ok(uacDTO);
   }
 }
