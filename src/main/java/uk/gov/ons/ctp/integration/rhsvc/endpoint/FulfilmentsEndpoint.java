@@ -71,6 +71,10 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
 
     log.with("size", fulfilments.size()).info("Found fulfilment(s)");
 
+    log.with("requestParam.caseType", caseType)
+        .with("requestParam.productGroup", productGroup)
+        .debug("Exit GET getFulfilments");
+
     return ResponseEntity.ok(fulfilments);
   }
 }
