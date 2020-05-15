@@ -49,6 +49,8 @@ public class CaseEndpoint {
           CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve UPRN: " + uprn.getValue());
     }
 
+    log.with("pathParam.uprn", uprn).debug("Exit GET getHHCaseByUPRN");
+
     return ResponseEntity.ok(results);
   }
 
@@ -77,6 +79,9 @@ public class CaseEndpoint {
     }
 
     CaseDTO result = caseService.modifyAddress(addressChange);
+
+    log.with("pathParam.caseId", caseId).debug("Exit modifyAddress");
+
     return ResponseEntity.ok(result);
   }
 
@@ -107,6 +112,8 @@ public class CaseEndpoint {
       log.with(caseId).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
+
+    log.with("pathParam.caseId", caseId).debug("Exit POST fulfilmentRequestBySMS");
 
     caseService.fulfilmentRequestBySMS(requestBodyDTO);
   }
