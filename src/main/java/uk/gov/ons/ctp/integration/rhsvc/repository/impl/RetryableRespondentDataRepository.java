@@ -75,12 +75,12 @@ public class RetryableRespondentDataRepository {
   /**
    * Read a UAC object from cloud.
    *
-   * @param universalAccessCode - the unique id of the object stored
+   * @param universalAccessCodeHash - the hash of the unique id of the object stored
    * @return - de-serialised version of the stored object
    * @throws CTPException - if a cloud exception was detected.
    */
-  public Optional<UAC> readUAC(final String universalAccessCode) throws CTPException {
-    return cloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCode);
+  public Optional<UAC> readUAC(final String universalAccessCodeHash) throws CTPException {
+    return cloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCodeHash);
   }
 
   /**
