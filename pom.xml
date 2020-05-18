@@ -122,13 +122,6 @@
 
     <!-- third party libraries -->
     <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock</artifactId>
-      <version>2.19.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>ma.glasnost.orika</groupId>
       <artifactId>orika-eclipse-tools</artifactId>
     </dependency>
