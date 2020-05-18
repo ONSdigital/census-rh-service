@@ -1,18 +1,18 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
@@ -111,8 +111,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     if (uacMatch.isPresent()) {
       String caseId = uacMatch.get().getCaseId();
       if (!StringUtils.isEmpty(caseId)) {
-        Optional<CollectionCase> caseMatch =
-            dataRepo.readCollectionCase(caseId);
+        Optional<CollectionCase> caseMatch = dataRepo.readCollectionCase(caseId);
         if (caseMatch.isPresent()) {
           data = createUniqueAccessCodeDTO(uacMatch.get(), caseMatch, CaseStatus.OK);
         } else {
@@ -128,7 +127,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       log.warn("Failed to retrieve UAC from storage");
       throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve UAC");
     }
-    
+
     return data;
   }
 
@@ -214,11 +213,13 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     // so NOW persist it
     dataRepo.writeUAC(uac);
 
-    sendQuestionnaireLinkedEvent(
-        uac.getQuestionnaireId(), primaryCase.getId(), individualCaseId);
+    sendQuestionnaireLinkedEvent(uac.getQuestionnaireId(), primaryCase.getId(), individualCaseId);
 
     UniqueAccessCodeDTO uniqueAccessCodeDTO =
-        createUniqueAccessCodeDTO(uac, individualCase != null ? Optional.of(individualCase) : Optional.of(primaryCase), CaseStatus.OK);
+        createUniqueAccessCodeDTO(
+            uac,
+            individualCase != null ? Optional.of(individualCase) : Optional.of(primaryCase),
+            CaseStatus.OK);
 
     sendRespondentAuthenticatedEvent(uniqueAccessCodeDTO);
 
@@ -384,7 +385,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     }
   }
 
-  private UniqueAccessCodeDTO createUniqueAccessCodeDTO(UAC uac, Optional<CollectionCase> collectionCase, CaseStatus caseStatus) {
+  private UniqueAccessCodeDTO createUniqueAccessCodeDTO(
+      UAC uac, Optional<CollectionCase> collectionCase, CaseStatus caseStatus) {
     UniqueAccessCodeDTO uniqueAccessCodeDTO = new UniqueAccessCodeDTO();
 
     // Populate the DTO with the case data and overwrite with the UAC data.
@@ -394,9 +396,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     if (collectionCase.isPresent()) {
       caseMapperFacade.map(collectionCase.get(), uniqueAccessCodeDTO);
     }
-    
+
     uacMapperFacade.map(uac, uniqueAccessCodeDTO);
-    
+
     uniqueAccessCodeDTO.setCaseStatus(caseStatus);
 
     return uniqueAccessCodeDTO;
