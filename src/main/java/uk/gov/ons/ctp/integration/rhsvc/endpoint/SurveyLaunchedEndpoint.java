@@ -29,6 +29,9 @@ public final class SurveyLaunchedEndpoint {
       throws CTPException {
 
     log.with("requestBody", surveyLaunchedDTO).info("Entering POST surveyLaunched");
+
     surveyLaunchedService.surveyLaunched(surveyLaunchedDTO);
+
+    log.with("caseId", surveyLaunchedDTO.getCaseId()).debug("Exit POST surveyLaunched");
   }
 }
