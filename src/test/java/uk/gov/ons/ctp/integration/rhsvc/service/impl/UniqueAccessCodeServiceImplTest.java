@@ -116,7 +116,7 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(CaseStatus.OK, uacDTO.getCaseStatus());
     assertEquals(UUID.fromString(uacTest.getCaseId()), uacDTO.getCaseId());
     assertEquals(
-        UUID.fromString(caseTest.getCollectionExerciseId()), uacDTO.getCollectionExerciseId());
+        UUID.fromString(uacTest.getCollectionExerciseId()), uacDTO.getCollectionExerciseId());
     assertEquals(uacTest.getQuestionnaireId(), uacDTO.getQuestionnaireId());
     assertEquals(uacTest.getCaseType(), uacDTO.getCaseType());
     assertEquals(uacTest.getRegion(), uacDTO.getRegion());

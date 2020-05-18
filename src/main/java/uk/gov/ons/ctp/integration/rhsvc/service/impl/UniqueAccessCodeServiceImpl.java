@@ -1,18 +1,18 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
@@ -106,31 +106,29 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   @Override
   public UniqueAccessCodeDTO getAndAuthenticateUAC(String uacHash) throws CTPException {
 
-    UniqueAccessCodeDTO data = new UniqueAccessCodeDTO();
-    data.setUacHash(uacHash);
+    UniqueAccessCodeDTO data;
     Optional<UAC> uacMatch = dataRepo.readUAC(uacHash);
     if (uacMatch.isPresent()) {
-      uacMapperFacade.map(uacMatch.get(), data);
-      if (!StringUtils.isEmpty(data.getCaseId())) {
+      String caseId = uacMatch.get().getCaseId();
+      if (!StringUtils.isEmpty(caseId)) {
         Optional<CollectionCase> caseMatch =
-            dataRepo.readCollectionCase(uacMatch.get().getCaseId());
+            dataRepo.readCollectionCase(caseId);
         if (caseMatch.isPresent()) {
-          caseMapperFacade.map(caseMatch.get(), data);
-          data.setCaseStatus(CaseStatus.OK);
+          data = createUniqueAccessCodeDTO(uacMatch.get(), caseMatch, CaseStatus.OK);
         } else {
           log.warn("Failed to retrieve Case for UAC from storage");
-          data.setCaseStatus(CaseStatus.NOT_FOUND);
+          data = createUniqueAccessCodeDTO(uacMatch.get(), caseMatch, CaseStatus.NOT_FOUND);
         }
         sendRespondentAuthenticatedEvent(data);
       } else {
         log.warn("Retrieved UAC CaseId not present");
-        data.setCaseStatus(CaseStatus.UNKNOWN);
+        data = createUniqueAccessCodeDTO(uacMatch.get(), Optional.empty(), CaseStatus.UNKNOWN);
       }
     } else {
       log.warn("Failed to retrieve UAC from storage");
       throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve UAC");
     }
-
+    
     return data;
   }
 
@@ -151,9 +149,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     String uprnAsString = request.getUprn().asString();
     List<CollectionCase> cases = dataRepo.readCollectionCasesByUprn(uprnAsString);
 
-    CollectionCase collectionCase = null;
+    CollectionCase primaryCase = null;
     if (cases.size() == 1) {
-      collectionCase = cases.get(0); // Will be a HH or CE case
+      primaryCase = cases.get(0); // Will be a HH or CE case
     } else if (cases.size() > 1) {
       // Should only be more than one case if HH and HI found at same UPRN
       // Use the HH case
@@ -164,32 +162,32 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         throw new CTPException(
             CTPException.Fault.SYSTEM_ERROR, "Cannot find Household case for UPRN:" + uprnAsString);
       }
-      collectionCase = householdCase.get();
+      primaryCase = householdCase.get();
     }
 
     // Create a new case if not found for the UPRN in Firestore
-    if (collectionCase == null) {
+    if (primaryCase == null) {
       // No case for the UPRN. Create a new case
       CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
-      collectionCase = createCase(primaryCaseType, uac, request);
-      log.with("caseId", collectionCase.getId())
+      primaryCase = createCase(primaryCaseType, uac, request);
+      log.with("caseId", primaryCase.getId())
           .with("primaryCaseType", primaryCaseType)
           .debug("Created new case");
-      validateUACCase(uac, collectionCase); // will abort here if invalid combo
+      validateUACCase(uac, primaryCase); // will abort here if invalid combo
 
       // Store new case in Firestore
-      dataRepo.writeCollectionCase(collectionCase);
+      dataRepo.writeCollectionCase(primaryCase);
 
       // tell RM we have created a case for the selected (HH|CE|SPG) address
-      sendNewAddressEvent(collectionCase);
+      sendNewAddressEvent(primaryCase);
     } else {
-      log.with(collectionCase.getId()).debug("Found existing case");
-      validateUACCase(uac, collectionCase); // will abort here if invalid combo
+      log.with(primaryCase.getId()).debug("Found existing case");
+      validateUACCase(uac, primaryCase); // will abort here if invalid combo
     }
 
     // for now assume that the UAC is to be linked to either the HH|CE|SPG case we found or the one
     // we created
-    String caseId = collectionCase.getId();
+    String caseId = primaryCase.getId();
     uac.setCaseId(caseId);
 
     String individualCaseId = null;
@@ -209,7 +207,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       uac.setCaseId(individualCaseId);
     }
 
-    // Our UAC will have been linked to one off:
+    // Our UAC will have been linked to one of:
     //   - The case we found by uprn in firestore
     //   - The HH|CE|SPG case we created when one was not found in firestore
     //   - The Individual case we created for one of the above
@@ -217,10 +215,10 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     dataRepo.writeUAC(uac);
 
     sendQuestionnaireLinkedEvent(
-        uac.getQuestionnaireId(), collectionCase.getId(), individualCaseId);
+        uac.getQuestionnaireId(), primaryCase.getId(), individualCaseId);
 
     UniqueAccessCodeDTO uniqueAccessCodeDTO =
-        createUniqueAccessCodeDTO(uac, individualCase != null ? individualCase : collectionCase);
+        createUniqueAccessCodeDTO(uac, individualCase != null ? Optional.of(individualCase) : Optional.of(primaryCase), CaseStatus.OK);
 
     sendRespondentAuthenticatedEvent(uniqueAccessCodeDTO);
 
@@ -386,19 +384,20 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     }
   }
 
-  private UniqueAccessCodeDTO createUniqueAccessCodeDTO(UAC uac, CollectionCase collectionCase) {
+  private UniqueAccessCodeDTO createUniqueAccessCodeDTO(UAC uac, Optional<CollectionCase> collectionCase, CaseStatus caseStatus) {
     UniqueAccessCodeDTO uniqueAccessCodeDTO = new UniqueAccessCodeDTO();
 
     // Populate the DTO with the case data and overwrite with the UAC data.
     // RHUI should only ever launch EQ using the UAC's version of data in preference to that of the
-    // Case
+    // case
 
-    // getAndAuthenticateUAC() does the DTO population the other way around. But for linking
-    // and any other purpose in RH from now on should do it in this order.
-
-    caseMapperFacade.map(collectionCase, uniqueAccessCodeDTO);
+    if (collectionCase.isPresent()) {
+      caseMapperFacade.map(collectionCase.get(), uniqueAccessCodeDTO);
+    }
+    
     uacMapperFacade.map(uac, uniqueAccessCodeDTO);
-    uniqueAccessCodeDTO.setCaseStatus(CaseStatus.OK);
+    
+    uniqueAccessCodeDTO.setCaseStatus(caseStatus);
 
     return uniqueAccessCodeDTO;
   }
