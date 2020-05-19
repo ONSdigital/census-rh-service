@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
+import static uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture.EXPECTED_JSON_CONTENT_TYPE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -83,7 +84,7 @@ public class CaseEndpointUnitTest {
     mockMvc
         .perform(get("/cases/uprn/{uprn}", UPRN))
         .andExpect(status().isOk())
-        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(content().contentType(EXPECTED_JSON_CONTENT_TYPE))
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(jsonPath("$.[0].caseId", is(rmCase0.getCaseId().toString())))
         .andExpect(jsonPath("$.[0].caseRef", is(rmCase0.getCaseRef())))
@@ -145,7 +146,7 @@ public class CaseEndpointUnitTest {
                 .content(mapper.writeValueAsString(addressChangeDTO))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(content().contentType(EXPECTED_JSON_CONTENT_TYPE))
         .andExpect(jsonPath("$.caseId", is(rmCase.getCaseId().toString())))
         .andExpect(jsonPath("$.caseRef", is(rmCase.getCaseRef())))
         .andExpect(jsonPath("$.caseType", is(rmCase.getCaseType())))

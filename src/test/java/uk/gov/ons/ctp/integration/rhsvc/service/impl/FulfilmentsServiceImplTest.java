@@ -76,9 +76,6 @@ public class FulfilmentsServiceImplTest {
 
     // Verify that nothing else was specified in the product search
     assertNull(capturedExampleProduct.getFulfilmentCode());
-    assertNull(capturedExampleProduct.getInitialContactCode());
-    assertNull(capturedExampleProduct.getReminderContactCode());
-    assertNull(capturedExampleProduct.getFieldDistributionCode());
     assertNull(capturedExampleProduct.getDescription());
     assertNull(capturedExampleProduct.getHandler());
 

@@ -15,4 +15,6 @@ public final class RespondentHomeFixture {
   public static final String QID_31 = "3130000002100533";
 
   public static final String A_QID = QID_01;
+
+  public static final String EXPECTED_JSON_CONTENT_TYPE = "application/json";
 }
