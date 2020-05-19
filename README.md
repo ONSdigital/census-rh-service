@@ -226,6 +226,8 @@ In the RabbitMQ console make sure that the following queues have been created an
        events   |  event.uac.update               | case.rh.uac
        events   |  event.response.authentication  | event.response.authentication
        events   |  event.website.feedback         | website.feedback
+       events   |  event.case.address.update      | event.case.address.update
+       events   |  event.questionnaire.update     | event.questionnaire.update
 
 The following dead letter queues should be configured:
 
@@ -234,10 +236,9 @@ The following dead letter queues should be configured:
        events.deadletter.exchange   | event.case.update              | case.rh.case.dlq
        events.deadletter.exchange   | event.uac.update               | case.rh.uac.dlq
 
-
 2) **UAC Data**
 
-Submit the UAC data by sending the following to the 'events' exchange with the routing key 'event.uac.update':
+Submit the UAC data (see UAC.java) by sending the following to the 'events' exchange with the routing key 'event.uac.update':
 
 	{
 	  "event": {
@@ -255,14 +256,15 @@ Submit the UAC data by sending the following to the 'events' exchange with the r
 	      "caseType": "HH",
 	      "region": "E",
 	      "caseId": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
-	      "collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93"
+	      "collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
+	      "formType": "H"
 	    }
 	  }
 	}
 
 3) **Case data**
 
-Submit the case by sending the following to the 'events' exchange with the routing key 'event.case.lifecycle':
+Submit the case (see CollectionCase.java) by sending the following to the 'events' exchange with the routing key 'event.case.lifecycle':
 
 	{
 	  "event": {
@@ -276,6 +278,7 @@ Submit the case by sending the following to the 'events' exchange with the routi
 	    "collectionCase": {
 	      "id": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
 	      "caseRef": "10000000010",
+	      "caseType": "HH",
 	      "survey": "CENSUS",
 	      "collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
 	      "address": {
@@ -299,12 +302,11 @@ Submit the case by sending the following to the 'events' exchange with the routi
 	        "email": "me@example.com",
 	        "telNo": "+447890000000"
 	      },
-	      "state": "ACTIONABLE",
-	      "actionableFrom": "2011-08-12T20:17:46.384Z"
+	      "actionableFrom": "2011-08-12T20:17:46.384Z",
+	      "handDelivery": "false"
 	    }
 	  }
 	}
-
 
 4) **Generate respondent authenticated event**
 

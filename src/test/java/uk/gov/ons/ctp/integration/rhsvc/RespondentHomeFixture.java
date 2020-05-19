@@ -16,7 +16,5 @@ public final class RespondentHomeFixture {
 
   public static final String A_QID = QID_01;
 
-  // public static final String EXPECTED_JSON_CONTENT_TYPE = "application/json;charset=UTF-8"; //
-  // Spring Boot 2.1.3
-  public static final String EXPECTED_JSON_CONTENT_TYPE = "application/json"; // Spring Boot 2.3.0
+  public static final String EXPECTED_JSON_CONTENT_TYPE = "application/json";
 }
