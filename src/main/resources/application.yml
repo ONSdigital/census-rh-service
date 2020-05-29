@@ -81,10 +81,11 @@ management:
 
 server:
   port: 8071
-  undertow.worker-threads: 40
-  undertow.io-threads: 6
-  shutdown:
-    grace-period: 30s
+  shutdown: graceful
+  undertow:
+    threads:
+      worker: 40
+      io: 6
 
 spring:
   mvc:
@@ -99,6 +100,8 @@ spring:
       enabled: never
   application:
     name: ONS RespondentHomeService
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 rabbitmq:
   username: guest
