@@ -5,7 +5,7 @@ import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.event.model.Address;
-import uk.gov.ons.ctp.common.event.model.AddressModified;
+import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
@@ -35,8 +35,7 @@ public class RHSvcBeanMapper extends ConfigurableMapper {
         .byDefault()
         .register();
 
-    factory.classMap(AddressDTO.class, AddressModified.class).byDefault().register();
-
-    factory.classMap(Address.class, AddressModified.class).byDefault().register();
+    factory.classMap(AddressDTO.class, AddressCompact.class).byDefault().register();
+    factory.classMap(Address.class, AddressCompact.class).byDefault().register();
   }
 }

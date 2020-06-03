@@ -52,7 +52,6 @@ public class CaseEventReceiverImplUnit_Test {
     addressFixture.setLatitude("50.863849");
     addressFixture.setLongitude("-1.229710");
     addressFixture.setUprn("XXXXXXXXXXXXX");
-    addressFixture.setArid("XXXXX");
     addressFixture.setAddressType("CE");
     addressFixture.setEstabType("XXX");
     contactFixture.setTitle("Ms");
