@@ -24,7 +24,9 @@
 		"surname": "smith",
 		"telNo": "+447890000000"
 	},
-	"actionableFrom": "2011-08-12T20:17:46.384Z"
+	"actionableFrom": "2011-08-12T20:17:46.384Z",
+	"addressInvalid": false,
+	"createdDateTime": "2020-06-01T20:17:46.384Z"
   },
   {
 	"id": "7a3ee925-4cc9-4084-b90e-d5b002e47eb5",
@@ -51,7 +53,9 @@
 		"surname": "smith",
 		"telNo": "+447890000000"
 	},
-	"actionableFrom": "2011-08-12T20:17:46.384Z"
+	"actionableFrom": "2011-08-12T20:17:46.384Z",
+	"addressInvalid": false,
+	"createdDateTime": "2020-06-01T20:17:46.384Z"
   },
   {
 	"id": "26e52f0e-c254-4d6b-9bd1-e57cec58fc1e",
@@ -78,6 +82,8 @@
 		"surname": "smith",
 		"telNo": "+447890000000"
 	},
-	"actionableFrom": "2011-08-12T20:17:46.384Z"
+	"actionableFrom": "2011-08-12T20:17:46.384Z",
+	"addressInvalid": false,
+	"createdDateTime": "2020-06-01T20:17:46.384Z"
   }
 ]

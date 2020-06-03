@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -33,6 +34,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNu
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
 /** Unit Tests on endpoint for Case resources */
+@RunWith(MockitoJUnitRunner.class)
 public class CaseEndpointUnitTest {
 
   private static final String UPRN = "123456";
@@ -62,7 +64,6 @@ public class CaseEndpointUnitTest {
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(caseEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))

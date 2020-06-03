@@ -16,9 +16,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -28,6 +29,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
 
 /** Unit Tests on endpoint for UAC resources */
+@RunWith(MockitoJUnitRunner.class)
 public class UniqueAccessCodeEndpointTest {
 
   private static final String UAC_HASH =
@@ -48,7 +50,6 @@ public class UniqueAccessCodeEndpointTest {
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(uacEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))

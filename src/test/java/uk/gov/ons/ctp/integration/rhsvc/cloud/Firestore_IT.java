@@ -5,6 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +18,7 @@ import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.time.DateTimeUtil;
 
 /**
  * This class tests the FirestoreDataStore class by connecting to a real firestore project.
@@ -25,6 +29,7 @@ import uk.gov.ons.ctp.common.event.model.CollectionCase;
  * /Users/peterbochel/.config/gcloud/application_default_credentials.json GOOGLE_CLOUD_PROJECT =
  * census-rh-peterb
  */
+@Ignore
 public class Firestore_IT {
 
   private static final String FIRESTORE_CREDENTIALS_ENV_NAME = "GOOGLE_APPLICATION_CREDENTIALS";
@@ -59,7 +64,6 @@ public class Firestore_IT {
     firestoreDataStore.deleteObject(TEST_SCHEMA, case2.getId());
   }
 
-  @Ignore
   @Test
   public void testStoreAndRetrieve() throws Exception {
     // Load test data
@@ -70,14 +74,21 @@ public class Firestore_IT {
     firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
     firestoreDataStore.storeObject(TEST_SCHEMA, case2.getId(), case2);
 
-    // Verify that 1st case can be read back
-    Optional<CollectionCase> retrievedCase1 =
-        firestoreDataStore.retrieveObject(CollectionCase.class, TEST_SCHEMA, case1.getId());
-    assertEquals(case1.getId(), retrievedCase1.get().getId());
-    assertEquals(case1, retrievedCase1.get());
+    verifyStoredCase(case1, false, "2020-06-01T20:17:46.384Z");
+    verifyStoredCase(case2, true, "2020-05-01T20:17:46.384Z");
   }
 
-  @Ignore
+  private void verifyStoredCase(
+      CollectionCase caze, boolean isAddrValid, String expectedCreatedDateTime) throws Exception {
+    Optional<CollectionCase> retrievedCase =
+        firestoreDataStore.retrieveObject(CollectionCase.class, TEST_SCHEMA, caze.getId());
+    assertTrue(retrievedCase.isPresent());
+    CollectionCase rcase = retrievedCase.get();
+    assertEquals(caze, rcase);
+    assertEquals(isAddrValid, rcase.isAddressInvalid());
+    assertEquals(expectedCreatedDateTime, zuluDateTimeFormatter(rcase.getCreatedDateTime()));
+  }
+
   @Test
   public void testReplaceObject() throws Exception {
     // Load test data
@@ -101,7 +112,6 @@ public class Firestore_IT {
     assertEquals(case2, retrievedCase.get());
   }
 
-  @Ignore
   @Test
   public void testRetrieveObject_unknownObject() throws Exception {
     // Chuck an object into firestore
@@ -115,7 +125,6 @@ public class Firestore_IT {
     assertTrue(retrievedCase.isEmpty());
   }
 
-  @Ignore
   @Test
   public void testSearch_multipleResults() throws Exception {
     // Read test data
@@ -126,7 +135,7 @@ public class Firestore_IT {
     firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
     firestoreDataStore.storeObject(TEST_SCHEMA, case2.getId(), case2);
 
-    // Verify that search can find the  first case
+    // Verify that search can find the first case
     String[] searchByForename = new String[] {"contact", "forename"};
     List<CollectionCase> retrievedCase1 =
         firestoreDataStore.search(
@@ -144,7 +153,6 @@ public class Firestore_IT {
     assertEquals(case2, retrievedCase2.get(1));
   }
 
-  @Ignore
   @Test
   public void testSearch_noResults() throws Exception {
     // Load test data
@@ -158,7 +166,6 @@ public class Firestore_IT {
     assertTrue(retrievedCase1.isEmpty());
   }
 
-  @Ignore
   @Test
   public void testSearch_serialisationFailure() throws Exception {
     // Add test data to Firestore
@@ -178,7 +185,6 @@ public class Firestore_IT {
     assertTrue(exceptionCaught);
   }
 
-  @Ignore
   @Test
   public void testDelete_success() throws Exception {
     // Load test data
@@ -199,7 +205,6 @@ public class Firestore_IT {
     assertTrue(retrievedCase.isEmpty());
   }
 
-  @Ignore
   @Test
   public void testDelete_onNonExistantObject() throws Exception {
     // Load test data, just so that Firestore has some data loaded
@@ -222,5 +227,11 @@ public class Firestore_IT {
     CollectionCase caseData = cases.get(caseOffset);
 
     return caseData;
+  }
+
+  private String zuluDateTimeFormatter(Date date) {
+    DateTimeFormatter formatter =
+        DateTimeFormatter.ofPattern(DateTimeUtil.DATE_FORMAT_IN_JSON).withZone(ZoneId.of("Z"));
+    return formatter.format(date.toInstant());
   }
 }

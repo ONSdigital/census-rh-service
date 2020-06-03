@@ -7,10 +7,11 @@ import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAd
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -19,6 +20,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.rhsvc.service.SurveyLaunchedService;
 
 /** Respondent Home Endpoint Unit tests */
+@RunWith(MockitoJUnitRunner.class)
 public final class SurveyLaunchedEndpointUnitTest {
   @InjectMocks private SurveyLaunchedEndpoint surveyLaunchedEndpoint;
 
@@ -33,8 +35,6 @@ public final class SurveyLaunchedEndpointUnitTest {
    */
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
-
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(surveyLaunchedEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
