@@ -372,8 +372,13 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     // https://collaborate2.ons.gov.uk/confluence/display/SDC/Auth.05+-+Unlinked+Authentication
 
     FormType uacFormType = FormType.valueOf(uac.getFormType());
-    CaseType uacCaseType = CaseType.valueOf(uac.getCaseType());
+    CaseType uacCaseType = null;
     CaseType caseCaseType = CaseType.valueOf(collectionCase.getCaseType());
+    if (uac.getCaseType().isEmpty()) {
+      uacCaseType = caseCaseType;      
+    } else {
+      uacCaseType = CaseType.valueOf(uac.getCaseType());
+    }
     Optional<LinkingCombination> linkCombo =
         LinkingCombination.lookup(uacFormType, uacCaseType, caseCaseType);
 
