@@ -302,6 +302,13 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.8.2</version>
+        <configuration>
+          <!-- exclude generated classes that cause javaco failures -->
+          <excludes>
+            <exclude>reflectasm.*</exclude>
+            <exclude>**/*MethodAccess</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution>
             <id>default-prepare-agent</id>

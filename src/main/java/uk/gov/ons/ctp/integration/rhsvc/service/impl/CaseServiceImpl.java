@@ -17,8 +17,8 @@ import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
-import uk.gov.ons.ctp.common.event.model.AddressModified;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
 import uk.gov.ons.ctp.common.event.model.Contact;
@@ -85,9 +85,8 @@ public class CaseServiceImpl implements CaseService {
 
     CaseDTO caseData = createModifiedAddressCaseDetails(caseId, rmCase, addressChanges);
 
-    AddressModified originalAddress = mapperFacade.map(rmCase.getAddress(), AddressModified.class);
-
-    AddressModified updatedAddress = mapperFacade.map(rmCase.getAddress(), AddressModified.class);
+    AddressCompact originalAddress = mapperFacade.map(rmCase.getAddress(), AddressCompact.class);
+    AddressCompact updatedAddress = mapperFacade.map(rmCase.getAddress(), AddressCompact.class);
 
     mapperFacade.map(addressChanges.getAddress(), updatedAddress);
 
@@ -129,7 +128,7 @@ public class CaseServiceImpl implements CaseService {
    * @param newAddress details of case
    */
   private void sendAddressModifiedEvent(
-      String caseId, AddressModified originalAddress, AddressModified newAddress)
+      String caseId, AddressCompact originalAddress, AddressCompact newAddress)
       throws CTPException {
 
     log.with("caseId", caseId)

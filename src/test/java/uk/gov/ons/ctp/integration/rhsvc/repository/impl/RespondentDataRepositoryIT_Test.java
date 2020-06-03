@@ -14,8 +14,6 @@ import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
-// import uk.gov.ons.ctp.integration.rhsvc.domain.model.Address;
-
 public class RespondentDataRepositoryIT_Test {
 
   private RespondentDataRepository cloud;
@@ -48,7 +46,6 @@ public class RespondentDataRepositoryIT_Test {
     address.setLatitude("50.863849");
     address.setLongitude("-1.229710");
     address.setUprn("XXXXXXXXXXXXX");
-    address.setArid("XXXXX");
     address.setAddressType("CE");
     address.setEstabType("XXX");
     Contact contact = new Contact();

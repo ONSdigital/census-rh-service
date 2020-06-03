@@ -117,7 +117,6 @@ public class CaseEventReceiverImplIT_Test {
     address.setLatitude("50.863849");
     address.setLongitude("-1.229710");
     address.setUprn("XXXXXXXXXXXXX");
-    address.setArid("XXXXX");
     address.setAddressType("CE");
     address.setEstabType("XXX");
 
