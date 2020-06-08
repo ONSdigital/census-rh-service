@@ -292,17 +292,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       // 1st choice. Set based on the establishment description
       caseTypeStr = addressTypeForEstab.get().name(); // ie the equivalent
     } else {
-      String addressType = request.getAddressType().name();
-      if (addressType != null
-          && (addressType.equals(CaseType.HH.name())
-              || addressType.equals(CaseType.CE.name())
-              || addressType.equals(CaseType.SPG.name()))) {
-        // 2nd choice. Use a case type based on the address type in the request
-        caseTypeStr = request.getAddressType().name(); // again the equivalent
-      } else {
-        // 3rd choice. No other choice
-        caseTypeStr = CaseType.HH.name();
-      }
+      caseTypeStr = request.getAddressType().name(); // trust AIMS
     }
 
     CaseType caseType = CaseType.valueOf(caseTypeStr);
