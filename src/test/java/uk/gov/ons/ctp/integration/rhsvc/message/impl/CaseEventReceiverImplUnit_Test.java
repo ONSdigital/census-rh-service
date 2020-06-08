@@ -7,9 +7,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
-import uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
@@ -21,8 +20,8 @@ public class CaseEventReceiverImplUnit_Test {
   @InjectMocks private CaseEventReceiverImpl target;
 
   @Test
-  public void test_acceptCaseEvent_success() throws CTPException {
-    CaseEvent caseEvent = RespondentHomeFixture.createCaseUpdatedEvent();
+  public void test_acceptCaseEvent_success() throws Exception {
+    CaseEvent caseEvent = FixtureHelper.loadClassFixtures(CaseEvent[].class).get(0);
     target.acceptCaseEvent(caseEvent);
     verify(mockRespondentDataRepo).writeCollectionCase(caseEvent.getPayload().getCollectionCase());
   }

@@ -22,8 +22,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
-import uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
@@ -47,7 +47,7 @@ public class CaseEventReceiverImplIT_Test {
   /** Test the receiver flow */
   @Test
   public void caseEventFlowTest() throws Exception {
-    CaseEvent caseEvent = RespondentHomeFixture.createCaseUpdatedEvent();
+    CaseEvent caseEvent = FixtureHelper.loadClassFixtures(CaseEvent[].class).get(0);
 
     // Construct message
     MessageProperties amqpMessageProperties = new MessageProperties();
@@ -70,7 +70,8 @@ public class CaseEventReceiverImplIT_Test {
   public void caseCaseReceivedWithoutMillisTest() throws Exception {
 
     // Create a case with a timestamp. Note that that the milliseconds are not specified
-    CaseEvent caseEvent = RespondentHomeFixture.createCaseUpdatedEvent();
+    CaseEvent caseEvent = FixtureHelper.loadClassFixtures(CaseEvent[].class).get(0);
+
     String caseAsJson = new ObjectMapper().writeValueAsString(caseEvent);
     String caseWithoutMillis =
         caseAsJson.replaceAll("\"dateTime\":\"[^\"]*", "\"dateTime\":\"2011-08-12T20:17:46Z");
