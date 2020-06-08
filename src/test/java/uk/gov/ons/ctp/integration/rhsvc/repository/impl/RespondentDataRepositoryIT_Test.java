@@ -69,9 +69,6 @@ public class RespondentDataRepositoryIT_Test {
     uac.setCaseId(caseId);
     uac.setActive(active);
     uac.setQuestionnaireId(questionnaireId);
-    uac.setCaseType(caseType);
-    uac.setRegion(region);
-    uac.setCollectionExerciseId(collectionExerciseId);
   }
 
   @Ignore
@@ -83,10 +80,7 @@ public class RespondentDataRepositoryIT_Test {
     assertEquals(uac.getUacHash(), uac2.getUacHash());
     assertEquals(uac.getActive(), uac2.getActive());
     assertEquals(uac.getCaseId(), uac2.getCaseId());
-    assertEquals(uac.getCaseType(), uac2.getCaseType());
     assertEquals(uac.getQuestionnaireId(), uac2.getQuestionnaireId());
-    assertEquals(uac.getRegion(), uac2.getRegion());
-    assertEquals(uac.getCollectionExerciseId(), uac2.getCollectionExerciseId());
   }
 
   @Ignore

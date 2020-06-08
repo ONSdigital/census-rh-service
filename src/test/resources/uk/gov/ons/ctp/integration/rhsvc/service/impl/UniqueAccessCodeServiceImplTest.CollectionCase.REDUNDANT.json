@@ -6,17 +6,17 @@
 	"survey": "CENSUS",
 	"collectionExerciseId": "ccbb7501-f6aa-4455-82cc-213a5295bf32",
 	"address": {
-		"addressLine1": "1 main street",
-		"addressLine2": "upper upperingham",
-		"addressLine3": "",
-		"townName": "upton",
-		"postcode": "UP103UP",
+		"addressLine1": "test Town Name 1",
+		"addressLine2": "test Town Name 1",
+		"addressLine3": "test Town Name 3",
+		"townName": "testTownName",
+		"postcode": "BY14 6AB",
 		"region": "E",
 		"latitude": "50.863849",
 		"longitude": "-1.229710",
 		"uprn": "123456",
 		"addressType": "HH",
-		"estabType": "XXX"
+		"estabType": "HOUSEHOLD"
 	},
 	"contact": {
 		"title": "Ms",
@@ -33,17 +33,17 @@
 	"survey": "CENSUS",
 	"collectionExerciseId": "d7b3542a-a8aa-4e64-bd52-9f057ce73b3e",
 	"address": {
-		"addressLine1": "1 Swan Avenue",
-		"addressLine2": "North Tringley",
-		"addressLine3": "",
-		"townName": "Byton",
+		"addressLine1": "test Town Name 1",
+		"addressLine2": "test Town Name 1",
+		"addressLine3": "test Town Name 3",
+		"townName": "testTownName",
 		"postcode": "BY14 6AB",
 		"region": "E",
 		"latitude": "50.863849",
 		"longitude": "-1.229710",
 		"uprn": "123456",
 		"addressType": "HH",
-		"estabType": "XXX"
+		"estabType": "HOUSEHOLD"
 	},
 	"contact": {
 		"title": "Ms",
@@ -60,17 +60,17 @@
 	"survey": "CENSUS",
 	"collectionExerciseId": "8617322c-2a76-4531-89c2-b6db3acdf62f",
 	"address": {
-		"addressLine1": "3 Foundry Lane",
-		"addressLine2": "Leaftea",
-		"addressLine3": "",
-		"townName": "Burnamble",
-		"postcode": "CA11 4TR",
+		"addressLine1": "test Town Name 1",
+		"addressLine2": "test Town Name 1",
+		"addressLine3": "test Town Name 3",
+		"townName": "testTownName",
+		"postcode": "BY14 6AB",
 		"region": "E",
 		"latitude": "50.863849",
 		"longitude": "-1.229710",
 		"uprn": "123456",
 		"addressType": "HH",
-		"estabType": "XXX"
+		"estabType": "HOUSEHOLD"
 	},
 	"contact": {
 		"title": "Ms",

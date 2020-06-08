@@ -1,0 +1,29 @@
+[
+  {
+	"id": "7a3ee925-4cc9-4084-b90e-d5b002e47eb5",
+	"caseType": "HI",
+	"caseRef": "10000000011",
+	"survey": "CENSUS",
+	"collectionExerciseId": "34d7f3bb-91c9-45d0-bb2d-90afce4fc790",
+	"address": {
+		"addressLine1": "test Address Line 1",
+		"addressLine2": "test Address Line 2",
+		"addressLine3": "test Address Line 3",
+		"townName": "testTownName",
+		"postcode": "BY14 6AB",
+		"region": "E",
+		"latitude": "50.863849",
+		"longitude": "-1.229710",
+		"uprn": "305634838282",
+		"addressType": "HH",
+		"estabType": "XXX"
+	},
+	"contact": {
+		"title": "Ms",
+		"forename": "Jane",
+		"surname": "smith",
+		"telNo": "+447890000000"
+	},
+	"actionableFrom": "2011-08-12T20:17:46.384Z"
+  }
+]

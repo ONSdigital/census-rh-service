@@ -15,6 +15,8 @@ logging:
   profile: DEV
   useJson: true
 
+collectionExerciseId : 34d7f3bb-91c9-45d0-bb2d-90afce4fc790
+
 management:
   health:
     rabbit:
