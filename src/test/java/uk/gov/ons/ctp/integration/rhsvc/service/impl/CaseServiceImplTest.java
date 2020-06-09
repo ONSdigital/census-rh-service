@@ -24,11 +24,12 @@ import java.util.stream.Collectors;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -50,6 +51,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
+@RunWith(MockitoJUnitRunner.class)
 public class CaseServiceImplTest {
 
   private static final UniquePropertyReferenceNumber UPRN =
@@ -71,8 +73,6 @@ public class CaseServiceImplTest {
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
-
-    MockitoAnnotations.initMocks(this);
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
     this.addressChangeDTO = FixtureHelper.loadClassFixtures(AddressChangeDTO[].class);
   }

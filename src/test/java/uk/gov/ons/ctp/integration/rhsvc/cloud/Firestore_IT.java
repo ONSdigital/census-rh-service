@@ -25,6 +25,7 @@ import uk.gov.ons.ctp.common.event.model.CollectionCase;
  * /Users/peterbochel/.config/gcloud/application_default_credentials.json GOOGLE_CLOUD_PROJECT =
  * census-rh-peterb
  */
+@Ignore
 public class Firestore_IT {
 
   private static final String FIRESTORE_CREDENTIALS_ENV_NAME = "GOOGLE_APPLICATION_CREDENTIALS";
@@ -59,7 +60,6 @@ public class Firestore_IT {
     firestoreDataStore.deleteObject(TEST_SCHEMA, case2.getId());
   }
 
-  @Ignore
   @Test
   public void testStoreAndRetrieve() throws Exception {
     // Load test data
@@ -70,14 +70,18 @@ public class Firestore_IT {
     firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
     firestoreDataStore.storeObject(TEST_SCHEMA, case2.getId(), case2);
 
-    // Verify that 1st case can be read back
-    Optional<CollectionCase> retrievedCase1 =
-        firestoreDataStore.retrieveObject(CollectionCase.class, TEST_SCHEMA, case1.getId());
-    assertEquals(case1.getId(), retrievedCase1.get().getId());
-    assertEquals(case1, retrievedCase1.get());
+    verifyStoredCase(case1);
+    verifyStoredCase(case2);
   }
 
-  @Ignore
+  private void verifyStoredCase(CollectionCase caze) throws Exception {
+    Optional<CollectionCase> retrievedCase =
+        firestoreDataStore.retrieveObject(CollectionCase.class, TEST_SCHEMA, caze.getId());
+    assertTrue(retrievedCase.isPresent());
+    CollectionCase rcase = retrievedCase.get();
+    assertEquals(caze, rcase);
+  }
+
   @Test
   public void testReplaceObject() throws Exception {
     // Load test data
@@ -101,7 +105,6 @@ public class Firestore_IT {
     assertEquals(case2, retrievedCase.get());
   }
 
-  @Ignore
   @Test
   public void testRetrieveObject_unknownObject() throws Exception {
     // Chuck an object into firestore
@@ -115,7 +118,6 @@ public class Firestore_IT {
     assertTrue(retrievedCase.isEmpty());
   }
 
-  @Ignore
   @Test
   public void testSearch_multipleResults() throws Exception {
     // Read test data
@@ -126,7 +128,7 @@ public class Firestore_IT {
     firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
     firestoreDataStore.storeObject(TEST_SCHEMA, case2.getId(), case2);
 
-    // Verify that search can find the  first case
+    // Verify that search can find the first case
     String[] searchByForename = new String[] {"contact", "forename"};
     List<CollectionCase> retrievedCase1 =
         firestoreDataStore.search(
@@ -144,7 +146,6 @@ public class Firestore_IT {
     assertEquals(case2, retrievedCase2.get(1));
   }
 
-  @Ignore
   @Test
   public void testSearch_noResults() throws Exception {
     // Load test data
@@ -158,7 +159,6 @@ public class Firestore_IT {
     assertTrue(retrievedCase1.isEmpty());
   }
 
-  @Ignore
   @Test
   public void testSearch_serialisationFailure() throws Exception {
     // Add test data to Firestore
@@ -178,7 +178,6 @@ public class Firestore_IT {
     assertTrue(exceptionCaught);
   }
 
-  @Ignore
   @Test
   public void testDelete_success() throws Exception {
     // Load test data
@@ -199,7 +198,6 @@ public class Firestore_IT {
     assertTrue(retrievedCase.isEmpty());
   }
 
-  @Ignore
   @Test
   public void testDelete_onNonExistantObject() throws Exception {
     // Load test data, just so that Firestore has some data loaded

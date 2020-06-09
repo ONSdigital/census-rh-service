@@ -27,7 +27,12 @@ import uk.gov.ons.ctp.common.event.model.NewAddress;
 import uk.gov.ons.ctp.common.event.model.QuestionnaireLinkedDetails;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
+<<<<<<< HEAD
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
+=======
+import uk.gov.ons.ctp.common.time.DateTimeUtil;
+import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
+>>>>>>> master
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UACLinkRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
@@ -305,6 +310,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     newCase.setHandDelivery(false);
     newCase.setSurvey("CENSUS");
     newCase.setCaseType(caseType.name());
+    newCase.setAddressInvalid(false);
+    newCase.setCreatedDateTime(DateTimeUtil.nowUTC());
 
     Address address = new Address();
     address.setAddressLine1(request.getAddressLine1());

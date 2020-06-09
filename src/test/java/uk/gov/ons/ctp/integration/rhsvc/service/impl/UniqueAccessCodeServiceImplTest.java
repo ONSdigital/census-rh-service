@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -21,12 +22,17 @@ import java.util.stream.Stream;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+<<<<<<< HEAD
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.test.util.ReflectionTestUtils;
+=======
+import org.mockito.junit.MockitoJUnitRunner;
+>>>>>>> master
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
@@ -54,6 +60,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
 
 /** Unit tests of the Unique Access Code Service */
+@RunWith(MockitoJUnitRunner.class)
 public class UniqueAccessCodeServiceImplTest {
 
   private static final String UAC_HASH =
@@ -76,9 +83,20 @@ public class UniqueAccessCodeServiceImplTest {
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
+<<<<<<< HEAD
     MockitoAnnotations.initMocks(this);
     appConfig.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
     ReflectionTestUtils.setField(uacSvc, "appConfig", appConfig);
+=======
+    this.uac = FixtureHelper.loadClassFixtures(UAC[].class);
+
+    this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
+    this.hhCase = collectionCase.get(0);
+    this.hiCase1 = collectionCase.get(1);
+    this.hiCase2 = collectionCase.get(2);
+
+    this.linkRequest = FixtureHelper.loadClassFixtures(UACLinkRequestDTO[].class).get(0);
+>>>>>>> master
   }
 
   @Test
@@ -581,6 +599,8 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(new Contact(), newCase.getContact());
     assertEquals(null, newCase.getActionableFrom());
     assertFalse(newCase.isHandDelivery());
+    assertNotNull(newCase.getCreatedDateTime());
+    assertFalse(newCase.isAddressInvalid());
 
     Address actualAddress = newCase.getAddress();
     assertEquals(expectedAddress.getAddressLine1(), actualAddress.getAddressLine1());

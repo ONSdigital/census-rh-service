@@ -1,15 +1,21 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.util.Arrays;
 import java.util.List;
 import ma.glasnost.orika.MapperFacade;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
@@ -30,11 +36,6 @@ public class FulfilmentsServiceImplTest {
   @InjectMocks FulfilmentsServiceImpl fulfilmentsService;
 
   @Captor ArgumentCaptor<Product> exampleProductCaptor;
-
-  @Before
-  public void initMocks() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Test
   public void testFulfilmentsQuery() throws Exception {

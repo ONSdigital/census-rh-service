@@ -4,14 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 
 import java.util.UUID;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
@@ -19,6 +19,7 @@ import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 
+@RunWith(MockitoJUnitRunner.class)
 public class SurveyLaunchedServiceImplTest {
 
   @Mock EventPublisher publisher;
@@ -26,11 +27,6 @@ public class SurveyLaunchedServiceImplTest {
   @InjectMocks SurveyLaunchedServiceImpl surveyLaunchedService;
 
   @Captor ArgumentCaptor<SurveyLaunchedResponse> sendEventCaptor;
-
-  @Before
-  public void initMocks() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Test
   public void testSurveyLaunchedAddressAgentIdValue() throws Exception {
