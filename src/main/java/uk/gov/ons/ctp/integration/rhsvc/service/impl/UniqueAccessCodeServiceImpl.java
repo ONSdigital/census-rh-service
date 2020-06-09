@@ -1,15 +1,15 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
+import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
@@ -66,21 +66,15 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       this.caseCaseType = caseCaseType;
     }
 
-    static Optional<LinkingCombination> lookup(
-        FormType uacFormType, CaseType caseCaseType) {
+    static Optional<LinkingCombination> lookup(FormType uacFormType, CaseType caseCaseType) {
       return Stream.of(LinkingCombination.values())
-          .filter(
-              row ->
-                  row.uacFormType == uacFormType
-                      && row.caseCaseType == caseCaseType)
+          .filter(row -> row.uacFormType == uacFormType && row.caseCaseType == caseCaseType)
           .findAny();
     }
   }
 
   /** Constructor */
-  public UniqueAccessCodeServiceImpl() {
-
-  }
+  public UniqueAccessCodeServiceImpl() {}
 
   @Override
   public UniqueAccessCodeDTO getAndAuthenticateUAC(String uacHash) throws CTPException {
@@ -98,7 +92,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
           data = createUniqueAccessCodeDTO(uacMatch.get(), caseMatch, CaseStatus.OK);
         } else {
           // Case NOT found
-          log.with(uacHash).with(caseId).error("Cannot find Case for UAC - telling UI unlinked - RM remediation required");
+          log.with(uacHash)
+              .with(caseId)
+              .error("Cannot find Case for UAC - telling UI unlinked - RM remediation required");
           data = createUniqueAccessCodeDTO(uacMatch.get(), Optional.empty(), CaseStatus.UNLINKED);
           data.setCaseId(null);
         }
@@ -347,11 +343,10 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     FormType uacFormType = FormType.valueOf(uac.getFormType());
     CaseType caseCaseType = CaseType.valueOf(collectionCase.getCaseType());
-    Optional<LinkingCombination> linkCombo =
-        LinkingCombination.lookup(uacFormType, caseCaseType);
+    Optional<LinkingCombination> linkCombo = LinkingCombination.lookup(uacFormType, caseCaseType);
 
     if (linkCombo.isEmpty()) {
-      String failureDetails = uacFormType +  ", " + caseCaseType;
+      String failureDetails = uacFormType + ", " + caseCaseType;
       log.warn("Failed to link UAC to case. Incompatible combination: " + failureDetails);
       throw new CTPException(
           CTPException.Fault.BAD_REQUEST, "Case and UAC incompatible: " + failureDetails);

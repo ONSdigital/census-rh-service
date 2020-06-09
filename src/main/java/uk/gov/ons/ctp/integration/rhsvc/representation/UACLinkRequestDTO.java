@@ -1,11 +1,10 @@
 package uk.gov.ons.ctp.integration.rhsvc.representation;
 
-import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.ons.ctp.common.domain.AddressType;
-import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.Region;
 
 /** This is a request object which holds details for a UAC link to case request. */
