@@ -5,9 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,7 +15,6 @@ import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.common.time.DateTimeUtil;
 
 /**
  * This class tests the FirestoreDataStore class by connecting to a real firestore project.
@@ -74,19 +70,16 @@ public class Firestore_IT {
     firestoreDataStore.storeObject(TEST_SCHEMA, case1.getId(), case1);
     firestoreDataStore.storeObject(TEST_SCHEMA, case2.getId(), case2);
 
-    verifyStoredCase(case1, false, "2020-06-01T20:17:46.384Z");
-    verifyStoredCase(case2, true, "2020-05-01T20:17:46.384Z");
+    verifyStoredCase(case1);
+    verifyStoredCase(case2);
   }
 
-  private void verifyStoredCase(
-      CollectionCase caze, boolean isAddrValid, String expectedCreatedDateTime) throws Exception {
+  private void verifyStoredCase(CollectionCase caze) throws Exception {
     Optional<CollectionCase> retrievedCase =
         firestoreDataStore.retrieveObject(CollectionCase.class, TEST_SCHEMA, caze.getId());
     assertTrue(retrievedCase.isPresent());
     CollectionCase rcase = retrievedCase.get();
     assertEquals(caze, rcase);
-    assertEquals(isAddrValid, rcase.isAddressInvalid());
-    assertEquals(expectedCreatedDateTime, zuluDateTimeFormatter(rcase.getCreatedDateTime()));
   }
 
   @Test
@@ -227,11 +220,5 @@ public class Firestore_IT {
     CollectionCase caseData = cases.get(caseOffset);
 
     return caseData;
-  }
-
-  private String zuluDateTimeFormatter(Date date) {
-    DateTimeFormatter formatter =
-        DateTimeFormatter.ofPattern(DateTimeUtil.DATE_FORMAT_IN_JSON).withZone(ZoneId.of("Z"));
-    return formatter.format(date.toInstant());
   }
 }
