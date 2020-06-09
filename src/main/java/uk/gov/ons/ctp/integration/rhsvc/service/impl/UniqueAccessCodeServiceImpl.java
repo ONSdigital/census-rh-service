@@ -58,7 +58,6 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     I1(FormType.I, CaseType.HH),
     I2(FormType.I, CaseType.SPG),
     I3(FormType.I, CaseType.CE),
-    I4(FormType.I, CaseType.HH),
     C1(FormType.CE1, CaseType.CE);
 
     private FormType uacFormType;
