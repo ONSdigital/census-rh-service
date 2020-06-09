@@ -2,11 +2,12 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
+import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
@@ -55,18 +57,24 @@ public class CaseServiceImpl implements CaseService {
     log.with("uprn", uprn).debug("Fetching case details by UPRN");
 
     List<CollectionCase> rmCase = dataRepo.readCollectionCasesByUprn(uprnValue);
-    List<CollectionCase> results =
+    Optional<CollectionCase> result =
         rmCase
             .stream()
             .filter(c -> c.getCaseType().equals(CaseType.HH.name()))
-            .collect(Collectors.toList());
-    List<CaseDTO> caseData = mapperFacade.mapAsList(results, CaseDTO.class);
+            .filter(c -> !c.isAddressInvalid())
+            .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
 
-    log.with("cases", caseData.size())
-        .with("uprn", uprnValue)
-        .debug("HH case(s) retrieved for UPRN");
-
-    return caseData;
+    // future swagger dictates that a list is returned
+    if (result.isPresent()) {
+      log.with("case", result.get().getId())
+          .with("uprn", uprnValue)
+          .debug("HH latest case retrieved for UPRN");
+      List list = mapperFacade.mapAsList(Collections.singletonList(result.get()), CaseDTO.class);
+      return list;
+    } else {
+      log.debug("No cases returned for uprn: " + uprnValue);
+      return new ArrayList<>();
+    }
   }
 
   @Override
@@ -76,7 +84,7 @@ public class CaseServiceImpl implements CaseService {
 
     Optional<CollectionCase> caseMatch = dataRepo.readCollectionCase(caseId);
 
-    if (!caseMatch.isPresent()) {
+    if (caseMatch.isEmpty()) {
       log.with("caseId", caseId).error("Failed to retrieve Case from storage");
       throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
@@ -128,8 +136,7 @@ public class CaseServiceImpl implements CaseService {
    * @param newAddress details of case
    */
   private void sendAddressModifiedEvent(
-      String caseId, AddressCompact originalAddress, AddressCompact newAddress)
-      throws CTPException {
+      String caseId, AddressCompact originalAddress, AddressCompact newAddress) {
 
     log.with("caseId", caseId)
         .with("uprn", originalAddress.getUprn())
@@ -170,7 +177,7 @@ public class CaseServiceImpl implements CaseService {
     }
 
     // Attempt to find the requested product
-    Product product = findProduct(caseDetails.get(), requestBodyDTO, DeliveryChannel.SMS);
+    Product product = findProduct(caseDetails.get(), requestBodyDTO);
     if (product == null) {
       log.info("fulfilmentRequestBySMS can't find compatible product");
       throw new CTPException(Fault.BAD_REQUEST, "Compatible product cannot be found");
@@ -187,24 +194,21 @@ public class CaseServiceImpl implements CaseService {
   }
 
   // Search the ProductReference for the specified product
-  private Product findProduct(
-      CollectionCase caseDetails,
-      SMSFulfilmentRequestDTO requestBodyDTO,
-      DeliveryChannel deliveryChannel)
+  private Product findProduct(CollectionCase caseDetails, SMSFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
 
     Region region = Region.valueOf(caseDetails.getAddress().getRegion());
 
     log.with("region", region)
-        .with("deliveryChannel", deliveryChannel)
+        .with("deliveryChannel", DeliveryChannel.SMS)
         .with("fulfilmentCode", requestBodyDTO.getFulfilmentCode())
         .debug("Attempting to find product.");
 
     // Build search criteria base on the cases details and the requested fulfilmentCode
     Product searchCriteria = new Product();
-    searchCriteria.setRequestChannels(Arrays.asList(Product.RequestChannel.RH));
-    searchCriteria.setRegions(Arrays.asList(region));
-    searchCriteria.setDeliveryChannel(deliveryChannel);
+    searchCriteria.setRequestChannels(Collections.singletonList(RequestChannel.RH));
+    searchCriteria.setRegions(Collections.singletonList(region));
+    searchCriteria.setDeliveryChannel(DeliveryChannel.SMS);
     searchCriteria.setFulfilmentCode(requestBodyDTO.getFulfilmentCode());
 
     // Attempt to find matching product
