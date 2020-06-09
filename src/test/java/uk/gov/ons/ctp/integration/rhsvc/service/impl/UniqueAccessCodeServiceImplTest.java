@@ -26,13 +26,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-<<<<<<< HEAD
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.springframework.test.util.ReflectionTestUtils;
-=======
 import org.mockito.junit.MockitoJUnitRunner;
->>>>>>> master
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
@@ -83,20 +79,8 @@ public class UniqueAccessCodeServiceImplTest {
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
-<<<<<<< HEAD
-    MockitoAnnotations.initMocks(this);
     appConfig.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
     ReflectionTestUtils.setField(uacSvc, "appConfig", appConfig);
-=======
-    this.uac = FixtureHelper.loadClassFixtures(UAC[].class);
-
-    this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
-    this.hhCase = collectionCase.get(0);
-    this.hiCase1 = collectionCase.get(1);
-    this.hiCase2 = collectionCase.get(2);
-
-    this.linkRequest = FixtureHelper.loadClassFixtures(UACLinkRequestDTO[].class).get(0);
->>>>>>> master
   }
 
   @Test
@@ -194,7 +178,6 @@ public class UniqueAccessCodeServiceImplTest {
     UAC uacTest = getUAC("unlinkedHousehold");
 
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
-    when(dataRepo.readCollectionCase(CASE_ID)).thenReturn(Optional.empty());
 
     UniqueAccessCodeDTO uacDTO = uacSvc.getAndAuthenticateUAC(UAC_HASH);
 
