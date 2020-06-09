@@ -378,7 +378,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
           cases
               .stream()
               .sorted(Comparator.comparing(CollectionCase::getCreatedDateTime))
-              .filter(c -> (!c.getCaseType().equals(CaseType.HI.name()) && !c.isAddressInvalid()))
+              .filter(c -> (!c.getCaseType().equals(CaseType.HI.name())))
+              .filter(c -> (!c.isAddressInvalid()))
               .collect(Collectors.toList());
       if (addressValidNonHICases.size() >= 1) {
         // take the HH last in the list ie the newest by createdDateTime
