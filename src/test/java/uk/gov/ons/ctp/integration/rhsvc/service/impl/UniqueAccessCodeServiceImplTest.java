@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -19,10 +20,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.AddressType;
@@ -51,6 +53,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseS
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
 /** Unit tests of the Unique Access Code Service */
+@RunWith(MockitoJUnitRunner.class)
 public class UniqueAccessCodeServiceImplTest {
 
   private static final String UAC_HASH =
@@ -76,8 +79,6 @@ public class UniqueAccessCodeServiceImplTest {
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
-
     this.uac = FixtureHelper.loadClassFixtures(UAC[].class);
 
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
@@ -669,6 +670,8 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(new Contact(), newCase.getContact());
     assertEquals(null, newCase.getActionableFrom());
     assertFalse(newCase.isHandDelivery());
+    assertNotNull(newCase.getCreatedDateTime());
+    assertFalse(newCase.isAddressInvalid());
 
     Address actualAddress = newCase.getAddress();
     assertEquals(expectedAddress.getAddressLine1(), actualAddress.getAddressLine1());

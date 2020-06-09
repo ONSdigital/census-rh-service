@@ -24,19 +24,20 @@ import java.util.stream.Collectors;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
-import uk.gov.ons.ctp.common.event.model.AddressModified;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
@@ -50,6 +51,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
+@RunWith(MockitoJUnitRunner.class)
 public class CaseServiceImplTest {
 
   private static final UniquePropertyReferenceNumber UPRN =
@@ -71,8 +73,6 @@ public class CaseServiceImplTest {
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
-
-    MockitoAnnotations.initMocks(this);
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
     this.addressChangeDTO = FixtureHelper.loadClassFixtures(AddressChangeDTO[].class);
   }
@@ -155,8 +155,8 @@ public class CaseServiceImplTest {
             payloadCapture.capture());
 
     AddressModification payload = payloadCapture.getValue();
-    AddressModified originalAddress = payload.getOriginalAddress();
-    AddressModified newAddress = payload.getNewAddress();
+    AddressCompact originalAddress = payload.getOriginalAddress();
+    AddressCompact newAddress = payload.getNewAddress();
     AddressDTO addressUpdate = addressChange.getAddress();
 
     assertEquals(rmCase.getId(), caseDTO.getCaseId().toString());
@@ -175,7 +175,6 @@ public class CaseServiceImplTest {
     assertEquals(rmCase.getAddress().getPostcode(), originalAddress.getPostcode());
     assertEquals(rmCase.getAddress().getRegion(), originalAddress.getRegion());
     assertEquals(rmCase.getAddress().getUprn(), originalAddress.getUprn());
-    assertEquals(rmCase.getAddress().getArid(), originalAddress.getArid());
 
     assertEquals(addressUpdate.getAddressLine1(), newAddress.getAddressLine1());
     assertEquals(addressUpdate.getAddressLine2(), newAddress.getAddressLine2());
@@ -184,7 +183,6 @@ public class CaseServiceImplTest {
     assertEquals(addressUpdate.getPostcode(), newAddress.getPostcode());
     assertEquals(rmCase.getAddress().getRegion(), newAddress.getRegion());
     assertEquals(rmCase.getAddress().getUprn(), newAddress.getUprn());
-    assertEquals(rmCase.getAddress().getArid(), newAddress.getArid());
   }
 
   /** Test request to modify address where caseId not found */

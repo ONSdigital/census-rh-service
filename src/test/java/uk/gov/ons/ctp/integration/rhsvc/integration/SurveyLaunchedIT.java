@@ -12,6 +12,7 @@ import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAd
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.UUID;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -40,6 +41,7 @@ import uk.gov.ons.ctp.integration.rhsvc.endpoint.SurveyLaunchedEndpoint;
  * This is a component test which submits a Post saying that a survey has been launched and uses a
  * mock of RabbitMQ to confirm that RH publishes a survey launched event.
  */
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class SurveyLaunchedIT {

@@ -10,10 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -26,6 +27,7 @@ import uk.gov.ons.ctp.integration.rhsvc.service.FulfilmentsService;
  * This class holds unit tests for the Fulfilments Endpoint to validate its handling of requests and
  * their parameters.
  */
+@RunWith(MockitoJUnitRunner.class)
 public final class FulfilmentsEndpointUnitTest {
   @InjectMocks private FulfilmentsEndpoint fulfilmentsEndpoint;
 
@@ -40,8 +42,6 @@ public final class FulfilmentsEndpointUnitTest {
    */
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
-
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(fulfilmentsEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))
@@ -51,10 +51,6 @@ public final class FulfilmentsEndpointUnitTest {
 
   @Test
   public void fulfilmentsReqestNoParameters() throws Exception {
-    List<ProductDTO> emptyList = new ArrayList<>();
-    Mockito.when(fulfilmentsService.getFulfilments(any(), any(), any(), any(), anyBoolean()))
-        .thenReturn(emptyList);
-
     mockMvc.perform(getJson("/fulfilments")).andExpect(status().isOk());
   }
 

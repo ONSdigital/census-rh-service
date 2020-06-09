@@ -14,7 +14,6 @@
 		"latitude": "50.863849",
 		"longitude": "-1.229710",
 		"uprn": "123456",
-		"arid": "XXXXX",
 		"addressType": "CE",
 		"estabType": "XXX"
 	},
@@ -24,7 +23,9 @@
 		"surname": "Jones",
 		"telNo": "+447890000000"
 	},
-	"actionableFrom": "2011-08-12T20:17:46.384Z"
+	"actionableFrom": "2011-08-12T20:17:46.384Z",
+	"addressInvalid": false,
+	"createdDateTime": "2020-06-01T20:17:46.384Z"
   },
   {
 	"id": "d9fa062c-0659-4cb4-980b-4d6a48039205",
@@ -41,7 +42,6 @@
 		"latitude": "53.863849",
 		"longitude": "-4.229710",
 		"uprn": "34534522",
-		"arid": "XXXXX",
 		"addressType": "CE",
 		"estabType": "XXX"
 	},
@@ -51,6 +51,8 @@
 		"surname": "Jones",
 		"telNo": "+447890023444"
 	},
-	"actionableFrom": "2011-08-12T20:17:46.384Z"
+	"actionableFrom": "2011-08-12T20:17:46.384Z",
+	"addressInvalid": false,
+	"createdDateTime": "2020-06-01T20:17:46.384Z"
   }
-] 
+]

@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
-import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,13 +22,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.model.Address;
+import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
-import uk.gov.ons.ctp.common.event.model.CasePayload;
-import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.common.event.model.Contact;
-import uk.gov.ons.ctp.common.event.model.Header;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
@@ -53,8 +47,7 @@ public class CaseEventReceiverImplIT_Test {
   /** Test the receiver flow */
   @Test
   public void caseEventFlowTest() throws Exception {
-
-    CaseEvent caseEvent = createCaseEvent();
+    CaseEvent caseEvent = FixtureHelper.loadClassFixtures(CaseEvent[].class).get(0);
 
     // Construct message
     MessageProperties amqpMessageProperties = new MessageProperties();
@@ -77,7 +70,8 @@ public class CaseEventReceiverImplIT_Test {
   public void caseCaseReceivedWithoutMillisTest() throws Exception {
 
     // Create a case with a timestamp. Note that that the milliseconds are not specified
-    CaseEvent caseEvent = createCaseEvent();
+    CaseEvent caseEvent = FixtureHelper.loadClassFixtures(CaseEvent[].class).get(0);
+
     String caseAsJson = new ObjectMapper().writeValueAsString(caseEvent);
     String caseWithoutMillis =
         caseAsJson.replaceAll("\"dateTime\":\"[^\"]*", "\"dateTime\":\"2011-08-12T20:17:46Z");
@@ -94,45 +88,5 @@ public class CaseEventReceiverImplIT_Test {
     ArgumentCaptor<CaseEvent> captur = ArgumentCaptor.forClass(CaseEvent.class);
     verify(receiver).acceptCaseEvent(captur.capture());
     assertTrue(captur.getValue().getPayload().equals(caseEvent.getPayload()));
-  }
-
-  private CaseEvent createCaseEvent() {
-    CaseEvent caseEvent = new CaseEvent();
-    CasePayload casePayload = caseEvent.getPayload();
-    CollectionCase collectionCase = casePayload.getCollectionCase();
-    collectionCase.setId("900000000");
-    collectionCase.setCaseRef("10000000010");
-    collectionCase.setSurvey("Census");
-    collectionCase.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
-    collectionCase.setActionableFrom("2011-08-12T20:17:46.384Z");
-    collectionCase.setHandDelivery(true);
-
-    Address address = collectionCase.getAddress();
-    address.setAddressLine1("1 main street");
-    address.setAddressLine2("upper upperingham");
-    address.setAddressLine3("");
-    address.setTownName("upton");
-    address.setPostcode("UP103UP");
-    address.setRegion("E");
-    address.setLatitude("50.863849");
-    address.setLongitude("-1.229710");
-    address.setUprn("XXXXXXXXXXXXX");
-    address.setArid("XXXXX");
-    address.setAddressType("CE");
-    address.setEstabType("XXX");
-
-    Contact contact = collectionCase.getContact();
-    contact.setTitle("Ms");
-    contact.setForename("jo");
-    contact.setSurname("smith");
-    contact.setTelNo("+447890000000");
-
-    Header header = new Header();
-    header.setType(EventType.CASE_UPDATED);
-    header.setDateTime(new Date());
-    header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
-    caseEvent.setEvent(header);
-
-    return caseEvent;
   }
 }

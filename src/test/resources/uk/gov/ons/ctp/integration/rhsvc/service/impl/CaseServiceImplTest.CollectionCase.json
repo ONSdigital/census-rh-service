@@ -15,7 +15,6 @@
 			"latitude": "50.863849",
 			"longitude": "-1.229710",
 			"uprn": "123456",
-			"arid": "XXXXX",
 			"addressType": "HH",
 			"estabType": "XXX"
 		},
@@ -25,7 +24,9 @@
 			"surname": "smith",
 			"telNo": "+447890000000"
 		},
-		"actionableFrom": "2011-08-12T20:17:46.384Z"
+		"actionableFrom": "2011-08-12T20:17:46.384Z",
+		"addressInvalid": false,
+		"createdDateTime": "2020-06-01T20:17:46.384Z"
 	},
 	{
 		"id": "dc4477d1-dd3f-4c69-b182-7ff725dc9fa5",
@@ -43,7 +44,6 @@
 			"latitude": "50.863849",
 			"longitude": "-1.229710",
 			"uprn": "123456",
-			"arid": "XXXXX",
 			"addressType": "HH",
 			"estabType": "XXX"
 		},
@@ -53,7 +53,9 @@
 			"surname": "smith",
 			"telNo": "+447890000000"
 		},
-		"actionableFrom": "2011-08-12T20:17:46.384Z"
+		"actionableFrom": "2011-08-12T20:17:46.384Z",
+		"addressInvalid": false,
+		"createdDateTime": "2020-06-01T20:17:46.384Z"
 	},
 	{
 		"id": "dc4477d1-dd3f-4c69-b183-7ff725dc9fa6",
@@ -71,7 +73,6 @@
 			"latitude": "50.863849",
 			"longitude": "-1.229710",
 			"uprn": "123456",
-			"arid": "XXXXX",
 			"addressType": "HH",
 			"estabType": "XXX"
 		},
@@ -81,6 +82,8 @@
 			"surname": "smith",
 			"telNo": "+447890000000"
 		},
-		"actionableFrom": "2011-08-12T20:17:46.384Z"
+		"actionableFrom": "2011-08-12T20:17:46.384Z",
+		"addressInvalid": false,
+		"createdDateTime": "2020-06-01T20:17:46.384Z"
 	}
 ]
