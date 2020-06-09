@@ -138,7 +138,6 @@ public class UniqueAccessCodeServiceImplTest {
     UAC uacTest = getUAC("linkedHousehold");
 
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
-    when(dataRepo.readCollectionCase(CASE_ID)).thenReturn(Optional.empty());
 
     UniqueAccessCodeDTO uacDTO = uacSvc.getAndAuthenticateUAC(UAC_HASH);
 
@@ -568,7 +567,6 @@ public class UniqueAccessCodeServiceImplTest {
   @Test
   public void attemptToLinkUACtoUnknownCase() throws Exception {
     UACLinkRequestDTO request = getRequest("householdAddress");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.empty());
 
     try {
       uacSvc.linkUACCase(UAC_HASH, request);
