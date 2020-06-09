@@ -2,9 +2,11 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,24 +128,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     UAC uac = uacOptional.get();
 
     // Read the Case(s) for the UPRN from firestore if we can
-    String uprnAsString = request.getUprn().asString();
-    List<CollectionCase> cases = dataRepo.readCollectionCasesByUprn(uprnAsString);
-
-    CollectionCase primaryCase = null;
-    if (cases.size() == 1) {
-      primaryCase = cases.get(0); // Will be a HH or CE case
-    } else if (cases.size() > 1) {
-      // Should only be more than one case if HH and HI found at same UPRN
-      // Use the HH case
-      Optional<CollectionCase> householdCase =
-          cases.stream().filter(c -> c.getCaseType().equals(CaseType.HH.name())).findFirst();
-      if (householdCase.isEmpty()) {
-        log.with("UACHash", uacHash).with("UPRN", uprnAsString).warn("Failed to find HH case");
-        throw new CTPException(
-            CTPException.Fault.SYSTEM_ERROR, "Cannot find Household case for UPRN:" + uprnAsString);
-      }
-      primaryCase = householdCase.get();
-    }
+    CollectionCase primaryCase = findValidNonHICase(request.getUprn().asString(), uacHash);
 
     // Create a new case if not found for the UPRN in Firestore
     if (primaryCase == null) {
@@ -371,5 +356,42 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     uniqueAccessCodeDTO.setCaseStatus(caseStatus);
 
     return uniqueAccessCodeDTO;
+  }
+
+  /**
+   * Find the latest, address valid, non HI case whose address is at the provided UPRN
+   *
+   * @param uprnAsString the uprn to search cases by
+   * @param uacHash for logging
+   * @return the latest non HI case which is address valid
+   * @throws CTPException failed to read from firestore
+   */
+  private CollectionCase findValidNonHICase(String uprnAsString, String uacHash)
+      throws CTPException {
+    List<CollectionCase> cases = dataRepo.readCollectionCasesByUprn(uprnAsString);
+
+    CollectionCase newestPrimaryCase = null;
+    if (cases.size() >= 1) {
+      // filter out just the non HI which are address valid and sort in ascending order by
+      // createdDateTime
+      List<CollectionCase> addressValidNonHICases =
+          cases
+              .stream()
+              .sorted(Comparator.comparing(CollectionCase::getCreatedDateTime))
+              .filter(c -> (!c.getCaseType().equals(CaseType.HI.name()) && !c.isAddressInvalid()))
+              .collect(Collectors.toList());
+      if (addressValidNonHICases.size() >= 1) {
+        // take the HH last in the list ie the newest by createdDateTime
+        newestPrimaryCase = addressValidNonHICases.get(addressValidNonHICases.size() - 1);
+        if (addressValidNonHICases.size() > 1) {
+          // carry on with the latest HH case but log a warning as it indicates RM events have got
+          // out of step
+          log.with("UACHash", uacHash)
+              .with("UPRN", uprnAsString)
+              .warn("More than one active HH case found for UPRN");
+        }
+      }
+    }
+    return newestPrimaryCase;
   }
 }

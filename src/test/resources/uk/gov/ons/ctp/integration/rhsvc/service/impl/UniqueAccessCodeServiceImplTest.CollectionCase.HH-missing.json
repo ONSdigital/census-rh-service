@@ -1,0 +1,58 @@
+[
+  {
+	"id": "52a34cb1-f564-45c1-a973-807e548d7900",
+	"caseType": "HI",
+	"caseRef": "10000000010",
+	"survey": "CENSUS",
+	"collectionExerciseId": "34d7f3bb-91c9-45d0-bb2d-90afce4fc790",
+	"address": {
+		"addressLine1": "test Address Line 1",
+		"addressLine2": "test Address Line 2",
+		"addressLine3": "test Address Line 3",
+		"townName": "testTownName",
+		"postcode": "BY14 6AB",
+		"region": "E",
+		"latitude": "50.863849",
+		"longitude": "-1.229710",
+		"uprn": "305634838282",
+		"addressType": "HH",
+		"estabType": "Household"
+	},
+	"contact": {
+		"title": "Ms",
+		"forename": "jo",
+		"surname": "smith",
+		"telNo": "+447890000000"
+	},
+	"createdDateTime": "2011-08-11T20:17:46.384Z",
+	"actionableFrom": "2011-08-12T20:17:46.384Z"
+  },
+  {
+	"id": "fa61e5de-d501-47e4-8ad4-230c87e33dc6",
+	"caseType": "HI",
+	"caseRef": "10000000010",
+	"survey": "CENSUS",
+	"collectionExerciseId": "34d7f3bb-91c9-45d0-bb2d-90afce4fc790",
+	"address": {
+		"addressLine1": "test Address Line 1",
+		"addressLine2": "test Address Line 2",
+		"addressLine3": "test Address Line 3",
+		"townName": "testTownName",
+		"postcode": "BY14 6AB",
+		"region": "E",
+		"latitude": "50.863849",
+		"longitude": "-1.229710",
+		"uprn": "305634838282",
+		"addressType": "HH",
+		"estabType": "Household"
+	},
+	"contact": {
+		"title": "Mr",
+		"forename": "john",
+		"surname": "smith",
+		"telNo": "+447890000000"
+	},
+	"createdDateTime": "2011-08-11T20:17:46.384Z",
+	"actionableFrom": "2011-08-12T20:17:46.384Z"
+  }
+]

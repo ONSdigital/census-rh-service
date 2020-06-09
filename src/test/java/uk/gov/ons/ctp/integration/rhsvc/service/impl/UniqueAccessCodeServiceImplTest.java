@@ -12,7 +12,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -261,6 +260,74 @@ public class UniqueAccessCodeServiceImplTest {
         householdCase.getAddress(),
         householdCase);
   }
+  /**
+   * Isolated assertion that the HH and not the HI
+   *
+   * @throws Exception ugh
+   */
+  @Test
+  public void linkHouseholdUACToSingleHousehold() throws Exception {
+    UACLinkRequestDTO request = getRequest("householdAddress");
+
+    UAC householdUAC = getUAC("unlinkedHousehold");
+    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+
+    List<CollectionCase> householdCases = getCases("HHandHI");
+    when(dataRepo.readCollectionCasesByUprn(eq(request.getUprn().asString())))
+        .thenReturn(householdCases);
+
+    // Run code under test: Attempt linking
+    UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
+
+    // assert that the case selected was the HH and not the HI
+    assertEquals(CASE_ID, uniqueAccessCodeDTO.getCaseId().toString());
+  }
+
+  /**
+   * Isolated assertion that the HH with addressInvalid is not selected
+   *
+   * @throws Exception ugh
+   */
+  @Test
+  public void linkHouseholdUACToValidHousehold() throws Exception {
+    UACLinkRequestDTO request = getRequest("householdAddress");
+
+    UAC householdUAC = getUAC("unlinkedHousehold");
+    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+
+    List<CollectionCase> householdCases = getCases("HH-addressInvalid");
+    when(dataRepo.readCollectionCasesByUprn(eq(request.getUprn().asString())))
+        .thenReturn(householdCases);
+
+    // Run code under test: Attempt linking
+    UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
+
+    // assert that the case selected was the HH and not the HI
+    assertEquals(CASE_ID, uniqueAccessCodeDTO.getCaseId().toString());
+  }
+
+  /**
+   * Isolated assertion that the HH with addressInvalid is not selected
+   *
+   * @throws Exception ugh
+   */
+  @Test
+  public void linkHouseholdUACtoLatestValidHousehold() throws Exception {
+    UACLinkRequestDTO request = getRequest("householdAddress");
+
+    UAC householdUAC = getUAC("unlinkedHousehold");
+    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+
+    List<CollectionCase> householdCases = getCases("HH-multiples");
+    when(dataRepo.readCollectionCasesByUprn(eq(request.getUprn().asString())))
+        .thenReturn(householdCases);
+
+    // Run code under test: Attempt linking
+    UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
+
+    // assert that the case selected was the HH and not the HI
+    assertEquals(CASE_ID, uniqueAccessCodeDTO.getCaseId().toString());
+  }
 
   @Test
   public void linkCE1UACToExistingCECase() throws Exception {
@@ -358,6 +425,54 @@ public class UniqueAccessCodeServiceImplTest {
         householdCase);
   }
 
+  /**
+   * Isolated assertion that even when there is an invalid address HH and valid HI, we create a new
+   * case
+   *
+   * @throws Exception ugh
+   */
+  @Test
+  public void linkHouseholdUACToNewHouseholdCaseWhenNoValidHHFound() throws Exception {
+    UACLinkRequestDTO request = getRequest("householdAddress");
+
+    UAC householdUAC = getUAC("unlinkedHousehold");
+    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+
+    List<CollectionCase> householdCases = getCases("HH-missing");
+    when(dataRepo.readCollectionCasesByUprn(eq(request.getUprn().asString())))
+        .thenReturn(householdCases);
+
+    // Run code under test: Attempt linking
+    UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
+
+    // Build expectation for the the address that will have been created
+    Address expectedAddress = createAddressFromLinkRequest(request, CaseType.HH);
+
+    // Verify that a new case has been created
+    List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
+    CollectionCase newCase = newCases.get(0);
+    validateCase(newCase, CaseType.HH, householdUAC, expectedAddress);
+
+    verifyNewAddressEventSent(
+        newCase.getId(), CaseType.HH, COLLECTION_EXERCISE_ID, expectedAddress);
+
+    verifyUACUpdated(UAC_HASH, newCase.getId());
+
+    VerifyQuestionnaireLinkedEventSent(householdUAC.getQuestionnaireId(), newCase.getId(), null);
+
+    verifyRespondentAuthenticatedEventSent(householdUAC.getQuestionnaireId(), newCase.getId());
+
+    verifyTotalNumberEventsSent(3);
+
+    verifyLinkingResult(
+        uniqueAccessCodeDTO,
+        newCase.getId(),
+        CaseType.HH,
+        householdUAC,
+        newCase.getAddress(),
+        newCase);
+  }
+
   // Happy path test for linking when the UAC cannot be linked to an existing case, and one needs to
   // be
   // created.
@@ -369,9 +484,7 @@ public class UniqueAccessCodeServiceImplTest {
     UAC householdUAC = getUAC("unlinkedHousehold");
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
 
-    // Don't find any cases when searching by UPRN
-    when(dataRepo.readCollectionCasesByUprn(eq(request.getUprn().asString())))
-        .thenReturn(new ArrayList<CollectionCase>());
+    // Default - don't find any cases when searching by UPRN
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -415,8 +528,6 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(individualUAC));
 
     // Don't find any cases when searching by UPRN
-    when(dataRepo.readCollectionCasesByUprn(eq(request.getUprn().asString())))
-        .thenReturn(new ArrayList<CollectionCase>());
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -698,6 +809,10 @@ public class UniqueAccessCodeServiceImplTest {
 
   private CollectionCase getCase(String qualifier) throws Exception {
     return FixtureHelper.loadClassFixtures(CollectionCase[].class, qualifier).get(0);
+  }
+
+  private List<CollectionCase> getCases(String qualifier) throws Exception {
+    return FixtureHelper.loadClassFixtures(CollectionCase[].class, qualifier);
   }
 
   private UACLinkRequestDTO getRequest(String qualifier) throws Exception {
