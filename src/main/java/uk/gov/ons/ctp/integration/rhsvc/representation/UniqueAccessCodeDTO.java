@@ -10,8 +10,7 @@ public class UniqueAccessCodeDTO {
   /** enum for valid case status */
   public enum CaseStatus {
     OK,
-    UNKNOWN,
-    NOT_FOUND
+    UNLINKED
   }
 
   private String uacHash;

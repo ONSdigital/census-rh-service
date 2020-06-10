@@ -144,10 +144,7 @@ public class UacEventReceiverImplIT_Test {
     uac.setUacHash("999999999");
     uac.setActive("true");
     uac.setQuestionnaireId(qid);
-    uac.setCaseType("H");
-    uac.setRegion("E");
     uac.setCaseId("c45de4dc-3c3b-11e9-b210-d663bd873d93");
-    uac.setCollectionExerciseId("n66de4dc-3c3b-11e9-b210-d663bd873d93");
     Header header = new Header();
     header.setType(type);
     header.setTransactionId("c45de4dc-3c3b-11e9-b210-d663bd873d93");

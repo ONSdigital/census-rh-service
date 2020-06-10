@@ -10,6 +10,7 @@ import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.util.StringToUPRNConverter;
 
 /** The bean mapper that maps to/from DTOs and repository entity types. */
@@ -31,6 +32,13 @@ public class RHSvcBeanMapper extends ConfigurableMapper {
         .classMap(CollectionCase.class, CaseDTO.class)
         .field("id", "caseId")
         .field("address.addressType", "addressType")
+        .field("address.region", "region")
+        .byDefault()
+        .register();
+
+    factory
+        .classMap(CollectionCase.class, UniqueAccessCodeDTO.class)
+        .field("id", "caseId")
         .field("address.region", "region")
         .byDefault()
         .register();

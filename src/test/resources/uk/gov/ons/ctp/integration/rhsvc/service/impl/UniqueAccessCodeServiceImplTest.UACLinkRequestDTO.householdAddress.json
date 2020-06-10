@@ -1,0 +1,11 @@
+{
+  "addressLine1": "test Address Line 1",
+  "addressLine2": "test Address Line 2",
+  "addressLine3": "test Address Line 3",
+  "townName": "testTownName",
+  "region": "E",
+  "postcode": "BY14 6AB",
+  "uprn": "305634838282",
+  "estabType": "HOUSEHOLD",
+  "addressType": "HH"
+}
