@@ -208,9 +208,6 @@ public class UniqueAccessCodeServiceImplTest {
   @Test
   public void getUACNotFound() throws Exception {
 
-    when(dataRepo.readUAC(UAC_HASH))
-        .thenThrow(new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND));
-
     boolean exceptionThrown = false;
     try {
       uacSvc.getAndAuthenticateUAC(UAC_HASH);
