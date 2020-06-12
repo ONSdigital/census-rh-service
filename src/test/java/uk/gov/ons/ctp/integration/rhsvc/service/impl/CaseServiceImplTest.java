@@ -84,7 +84,7 @@ public class CaseServiceImplTest {
 
     CollectionCase hhCase = this.collectionCase.get(0);
 
-    CaseDTO rmCase = caseSvc.getCaseByUPRN(UPRN);
+    CaseDTO rmCase = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertNotNull(rmCase);
     assertEquals(hhCase.getId(), rmCase.getCaseId().toString());
@@ -112,7 +112,7 @@ public class CaseServiceImplTest {
             .collect(Collectors.toList());
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(nonHHCases);
-    caseSvc.getCaseByUPRN(UPRN);
+    caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
   /** Test Test throws a CTPException where no cases returned from repository */
@@ -122,7 +122,7 @@ public class CaseServiceImplTest {
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(Collections.emptyList());
 
-    caseSvc.getCaseByUPRN(UPRN);
+    caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
   /** Test returns valid CaseDTO and sends address modified event message for valid CaseID */

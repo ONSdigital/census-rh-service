@@ -78,7 +78,7 @@ public class CaseEndpointUnitTest {
   public void getCaseByUPRNFound() throws Exception {
     CaseDTO rmCase0 = caseDTO.get(0);
 
-    when(caseService.getCaseByUPRN(new UniquePropertyReferenceNumber(UPRN)))
+    when(caseService.getLatestValidNonHICaseByUPRN(new UniquePropertyReferenceNumber(UPRN)))
         .thenReturn(caseDTO.get(0));
 
     mockMvc
@@ -99,7 +99,7 @@ public class CaseEndpointUnitTest {
   @Test
   public void getHHCaseByUPRNNotFound() throws Exception {
 
-    when(caseService.getCaseByUPRN(new UniquePropertyReferenceNumber(UPRN)))
+    when(caseService.getLatestValidNonHICaseByUPRN(new UniquePropertyReferenceNumber(UPRN)))
         .thenThrow(new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, ERROR_MESSAGE));
 
     mockMvc

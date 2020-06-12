@@ -19,7 +19,8 @@ public interface CaseService {
    * @return Case details for address UPRN
    * @throws CTPException if anything went wrong.
    */
-  CaseDTO getCaseByUPRN(final UniquePropertyReferenceNumber uprn) throws CTPException;
+  CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
+      throws CTPException;
 
   /**
    * Change address for a Case

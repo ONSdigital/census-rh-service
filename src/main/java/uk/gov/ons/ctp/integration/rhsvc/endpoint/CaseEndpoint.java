@@ -41,7 +41,7 @@ public class CaseEndpoint {
       @PathVariable(value = "uprn") final UniquePropertyReferenceNumber uprn) throws CTPException {
     log.with("pathParam.uprn", uprn).info("Entering GET getHHCaseByUPRN");
 
-    CaseDTO result = caseService.getCaseByUPRN(uprn);
+    CaseDTO result = caseService.getLatestValidNonHICaseByUPRN(uprn);
     log.with("pathParam.uprn", uprn).debug("Exit GET getHHCaseByUPRN");
     return ResponseEntity.ok(result);
   }

@@ -49,7 +49,8 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private ProductReference productReference;
 
   @Override
-  public CaseDTO getCaseByUPRN(final UniquePropertyReferenceNumber uprn) throws CTPException {
+  public CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
+      throws CTPException {
 
     String uprnValue = Long.toString(uprn.getValue());
     log.with("uprn", uprn).debug("Fetching case details by UPRN");
@@ -58,7 +59,7 @@ public class CaseServiceImpl implements CaseService {
     Optional<CollectionCase> result =
         rmCase
             .stream()
-            .filter(c -> c.getCaseType().equals(CaseType.HH.name()))
+            .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
             .filter(c -> !c.isAddressInvalid())
             .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
 
