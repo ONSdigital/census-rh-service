@@ -91,6 +91,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         Optional<CollectionCase> caseMatch = dataRepo.readCollectionCase(caseId);
         if (caseMatch.isPresent()) {
           // Case found
+          log.with(uacHash).with(caseId).debug("UAC is linked");
           data = createUniqueAccessCodeDTO(uacMatch.get(), caseMatch, CaseStatus.OK);
         } else {
           // Case NOT found
@@ -101,7 +102,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
           data.setCaseId(null);
         }
       } else {
-        // unlinked
+        // unlinked log.with(uacHash)
+        log.with(uacHash).debug("UAC is unlinked");
         data = createUniqueAccessCodeDTO(uacMatch.get(), Optional.empty(), CaseStatus.UNLINKED);
       }
       sendRespondentAuthenticatedEvent(data);
@@ -157,7 +159,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     String individualCaseId = null;
     CollectionCase individualCase = null;
 
-    // if the uac indicates that the UAC is for a HI, we need to link the UAC to a new HI case
+    // if the uac indicates that the UAC is for a HI through the formType of I, we need to link the
+    // UAC to a new HI case
     // instead of the HH case
     if (primaryCase.getCaseType().equals(CaseType.HH.name())
         && uac.getFormType().equals(FormType.I.name())) {
@@ -172,9 +175,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     }
 
     // Our UAC will have been linked to one of:
-    //   - The case we found by uprn in firestore
-    //   - The HH|CE|SPG case we created when one was not found in firestore
-    //   - The Individual case we created for one of the above
+    // - The case we found by uprn in firestore
+    // - The HH|CE|SPG case we created when one was not found in firestore
+    // - The Individual case we created for one of the above
     // so NOW persist it
     dataRepo.writeUAC(uac);
 
@@ -381,14 +384,14 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
               .filter(c -> (!c.isAddressInvalid()))
               .collect(Collectors.toList());
       if (addressValidNonHICases.size() >= 1) {
-        // take the HH last in the list ie the newest by createdDateTime
+        // take the case last in the list ie the newest by createdDateTime
         newestPrimaryCase = addressValidNonHICases.get(addressValidNonHICases.size() - 1);
         if (addressValidNonHICases.size() > 1) {
-          // carry on with the latest HH case but log a warning as it indicates RM events have got
+          // carry on with the latest case but log a warning as it indicates RM events have got
           // out of step
           log.with("UACHash", uacHash)
               .with("UPRN", uprnAsString)
-              .warn("More than one active HH case found for UPRN");
+              .warn("More than one active case found for UPRN");
         }
       }
     }
