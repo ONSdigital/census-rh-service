@@ -10,12 +10,12 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.cloud.CloudDataStore;
+import uk.gov.ons.ctp.common.cloud.DataStoreContentionException;
+import uk.gov.ons.ctp.common.cloud.FirestoreDataStore;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.DataStoreContentionException;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore;
 
 /**
  * This layer interacts with the data repository. It is responsible for handling exponential

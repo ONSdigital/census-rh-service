@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.cloud.DataStoreContentionException;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.DataStoreContentionException;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 /** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
