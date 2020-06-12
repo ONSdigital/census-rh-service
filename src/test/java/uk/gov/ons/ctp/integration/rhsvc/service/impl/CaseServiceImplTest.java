@@ -1,7 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -86,10 +84,9 @@ public class CaseServiceImplTest {
 
     CollectionCase hhCase = this.collectionCase.get(0);
 
-    List<CaseDTO> caseDTO = caseSvc.getHHCaseByUPRN(UPRN);
-    CaseDTO rmCase = caseDTO.get(0);
+    CaseDTO rmCase = caseSvc.getCaseByUPRN(UPRN);
 
-    assertThat(caseDTO, hasSize(1));
+    assertNotNull(rmCase);
     assertEquals(hhCase.getId(), rmCase.getCaseId().toString());
     assertEquals(hhCase.getCaseRef(), rmCase.getCaseRef());
     assertEquals(hhCase.getCaseType(), rmCase.getCaseType());
@@ -104,8 +101,8 @@ public class CaseServiceImplTest {
         hhCase.getAddress().getUprn(), Long.toString(rmCase.getAddress().getUprn().getValue()));
   }
 
-  /** Test returns empty list where only non HH cases returned from repository */
-  @Test
+  /** Test throws a CTPException where only non HH cases returned from repository */
+  @Test(expected = CTPException.class)
   public void getHHCaseByUPRNHICasesOnly() throws Exception {
 
     List<CollectionCase> nonHHCases =
@@ -115,23 +112,17 @@ public class CaseServiceImplTest {
             .collect(Collectors.toList());
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(nonHHCases);
-
-    List<CaseDTO> caseDTO = caseSvc.getHHCaseByUPRN(UPRN);
-
-    assertThat(nonHHCases, hasSize(2));
-    assertThat(caseDTO, hasSize(0));
+    caseSvc.getCaseByUPRN(UPRN);
   }
 
-  /** Test returns empty list where no cases returned from repository */
-  @Test
+  /** Test Test throws a CTPException where no cases returned from repository */
+  @Test(expected = CTPException.class)
   public void getHHCaseByUPRNNotFound() throws Exception {
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(Collections.emptyList());
 
-    List<CaseDTO> caseDTO = caseSvc.getHHCaseByUPRN(UPRN);
-
-    assertThat(caseDTO, hasSize(0));
+    caseSvc.getCaseByUPRN(UPRN);
   }
 
   /** Test returns valid CaseDTO and sends address modified event message for valid CaseID */

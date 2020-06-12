@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -50,8 +49,7 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private ProductReference productReference;
 
   @Override
-  public List<CaseDTO> getHHCaseByUPRN(final UniquePropertyReferenceNumber uprn)
-      throws CTPException {
+  public CaseDTO getCaseByUPRN(final UniquePropertyReferenceNumber uprn) throws CTPException {
 
     String uprnValue = Long.toString(uprn.getValue());
     log.with("uprn", uprn).debug("Fetching case details by UPRN");
@@ -64,16 +62,14 @@ public class CaseServiceImpl implements CaseService {
             .filter(c -> !c.isAddressInvalid())
             .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
 
-    // future swagger dictates that a list is returned
     if (result.isPresent()) {
       log.with("case", result.get().getId())
           .with("uprn", uprnValue)
           .debug("HH latest case retrieved for UPRN");
-      List list = mapperFacade.mapAsList(Collections.singletonList(result.get()), CaseDTO.class);
-      return list;
+      return mapperFacade.map(result.get(), CaseDTO.class);
     } else {
       log.debug("No cases returned for uprn: " + uprnValue);
-      return new ArrayList<>();
+      throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
   }
 
