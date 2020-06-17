@@ -90,6 +90,7 @@ public class CaseEndpointUnitTest {
         .andExpect(jsonPath("$.caseRef", is(rmCase0.getCaseRef())))
         .andExpect(jsonPath("$.caseType", is(rmCase0.getCaseType())))
         .andExpect(jsonPath("$.addressType", is(rmCase0.getAddressType())))
+        .andExpect(jsonPath("$.addressLevel", is(rmCase0.getAddressLevel())))
         .andExpect(jsonPath("$.addressLine1", is(rmCase0.getAddress().getAddressLine1())))
         .andExpect(jsonPath("$.townName", is(rmCase0.getAddress().getTownName())))
         .andExpect(jsonPath("$.postcode", is(rmCase0.getAddress().getPostcode())));
@@ -140,6 +141,7 @@ public class CaseEndpointUnitTest {
         .andExpect(jsonPath("$.caseRef", is(rmCase.getCaseRef())))
         .andExpect(jsonPath("$.caseType", is(rmCase.getCaseType())))
         .andExpect(jsonPath("$.addressType", is(rmCase.getAddressType())))
+        .andExpect(jsonPath("$.addressLevel", is(rmCase.getAddressLevel())))
         .andExpect(jsonPath("$.addressLine1", is(rmCase.getAddress().getAddressLine1())))
         .andExpect(jsonPath("$.addressLine2", is(rmCase.getAddress().getAddressLine2())))
         .andExpect(jsonPath("$.addressLine3", is(rmCase.getAddress().getAddressLine3())))
