@@ -30,19 +30,19 @@ public class CaseEndpoint {
   @Autowired private CaseService caseService;
 
   /**
-   * the GET end point to return the latest valid HH Case by UPRN
+   * the GET end point to return the latest valid Non HI Case by UPRN
    *
    * @param uprn the UPRN
-   * @return Returned latest HH case with valid address for the UPRN
+   * @return Returned latest Non HI case with valid address for the UPRN
    * @throws CTPException something went wrong - thrown by case service
    */
   @RequestMapping(value = "/uprn/{uprn}", method = RequestMethod.GET)
   public ResponseEntity<CaseDTO> getCaseByUPRN(
       @PathVariable(value = "uprn") final UniquePropertyReferenceNumber uprn) throws CTPException {
-    log.with("pathParam.uprn", uprn).info("Entering GET getHHCaseByUPRN");
+    log.with("pathParam.uprn", uprn).info("Entering GET getLatestValidNonHICaseByUPRN");
 
     CaseDTO result = caseService.getLatestValidNonHICaseByUPRN(uprn);
-    log.with("pathParam.uprn", uprn).debug("Exit GET getHHCaseByUPRN");
+    log.with("pathParam.uprn", uprn).debug("Exit GET getLatestValidNonHICaseByUPRN");
     return ResponseEntity.ok(result);
   }
 
