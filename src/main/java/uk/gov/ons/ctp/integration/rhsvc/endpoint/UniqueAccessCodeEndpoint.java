@@ -47,6 +47,7 @@ public class UniqueAccessCodeEndpoint {
    * the POST end-point to link a UAC to a case.
    *
    * @param uacHash the hashed UAC.
+   * @param request the request DTO
    * @return details about the address the uac to.
    * @throws CTPException something went wrong.
    */
