@@ -67,7 +67,7 @@ public class RetryableRespondentDataRepository {
               multiplierExpression = "#{${cloudStorage.backoffMultiplier}}",
               maxDelayExpression = "#{${cloudStorage.backoffMax}}"),
       maxAttemptsExpression = "#{${cloudStorage.backoffMaxAttempts}}",
-      listeners = "rhRetryListener")
+      listeners = "cloudRetryListener")
   public void writeUAC(final UAC uac) throws CTPException, DataStoreContentionException {
     cloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac);
   }
@@ -99,7 +99,7 @@ public class RetryableRespondentDataRepository {
               multiplierExpression = "#{${cloudStorage.backoffMultiplier}}",
               maxDelayExpression = "#{${cloudStorage.backoffMax}}"),
       maxAttemptsExpression = "#{${cloudStorage.backoffMaxAttempts}}",
-      listeners = "rhRetryListener")
+      listeners = "cloudRetryListener")
   public void writeCollectionCase(final CollectionCase collectionCase)
       throws CTPException, DataStoreContentionException {
     cloudDataStore.storeObject(caseSchema, collectionCase.getId(), collectionCase);
