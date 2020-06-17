@@ -1,14 +1,13 @@
 package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.cloud.DataStoreContentionException;
+import uk.gov.ons.ctp.common.cloud.RetryableCloudDataStore;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
@@ -16,9 +15,30 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 /** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
 @Service
 public class RespondentDataRepositoryImpl implements RespondentDataRepository {
-  private static final Logger log = LoggerFactory.getLogger(RespondentDataRepositoryImpl.class);
+  private RetryableCloudDataStore cloudDataStore;
 
-  @Autowired private RetryableRespondentDataRepository retryableRespondentDataRepository;
+  @Value("${GOOGLE_CLOUD_PROJECT}")
+  String gcpProject;
+
+  @Value("${cloudStorage.caseSchemaName}")
+  String caseSchemaName;
+
+  @Value("${cloudStorage.uacSchemaName}")
+  String uacSchemaName;
+
+  String caseSchema;
+  String uacSchema;
+
+  @PostConstruct
+  public void init() {
+    caseSchema = gcpProject + "-" + caseSchemaName.toLowerCase();
+    uacSchema = gcpProject + "-" + uacSchemaName.toLowerCase();
+  }
+
+  @Autowired
+  public RespondentDataRepositoryImpl(RetryableCloudDataStore retryableCloudDataStore) {
+    this.cloudDataStore = retryableCloudDataStore;
+  }
 
   /**
    * Stores a UAC object into the cloud data store.
@@ -28,13 +48,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public void writeUAC(final UAC uac) throws CTPException {
-    try {
-      retryableRespondentDataRepository.writeUAC(uac);
-    } catch (DataStoreContentionException e) {
-      log.error("Retries exhausted for storage of UAC: " + uac.getCaseId());
-      throw new CTPException(
-          Fault.SYSTEM_ERROR, e, "Retries exhausted for storage of UAC: " + uac.getCaseId());
-    }
+    cloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac, uac.getCaseId());
   }
 
   /**
@@ -46,7 +60,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public Optional<UAC> readUAC(final String universalAccessCodeHash) throws CTPException {
-    return retryableRespondentDataRepository.readUAC(universalAccessCodeHash);
+    return cloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCodeHash);
   }
 
   /**
@@ -57,13 +71,8 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
-    try {
-      retryableRespondentDataRepository.writeCollectionCase(collectionCase);
-    } catch (DataStoreContentionException e) {
-      log.error("Retries exhausted for storage of CollectionCase: " + collectionCase.getId());
-      throw new CTPException(
-          Fault.SYSTEM_ERROR, e, "Retries exhausted for storage of UAC: " + collectionCase.getId());
-    }
+    String id = collectionCase.getId();
+    cloudDataStore.storeObject(caseSchema, id, collectionCase, id);
   }
 
   /**
@@ -75,7 +84,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public Optional<CollectionCase> readCollectionCase(final String caseId) throws CTPException {
-    return retryableRespondentDataRepository.readCollectionCase(caseId);
+    return cloudDataStore.retrieveObject(CollectionCase.class, caseSchema, caseId);
   }
 
   /**
@@ -88,6 +97,10 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException {
-    return retryableRespondentDataRepository.readCollectionCasesByUprn(uprn);
+    // Run search
+    String[] searchByUprnPath = new String[] {"address", "uprn"};
+    List<CollectionCase> searchResults =
+        cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
+    return searchResults;
   }
 }
