@@ -96,7 +96,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>ROBC-CR-998-X-SNAPSHOT</version>
+      <version>0.0.60-SNAPSHOT</version>
     </dependency>
 
     <dependency>
