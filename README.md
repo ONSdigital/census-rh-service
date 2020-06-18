@@ -411,7 +411,7 @@ This example uses a case uuid of: f868fcfc-7280-40ea-ab01-b173ac245da3
     # Nicely close down rabbit connection (Probably not required)
     http --auth generator:hitmeup GET "http://localhost:8171/rabbit/close"
     
-Modified enpoint /cases/uprn/ - method name changed from 
+Modified endpoint /cases/uprn/ - method name changed from 
 getHHCaseByUPRN to
 getLatestValidNonHICaseByUPRN
 to reflect the fact that it will return non HI cases now with latest valid address record.

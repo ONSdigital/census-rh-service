@@ -13,9 +13,9 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNu
 public interface CaseService {
 
   /**
-   * Retrieve the data relating to HH Cases by address UPRN
+   * Retrieve the data relating to non-HI latest valid Case by address UPRN
    *
-   * @param uprn of address for which HH case details are requested
+   * @param uprn of address for which latest valid non-HI case details are requested
    * @return Case details for address UPRN
    * @throws CTPException if anything went wrong.
    */
