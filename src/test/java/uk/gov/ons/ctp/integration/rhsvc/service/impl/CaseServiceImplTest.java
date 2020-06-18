@@ -134,7 +134,7 @@ public class CaseServiceImplTest {
     collectionCase.forEach(cc -> cc.setCaseType("HH"));
 
     collectionCase.get(0).setCreatedDateTime(mid);
-    collectionCase.get(1).setCreatedDateTime(latest);
+    collectionCase.get(1).setCreatedDateTime(latest); // EXPECTED
     collectionCase.get(2).setCreatedDateTime(earliest);
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(collectionCase);
@@ -154,11 +154,11 @@ public class CaseServiceImplTest {
     final Date mid = DateUtils.addDays(new Date(), 1);
     final Date latest = DateUtils.addDays(new Date(), 2);
     collectionCase.get(0).setCreatedDateTime(mid);
-    collectionCase.get(0).setCaseType("HH");
+    collectionCase.get(0).setCaseType("HH"); // EXPECTED
     collectionCase.get(1).setCreatedDateTime(latest);
-    collectionCase.get(1).setCaseType("HI");
+    collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
-    collectionCase.get(2).setCaseType("HH");
+    collectionCase.get(2).setCaseType("HH"); // VALID
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(collectionCase);
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
@@ -182,7 +182,7 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCreatedDateTime(latest);
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
-    collectionCase.get(2).setCaseType("HH"); // VALID
+    collectionCase.get(2).setCaseType("HH"); // VALID / EXPECTED
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(collectionCase);
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
