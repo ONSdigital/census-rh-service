@@ -66,7 +66,7 @@ public class CaseServiceImpl implements CaseService {
     if (result.isPresent()) {
       log.with("case", result.get().getId())
           .with("uprn", uprnValue)
-          .debug("HH latest case retrieved for UPRN");
+          .debug("non HI latest valid case retrieved for UPRN");
       return mapperFacade.map(result.get(), CaseDTO.class);
     } else {
       log.debug("No cases returned for uprn: " + uprnValue);
