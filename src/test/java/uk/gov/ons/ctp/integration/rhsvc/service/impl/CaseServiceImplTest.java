@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Before;
@@ -41,7 +40,6 @@ import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
-import uk.gov.ons.ctp.integration.common.product.model.Product.CaseType;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
@@ -109,7 +107,8 @@ public class CaseServiceImplTest {
 
     List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
     invalidAddressList.get(0).setAddressInvalid(Boolean.TRUE);
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(invalidAddressList);
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(invalidAddressList);
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
@@ -119,7 +118,8 @@ public class CaseServiceImplTest {
 
     List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
     invalidAddressList.get(0).setCaseType("HI");
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(invalidAddressList);
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(invalidAddressList);
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
@@ -131,15 +131,19 @@ public class CaseServiceImplTest {
     final Date mid = DateUtils.addDays(new Date(), 1);
     final Date latest = DateUtils.addDays(new Date(), 2);
 
-    collectionCase.forEach( cc -> cc.setCaseType("HH"));
+    collectionCase.forEach(cc -> cc.setCaseType("HH"));
 
     collectionCase.get(0).setCreatedDateTime(mid);
     collectionCase.get(1).setCreatedDateTime(latest);
     collectionCase.get(2).setCreatedDateTime(earliest);
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(collectionCase);
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(collectionCase);
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
-    assertEquals("Resultant Case created date should match expected case with latest date", UUID.fromString(collectionCase.get(1).getId()), result.getCaseId());
+    assertEquals(
+        "Resultant Case created date should match expected case with latest date",
+        UUID.fromString(collectionCase.get(1).getId()),
+        result.getCaseId());
   }
 
   /** Test retrieves latest valid case when actual latest date is an HI case */
@@ -155,10 +159,14 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI");
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH");
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(collectionCase);
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(collectionCase);
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
-    assertEquals("Resultant Case created date should match expected case with latest date", UUID.fromString(collectionCase.get(0).getId()), result.getCaseId());
+    assertEquals(
+        "Resultant Case created date should match expected case with latest date",
+        UUID.fromString(collectionCase.get(0).getId()),
+        result.getCaseId());
   }
 
   /** Test Test throws a CTPException where no cases returned from repository */
