@@ -1,6 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
-import java.util.List;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
@@ -14,13 +13,14 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNu
 public interface CaseService {
 
   /**
-   * Retrieve the data relating to HH Cases by address UPRN
+   * Retrieve the data relating to non-HI latest valid Case by address UPRN
    *
-   * @param uprn of address for which HH case details are requested
-   * @return List of HH Case details for address UPRN
+   * @param uprn of address for which latest valid non-HI case details are requested
+   * @return Case details for address UPRN
    * @throws CTPException if anything went wrong.
    */
-  List<CaseDTO> getHHCaseByUPRN(final UniquePropertyReferenceNumber uprn) throws CTPException;
+  CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
+      throws CTPException;
 
   /**
    * Change address for a Case
