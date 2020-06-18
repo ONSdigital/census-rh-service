@@ -98,7 +98,7 @@ public class CaseEndpointUnitTest {
 
   /** Test returns resource not found for non-existent UPRN */
   @Test
-  public void getHHCaseByUPRNNotFound() throws Exception {
+  public void getCaseByUPRNNotFound() throws Exception {
 
     when(caseService.getLatestValidNonHICaseByUPRN(new UniquePropertyReferenceNumber(UPRN)))
         .thenThrow(new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, ERROR_MESSAGE));
@@ -112,7 +112,7 @@ public class CaseEndpointUnitTest {
 
   /** Test returns bad request for invalid UPRN */
   @Test
-  public void getHHCaseByUPRNBadRequest() throws Exception {
+  public void getCaseByUPRNBadRequest() throws Exception {
 
     mockMvc
         .perform(get("/cases/uprn/{uprn}", INVALID_UPRN))
