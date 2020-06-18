@@ -161,13 +161,9 @@ public class CaseServiceImplTest {
     assertEquals("Resultant Case created date should match expected case with latest date", UUID.fromString(collectionCase.get(0).getId()), result.getCaseId());
   }
 
-
-
-
-
   /** Test Test throws a CTPException where no cases returned from repository */
   @Test(expected = CTPException.class)
-  public void getHHCaseByUPRNNotFound() throws Exception {
+  public void getCaseByUPRNNotFound() throws Exception {
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(Collections.emptyList());
