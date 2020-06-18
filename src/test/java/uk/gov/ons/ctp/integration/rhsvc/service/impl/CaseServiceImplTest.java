@@ -169,6 +169,30 @@ public class CaseServiceImplTest {
         result.getCaseId());
   }
 
+  /** Test retrieves latest Address valid case when actual latest date is an HI case */
+  @Test
+  public void getLatestAddressValidCaseNoneHIByUPRNOnly() throws Exception {
+
+    final Date earliest = new Date();
+    final Date mid = DateUtils.addDays(new Date(), 1);
+    final Date latest = DateUtils.addDays(new Date(), 2);
+    collectionCase.get(0).setCreatedDateTime(mid);
+    collectionCase.get(0).setCaseType("HH");
+    collectionCase.get(0).setAddressInvalid(Boolean.TRUE); // INVALID
+    collectionCase.get(1).setCreatedDateTime(latest);
+    collectionCase.get(1).setCaseType("HI"); // INVALID
+    collectionCase.get(2).setCreatedDateTime(earliest);
+    collectionCase.get(2).setCaseType("HH"); // VALID
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(collectionCase);
+    CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
+
+    assertEquals(
+        "Resultant Case created date should match expected case with latest date and Valid Address",
+        UUID.fromString(collectionCase.get(2).getId()),
+        result.getCaseId());
+  }
+
   /** Test Test throws a CTPException where no cases returned from repository */
   @Test(expected = CTPException.class)
   public void getCaseByUPRNNotFound() throws Exception {
