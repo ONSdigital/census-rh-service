@@ -20,10 +20,10 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   @Value("${GOOGLE_CLOUD_PROJECT}")
   String gcpProject;
 
-  @Value("${cloudStorage.caseSchemaName}")
+  @Value("${cloud-storage.case-schema-name}")
   String caseSchemaName;
 
-  @Value("${cloudStorage.uacSchemaName}")
+  @Value("${cloud-storage.uac-schema-name}")
   String uacSchemaName;
 
   String caseSchema;

@@ -144,10 +144,11 @@ swagger-settings:
   description: API for ${project.artifactId}
   version: ${project.version}
 
-cloudStorage:
-  caseSchemaName: case
-  uacSchemaName: uac
-  backoffInitial: 100
-  backoffMultiplier: 1.2
-  backoffMax: 16000
-  backoffMaxAttempts: 30
+cloud-storage:
+  case-schema-name: case
+  uac-schema-name: uac
+  backoff:
+    initial: 100
+    multiplier: 1.2
+    max: 16000
+    max-attempts: 30
