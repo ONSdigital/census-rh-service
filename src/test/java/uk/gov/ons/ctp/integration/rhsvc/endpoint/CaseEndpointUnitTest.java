@@ -1,7 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -76,42 +75,32 @@ public class CaseEndpointUnitTest {
 
   /** Test returns valid JSON for valid UPRN */
   @Test
-  public void getHHCaseByUPRNFound() throws Exception {
+  public void getCaseByUPRNFound() throws Exception {
     CaseDTO rmCase0 = caseDTO.get(0);
-    CaseDTO rmCase1 = caseDTO.get(1);
 
-    when(caseService.getHHCaseByUPRN(new UniquePropertyReferenceNumber(UPRN))).thenReturn(caseDTO);
+    when(caseService.getLatestValidNonHICaseByUPRN(new UniquePropertyReferenceNumber(UPRN)))
+        .thenReturn(caseDTO.get(0));
 
     mockMvc
         .perform(get("/cases/uprn/{uprn}", UPRN))
         .andExpect(status().isOk())
         .andExpect(content().contentType(EXPECTED_JSON_CONTENT_TYPE))
-        .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$.[0].caseId", is(rmCase0.getCaseId().toString())))
-        .andExpect(jsonPath("$.[0].caseRef", is(rmCase0.getCaseRef())))
-        .andExpect(jsonPath("$.[0].caseType", is(rmCase0.getCaseType())))
-        .andExpect(jsonPath("$.[0].addressType", is(rmCase0.getAddressType())))
-        .andExpect(jsonPath("$.[0].addressLine1", is(rmCase0.getAddress().getAddressLine1())))
-        .andExpect(jsonPath("$.[0].townName", is(rmCase0.getAddress().getTownName())))
-        .andExpect(jsonPath("$.[0].postcode", is(rmCase0.getAddress().getPostcode())))
-        .andExpect(
-            jsonPath("$.[0].uprn", is(Long.toString(rmCase0.getAddress().getUprn().getValue()))))
-        .andExpect(jsonPath("$.[1].caseId", is(rmCase1.getCaseId().toString())))
-        .andExpect(jsonPath("$.[1].caseRef", is(rmCase1.getCaseRef())))
-        .andExpect(jsonPath("$.[1].caseType", is(rmCase1.getCaseType())))
-        .andExpect(jsonPath("$.[1].addressType", is(rmCase1.getAddressType())))
-        .andExpect(jsonPath("$.[1].addressLine1", is(rmCase1.getAddress().getAddressLine1())))
-        .andExpect(jsonPath("$.[1].townName", is(rmCase1.getAddress().getTownName())))
-        .andExpect(jsonPath("$.[1].postcode", is(rmCase1.getAddress().getPostcode())))
-        .andExpect(
-            jsonPath("$.[1].uprn", is(Long.toString(rmCase1.getAddress().getUprn().getValue()))));
+        // .andExpect(jsonPath("$", hasSize(1)))
+        .andExpect(jsonPath("$.caseId", is(rmCase0.getCaseId().toString())))
+        .andExpect(jsonPath("$.caseRef", is(rmCase0.getCaseRef())))
+        .andExpect(jsonPath("$.caseType", is(rmCase0.getCaseType())))
+        .andExpect(jsonPath("$.addressType", is(rmCase0.getAddressType())))
+        .andExpect(jsonPath("$.addressLevel", is(rmCase0.getAddressLevel())))
+        .andExpect(jsonPath("$.addressLine1", is(rmCase0.getAddress().getAddressLine1())))
+        .andExpect(jsonPath("$.townName", is(rmCase0.getAddress().getTownName())))
+        .andExpect(jsonPath("$.postcode", is(rmCase0.getAddress().getPostcode())));
   }
 
   /** Test returns resource not found for non-existent UPRN */
   @Test
-  public void getHHCaseByUPRNNotFound() throws Exception {
+  public void getCaseByUPRNNotFound() throws Exception {
 
-    when(caseService.getHHCaseByUPRN(new UniquePropertyReferenceNumber(UPRN)))
+    when(caseService.getLatestValidNonHICaseByUPRN(new UniquePropertyReferenceNumber(UPRN)))
         .thenThrow(new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, ERROR_MESSAGE));
 
     mockMvc
@@ -123,7 +112,7 @@ public class CaseEndpointUnitTest {
 
   /** Test returns bad request for invalid UPRN */
   @Test
-  public void getHHCaseByUPRNBadRequest() throws Exception {
+  public void getCaseByUPRNBadRequest() throws Exception {
 
     mockMvc
         .perform(get("/cases/uprn/{uprn}", INVALID_UPRN))
@@ -152,6 +141,7 @@ public class CaseEndpointUnitTest {
         .andExpect(jsonPath("$.caseRef", is(rmCase.getCaseRef())))
         .andExpect(jsonPath("$.caseType", is(rmCase.getCaseType())))
         .andExpect(jsonPath("$.addressType", is(rmCase.getAddressType())))
+        .andExpect(jsonPath("$.addressLevel", is(rmCase.getAddressLevel())))
         .andExpect(jsonPath("$.addressLine1", is(rmCase.getAddress().getAddressLine1())))
         .andExpect(jsonPath("$.addressLine2", is(rmCase.getAddress().getAddressLine2())))
         .andExpect(jsonPath("$.addressLine3", is(rmCase.getAddress().getAddressLine3())))

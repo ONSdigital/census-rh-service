@@ -22,4 +22,6 @@ public class CaseDTO {
   @JsonUnwrapped private AddressDTO address;
 
   private String region;
+
+  private String addressLevel;
 }

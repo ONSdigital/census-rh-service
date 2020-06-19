@@ -1,7 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -20,8 +18,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import ma.glasnost.orika.MapperFacade;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,59 +77,130 @@ public class CaseServiceImplTest {
 
   /** Test returns valid CaseDTO for valid UPRN */
   @Test
-  public void getHHCaseByUPRNFound() throws Exception {
+  public void getCaseByUPRNFound() throws Exception {
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(collectionCase);
 
-    CollectionCase hhCase = this.collectionCase.get(0);
+    CollectionCase nonHICase = this.collectionCase.get(0);
 
-    List<CaseDTO> caseDTO = caseSvc.getHHCaseByUPRN(UPRN);
-    CaseDTO rmCase = caseDTO.get(0);
+    CaseDTO rmCase = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
-    assertThat(caseDTO, hasSize(1));
-    assertEquals(hhCase.getId(), rmCase.getCaseId().toString());
-    assertEquals(hhCase.getCaseRef(), rmCase.getCaseRef());
-    assertEquals(hhCase.getCaseType(), rmCase.getCaseType());
-    assertEquals(hhCase.getAddress().getAddressType(), rmCase.getAddressType());
-    assertEquals(hhCase.getAddress().getAddressLine1(), rmCase.getAddress().getAddressLine1());
-    assertEquals(hhCase.getAddress().getAddressLine2(), rmCase.getAddress().getAddressLine2());
-    assertEquals(hhCase.getAddress().getAddressLine3(), rmCase.getAddress().getAddressLine3());
-    assertEquals(hhCase.getAddress().getTownName(), rmCase.getAddress().getTownName());
-    assertEquals(hhCase.getAddress().getRegion(), rmCase.getRegion());
-    assertEquals(hhCase.getAddress().getPostcode(), rmCase.getAddress().getPostcode());
+    assertNotNull(rmCase);
+    assertEquals(nonHICase.getId(), rmCase.getCaseId().toString());
+    assertEquals(nonHICase.getCaseRef(), rmCase.getCaseRef());
+    assertEquals(nonHICase.getCaseType(), rmCase.getCaseType());
+    assertEquals(nonHICase.getAddress().getAddressType(), rmCase.getAddressType());
+    assertEquals(nonHICase.getAddress().getAddressLine1(), rmCase.getAddress().getAddressLine1());
+    assertEquals(nonHICase.getAddress().getAddressLine2(), rmCase.getAddress().getAddressLine2());
+    assertEquals(nonHICase.getAddress().getAddressLine3(), rmCase.getAddress().getAddressLine3());
+    assertEquals(nonHICase.getAddress().getTownName(), rmCase.getAddress().getTownName());
+    assertEquals(nonHICase.getAddress().getRegion(), rmCase.getRegion());
+    assertEquals(nonHICase.getAddress().getPostcode(), rmCase.getAddress().getPostcode());
     assertEquals(
-        hhCase.getAddress().getUprn(), Long.toString(rmCase.getAddress().getUprn().getValue()));
+        nonHICase.getAddress().getUprn(), Long.toString(rmCase.getAddress().getUprn().getValue()));
   }
 
-  /** Test returns empty list where only non HH cases returned from repository */
-  @Test
-  public void getHHCaseByUPRNHICasesOnly() throws Exception {
+  /** Test throws a CTPException where only Invalid Address cases are returned from repository */
+  @Test(expected = CTPException.class)
+  public void getInvalidAddressCaseByUPRNOnly() throws Exception {
 
-    List<CollectionCase> nonHHCases =
-        collectionCase
-            .stream()
-            .filter(c -> !c.getCaseType().equals(Product.CaseType.HH.name()))
-            .collect(Collectors.toList());
-
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue()))).thenReturn(nonHHCases);
-
-    List<CaseDTO> caseDTO = caseSvc.getHHCaseByUPRN(UPRN);
-
-    assertThat(nonHHCases, hasSize(2));
-    assertThat(caseDTO, hasSize(0));
+    List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
+    invalidAddressList.get(0).setAddressInvalid(Boolean.TRUE);
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(invalidAddressList);
+    caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
-  /** Test returns empty list where no cases returned from repository */
+  /** Test throws a CTPException where only HI cases are returned from repository */
+  @Test(expected = CTPException.class)
+  public void getOnlyHICaseByUPRNOnly() throws Exception {
+
+    List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
+    invalidAddressList.get(0).setCaseType("HI");
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(invalidAddressList);
+    caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
+  }
+
+  /** Test retrieves latest case when all valid HH */
   @Test
-  public void getHHCaseByUPRNNotFound() throws Exception {
+  public void getLatestCaseByUPRNOnly() throws Exception {
+
+    final Date earliest = new Date();
+    final Date mid = DateUtils.addDays(new Date(), 1);
+    final Date latest = DateUtils.addDays(new Date(), 2);
+
+    collectionCase.forEach(cc -> cc.setCaseType("HH"));
+
+    collectionCase.get(0).setCreatedDateTime(mid);
+    collectionCase.get(1).setCreatedDateTime(latest); // EXPECTED
+    collectionCase.get(2).setCreatedDateTime(earliest);
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(collectionCase);
+    CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
+
+    assertEquals(
+        "Resultant Case created date should match expected case with latest date",
+        UUID.fromString(collectionCase.get(1).getId()),
+        result.getCaseId());
+  }
+
+  /** Test retrieves latest valid case when actual latest date is an HI case */
+  @Test
+  public void getLatestCaseNoneHIByUPRNOnly() throws Exception {
+
+    final Date earliest = new Date();
+    final Date mid = DateUtils.addDays(new Date(), 1);
+    final Date latest = DateUtils.addDays(new Date(), 2);
+    collectionCase.get(0).setCreatedDateTime(mid);
+    collectionCase.get(0).setCaseType("HH"); // EXPECTED
+    collectionCase.get(1).setCreatedDateTime(latest);
+    collectionCase.get(1).setCaseType("HI"); // INVALID
+    collectionCase.get(2).setCreatedDateTime(earliest);
+    collectionCase.get(2).setCaseType("HH"); // VALID
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(collectionCase);
+    CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
+
+    assertEquals(
+        "Resultant Case created date should match expected case with latest date",
+        UUID.fromString(collectionCase.get(0).getId()),
+        result.getCaseId());
+  }
+
+  /** Test retrieves latest Address valid case when actual latest date is an HI case */
+  @Test
+  public void getLatestAddressValidCaseNoneHIByUPRNOnly() throws Exception {
+
+    final Date earliest = new Date();
+    final Date mid = DateUtils.addDays(new Date(), 1);
+    final Date latest = DateUtils.addDays(new Date(), 2);
+    collectionCase.get(0).setCreatedDateTime(mid);
+    collectionCase.get(0).setCaseType("HH");
+    collectionCase.get(0).setAddressInvalid(Boolean.TRUE); // INVALID
+    collectionCase.get(1).setCreatedDateTime(latest);
+    collectionCase.get(1).setCaseType("HI"); // INVALID
+    collectionCase.get(2).setCreatedDateTime(earliest);
+    collectionCase.get(2).setCaseType("HH"); // VALID / EXPECTED
+    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(collectionCase);
+    CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
+
+    assertEquals(
+        "Resultant Case created date should match expected case with latest date and Valid Address",
+        UUID.fromString(collectionCase.get(2).getId()),
+        result.getCaseId());
+  }
+
+  /** Test Test throws a CTPException where no cases returned from repository */
+  @Test(expected = CTPException.class)
+  public void getCaseByUPRNNotFound() throws Exception {
 
     when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(Collections.emptyList());
 
-    List<CaseDTO> caseDTO = caseSvc.getHHCaseByUPRN(UPRN);
-
-    assertThat(caseDTO, hasSize(0));
+    caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
   /** Test returns valid CaseDTO and sends address modified event message for valid CaseID */

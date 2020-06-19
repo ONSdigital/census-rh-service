@@ -33,6 +33,7 @@ public class RHSvcBeanMapper extends ConfigurableMapper {
         .field("id", "caseId")
         .field("address.addressType", "addressType")
         .field("address.region", "region")
+        .field("address.addressLevel", "addressLevel")
         .byDefault()
         .register();
 

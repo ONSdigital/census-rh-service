@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.List;
 import java.util.UUID;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,27 +30,20 @@ public class CaseEndpoint {
   @Autowired private CaseService caseService;
 
   /**
-   * the GET end point to get a List of HH Cases by UPRN
+   * the GET end point to return the latest valid Non HI Case by UPRN
    *
    * @param uprn the UPRN
-   * @return List of returned HH cases for the UPRN
-   * @throws CTPException something went wrong
+   * @return Returned latest Non HI case with valid address for the UPRN
+   * @throws CTPException something went wrong - thrown by case service
    */
   @RequestMapping(value = "/uprn/{uprn}", method = RequestMethod.GET)
-  public ResponseEntity<List<CaseDTO>> getHHCaseByUPRN(
+  public ResponseEntity<CaseDTO> getCaseByUPRN(
       @PathVariable(value = "uprn") final UniquePropertyReferenceNumber uprn) throws CTPException {
-    log.with("pathParam.uprn", uprn).info("Entering GET getHHCaseByUPRN");
+    log.with("pathParam.uprn", uprn).info("Entering GET getLatestValidNonHICaseByUPRN");
 
-    List<CaseDTO> results = caseService.getHHCaseByUPRN(uprn);
-
-    if (results.isEmpty()) {
-      throw new CTPException(
-          CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve UPRN: " + uprn.getValue());
-    }
-
-    log.with("pathParam.uprn", uprn).debug("Exit GET getHHCaseByUPRN");
-
-    return ResponseEntity.ok(results);
+    CaseDTO result = caseService.getLatestValidNonHICaseByUPRN(uprn);
+    log.with("pathParam.uprn", uprn).debug("Exit GET getLatestValidNonHICaseByUPRN");
+    return ResponseEntity.ok(result);
   }
 
   /**
