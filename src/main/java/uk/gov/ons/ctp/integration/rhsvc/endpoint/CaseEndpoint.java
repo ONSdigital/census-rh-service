@@ -17,6 +17,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -46,6 +47,16 @@ public class CaseEndpoint {
     return ResponseEntity.ok(result);
   }
 
+  private void validateMatchingCaseId(UUID caseId, UUID dtoCaseId, String dtoName)
+      throws CTPException {
+    if (!caseId.equals(dtoCaseId)) {
+      String message =
+          "The caseid in the " + dtoName + " URL does not match the caseid in the request body";
+      log.with(caseId).warn(message);
+      throw new CTPException(Fault.BAD_REQUEST, message);
+    }
+  }
+
   /**
    * the PUT end point to notify of an address change
    *
@@ -59,21 +70,14 @@ public class CaseEndpoint {
   public ResponseEntity<CaseDTO> modifyAddress(
       @PathVariable("caseId") final UUID caseId, @Valid @RequestBody AddressChangeDTO addressChange)
       throws CTPException {
+    String methodName = "modifyAddress";
     log.with("pathParam.caseId", caseId)
         .with("requestBody", addressChange)
-        .info("Entering PUT modifyAddress");
+        .info("Entering PUT {}", methodName);
 
-    if (!caseId.equals(addressChange.getCaseId())) {
-      String message =
-          "The caseid in the modifyAddress URL does not match the caseid in the request body";
-      log.with(caseId).warn(message);
-      throw new CTPException(Fault.BAD_REQUEST, message);
-    }
-
+    validateMatchingCaseId(caseId, addressChange.getCaseId(), methodName);
     CaseDTO result = caseService.modifyAddress(addressChange);
-
-    log.with("pathParam.caseId", caseId).debug("Exit modifyAddress");
-
+    log.with("pathParam.caseId", caseId).debug("Exit {}", methodName);
     return ResponseEntity.ok(result);
   }
 
@@ -92,21 +96,29 @@ public class CaseEndpoint {
       @PathVariable(value = "caseId") final UUID caseId,
       @Valid @RequestBody SMSFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
-
+    String methodName = "fulfilmentRequestBySMS";
     log.with("pathParam.caseId", caseId)
         .with("requestBody", requestBodyDTO)
-        .info("Entering POST fulfilmentRequestBySMS");
+        .info("Entering POST {}", methodName);
 
-    if (!caseId.equals(requestBodyDTO.getCaseId())) {
-      String message =
-          "The caseid in the fulfilmentRequestBySMS URL does not"
-              + " match the caseid in the request body";
-      log.with(caseId).warn(message);
-      throw new CTPException(Fault.BAD_REQUEST, message);
-    }
-
-    log.with("pathParam.caseId", caseId).debug("Exit POST fulfilmentRequestBySMS");
-
+    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
+    log.with("pathParam.caseId", caseId).debug("Exit POST {}", methodName);
     caseService.fulfilmentRequestBySMS(requestBodyDTO);
+  }
+
+  @RequestMapping(value = "/{caseId}/fulfilment/post", method = RequestMethod.POST)
+  @ResponseStatus(value = HttpStatus.OK)
+  public void fulfilmentRequestByPost(
+      @PathVariable(value = "caseId") final UUID caseId,
+      @Valid @RequestBody PostalFulfilmentRequestDTO requestBodyDTO)
+      throws CTPException {
+    String methodName = "fulfilmentRequestByPost";
+    log.with("pathParam.caseId", caseId)
+        .with("requestBody", requestBodyDTO)
+        .info("Entering POST {}", methodName);
+
+    validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
+    log.with("pathParam.caseId", caseId).debug("Exit POST {}", methodName);
+    caseService.fulfilmentRequestByPost(requestBodyDTO);
   }
 }

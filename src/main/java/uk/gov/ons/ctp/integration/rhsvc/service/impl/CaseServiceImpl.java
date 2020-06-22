@@ -31,6 +31,7 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -188,6 +189,13 @@ public class CaseServiceImpl implements CaseService {
         Source.RESPONDENT_HOME,
         Channel.RH,
         fulfilmentRequestedPayload);
+  }
+
+  @Override
+  public void fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO)
+      throws CTPException {
+    // TODO Auto-generated method stub
+    // WRITEME
   }
 
   // Search the ProductReference for the specified product
