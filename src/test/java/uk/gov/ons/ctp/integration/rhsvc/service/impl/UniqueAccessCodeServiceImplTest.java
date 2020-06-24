@@ -716,10 +716,10 @@ public class UniqueAccessCodeServiceImplTest {
             newAddressCapture.capture());
 
     NewAddress newAddress = newAddressCapture.getValue();
-    assertEquals(caseId, newAddress.getSourceCaseId());
 
     CollectionCaseNewAddress caseNewAddress = newAddress.getCollectionCase();
     assertEquals(CaseType.HH.name(), caseNewAddress.getCaseType());
+    assertEquals(caseId, caseNewAddress.getId());
     assertEquals("CENSUS", caseNewAddress.getSurvey());
     assertEquals(collectionExerciseId, caseNewAddress.getCollectionExerciseId());
     assertEquals(null, caseNewAddress.getFieldCoordinatorId());

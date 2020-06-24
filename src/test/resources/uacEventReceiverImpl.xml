@@ -13,7 +13,7 @@
 
     <bean id="cloud" class="uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl"/>
 
-    <bean id="firestoreDataStore" lazy-init="true" class="uk.gov.ons.ctp.integration.rhsvc.cloud.FirestoreDataStore"/>
+    <bean id="firestoreDataStore" lazy-init="true" class="uk.gov.ons.ctp.common.cloud.FirestoreDataStore"/>
 
     <bean id="eventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.EventReceiverConfiguration" />
 
