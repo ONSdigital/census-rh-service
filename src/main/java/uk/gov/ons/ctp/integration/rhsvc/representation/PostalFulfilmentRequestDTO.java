@@ -11,7 +11,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** The request object when contact centre requests a postal fulfilment for a given case. */
 @Data
 @Builder
 @NoArgsConstructor
