@@ -16,7 +16,6 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
@@ -25,7 +24,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
 @SpringBootApplication
 @IntegrationComponentScan("uk.gov.ons.ctp.integration")
-@ComponentScan(basePackages = {"uk.gov.ons.ctp.integration"})
+@ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common"})
 @ImportResource("springintegration/main.xml")
 public class RHSvcApplication {
 
@@ -71,11 +70,6 @@ public class RHSvcApplication {
   @Primary
   public CustomObjectMapper customObjectMapper() {
     return new CustomObjectMapper();
-  }
-
-  @Bean
-  public RestExceptionHandler restExceptionHandler() {
-    return new RestExceptionHandler();
   }
 
   @Value("#{new Boolean('${logging.useJson}')}")
