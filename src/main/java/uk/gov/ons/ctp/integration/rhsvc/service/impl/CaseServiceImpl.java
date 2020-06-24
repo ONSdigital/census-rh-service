@@ -189,10 +189,13 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private void createAndSendFulfilment(
-      DeliveryChannel channel, Contact contact, UUID caseId, String fulfilmentCode)
+      DeliveryChannel deliveryChannel, Contact contact, UUID caseId, String fulfilmentCode)
       throws CTPException {
+    log.with("fulfilmentCode", fulfilmentCode)
+        .with("deliveryChannel", deliveryChannel)
+        .debug("Entering createAndSendFulfilment");
     FulfilmentRequest payload =
-        createFulfilmentRequestPayload(fulfilmentCode, channel, caseId, contact);
+        createFulfilmentRequestPayload(fulfilmentCode, deliveryChannel, caseId, contact);
     eventPublisher.sendEvent(
         EventType.FULFILMENT_REQUESTED, Source.RESPONDENT_HOME, Channel.RH, payload);
   }
@@ -226,8 +229,6 @@ public class CaseServiceImpl implements CaseService {
   private FulfilmentRequest createFulfilmentRequestPayload(
       String fulfilmentCode, Product.DeliveryChannel deliveryChannel, UUID caseId, Contact contact)
       throws CTPException {
-    log.with(fulfilmentCode).debug("Entering createFulfilmentEvent");
-
     // Read case from firestore
     CollectionCase caseDetails =
         dataRepo
