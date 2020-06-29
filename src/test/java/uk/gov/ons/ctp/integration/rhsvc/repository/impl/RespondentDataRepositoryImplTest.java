@@ -57,6 +57,36 @@ public class RespondentDataRepositoryImplTest {
         target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
   }
 
+  /** Returns Empty Optional where no valid caseType cases are returned from repository */
+  @Test
+  public void getInvalidCaseTypeCasesByUPRNOnly() throws Exception {
+
+    collectionCase.forEach(cc -> cc.setCaseType("HI"));
+    when(mockCloudDataStore.search(
+            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
+        .thenReturn(collectionCase);
+
+    Assert.assertEquals(
+        "Expects Empty Optional",
+        Optional.empty(),
+        target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
+  }
+
+  /** Returns Empty Optional where no valid Address cases are returned from repository */
+  @Test
+  public void getInvalidAddressedCasesByUPRNOnly() throws Exception {
+
+    collectionCase.forEach(cc -> cc.setAddressInvalid(Boolean.TRUE));
+    when(mockCloudDataStore.search(
+            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
+        .thenReturn(collectionCase);
+
+    Assert.assertEquals(
+        "Expects Empty Optional",
+        Optional.empty(),
+        target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
+  }
+
   /** Test retrieves latest case when all valid HH */
   @Test
   public void getLatestCaseByUPRNOnly() throws Exception {
