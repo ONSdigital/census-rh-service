@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.cloud.RetryableCloudDataStore;
+import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -28,6 +30,8 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
 
   String caseSchema;
   String uacSchema;
+
+  final String[] searchByUprnPath = new String[] {"address", "uprn"};
 
   @PostConstruct
   public void init() {
@@ -99,10 +103,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   @Deprecated
   public List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException {
     // Run search
-    String[] searchByUprnPath = new String[] {"address", "uprn"};
-    List<CollectionCase> searchResults =
-        cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
-    return searchResults;
+    return cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
   }
 
   /**
@@ -117,6 +118,23 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   @Override
   public Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(String uprn)
       throws CTPException {
-    return retryableRespondentDataRepository.readNonHILatestCollectionCaseByUprn(uprn);
+    List<CollectionCase> searchResults =
+        cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
+    return filterLatestValidNonHiCollectionCaseSearchResults(searchResults);
+  }
+
+  /**
+   * Filter search results returning Latest !addressInvalid non HI case
+   *
+   * @param searchResults - Search results found in dataStore by searching by uprn
+   * @return Optional of the resulting collection case or Empty
+   */
+  private Optional<CollectionCase> filterLatestValidNonHiCollectionCaseSearchResults(
+      final List<CollectionCase> searchResults) {
+    return searchResults
+        .stream()
+        .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
+        .filter(c -> !c.isAddressInvalid())
+        .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
   }
 }

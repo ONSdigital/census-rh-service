@@ -13,12 +13,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.cloud.RetryableCloudDataStore;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.integration.rhsvc.cloud.CloudDataStore;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,12 +28,10 @@ public class RespondentDataRepositoryImplTest {
       new UniquePropertyReferenceNumber("123456");
   private static final String UPRN_STRING = Long.toString(UPRN.getValue());
 
-  @Mock private CloudDataStore mockCloudDataStore;
+  @Spy
+  private RetryableCloudDataStore mockCloudDataStore;
 
   @InjectMocks private RespondentDataRepositoryImpl target;
-
-  private final RetryableRespondentDataRepository retryableRespondentDataRepository =
-      new RetryableRespondentDataRepository();
 
   private List<CollectionCase> collectionCase;
   private final String[] searchByUprnPath = new String[] {"address", "uprn"};
@@ -42,11 +40,7 @@ public class RespondentDataRepositoryImplTest {
   @Before
   public void setUp() throws Exception {
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
-    ReflectionTestUtils.setField(retryableRespondentDataRepository, "caseSchema", "SCHEMA");
-    ReflectionTestUtils.setField(
-        retryableRespondentDataRepository, "cloudDataStore", mockCloudDataStore);
-    ReflectionTestUtils.setField(
-        target, "retryableRespondentDataRepository", retryableRespondentDataRepository);
+    ReflectionTestUtils.setField(target, "caseSchema", "SCHEMA");
   }
 
   /** Returns Empty Optional where no valid Address cases are returned from repository */
@@ -54,12 +48,8 @@ public class RespondentDataRepositoryImplTest {
   public void getInvalidAddressCaseByUPRNOnly() throws Exception {
 
     final List<CollectionCase> emptyList = new ArrayList<>();
-
     when(mockCloudDataStore.search(
-            CollectionCase.class,
-            retryableRespondentDataRepository.caseSchema,
-            searchByUprnPath,
-            UPRN_STRING))
+            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
         .thenReturn(emptyList);
 
     Assert.assertEquals(
@@ -77,15 +67,11 @@ public class RespondentDataRepositoryImplTest {
     final Date latest = DateUtils.addDays(new Date(), 2);
 
     collectionCase.forEach(cc -> cc.setCaseType("HH"));
-
     collectionCase.get(0).setCreatedDateTime(mid);
     collectionCase.get(1).setCreatedDateTime(latest); // EXPECTED
     collectionCase.get(2).setCreatedDateTime(earliest);
     when(mockCloudDataStore.search(
-            CollectionCase.class,
-            retryableRespondentDataRepository.caseSchema,
-            searchByUprnPath,
-            UPRN_STRING))
+            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
         .thenReturn(collectionCase);
 
     assertEquals(
@@ -108,10 +94,7 @@ public class RespondentDataRepositoryImplTest {
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID
     when(mockCloudDataStore.search(
-            CollectionCase.class,
-            retryableRespondentDataRepository.caseSchema,
-            searchByUprnPath,
-            UPRN_STRING))
+            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
         .thenReturn(collectionCase);
 
     assertEquals(
@@ -135,10 +118,7 @@ public class RespondentDataRepositoryImplTest {
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID / EXPECTED
     when(mockCloudDataStore.search(
-            CollectionCase.class,
-            retryableRespondentDataRepository.caseSchema,
-            searchByUprnPath,
-            UPRN_STRING))
+            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
         .thenReturn(collectionCase);
 
     assertEquals(
