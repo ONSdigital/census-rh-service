@@ -28,8 +28,7 @@ public class RespondentDataRepositoryImplTest {
       new UniquePropertyReferenceNumber("123456");
   private static final String UPRN_STRING = Long.toString(UPRN.getValue());
 
-  @Spy
-  private RetryableCloudDataStore mockCloudDataStore;
+  @Spy private RetryableCloudDataStore mockCloudDataStore;
 
   @InjectMocks private RespondentDataRepositoryImpl target;
 
