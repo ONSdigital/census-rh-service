@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
@@ -10,6 +11,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -38,7 +40,7 @@ public class RetryableRespondentDataRepository {
   String caseSchema;
   String uacSchema;
 
-  private CloudDataStore cloudDataStore;
+  private final CloudDataStore cloudDataStore;
 
   public RetryableRespondentDataRepository() {
     this.cloudDataStore = new FirestoreDataStore();
@@ -124,13 +126,44 @@ public class RetryableRespondentDataRepository {
    *     cases are found then an empty List is returned.
    * @throws CTPException - if a cloud exception was detected.
    */
+  @Deprecated
   public List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException {
+    // Run search
+    String[] searchByUprnPath = new String[] {"address", "uprn"};
+    return cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
+  }
+
+  /**
+   * Read case objects from cloud based on its uprn. Filter by non HI, not addressInvalid, latest
+   * case
+   *
+   * @param uprn - is the uprn that the target case(s) must contain.
+   * @return - Optional containing 1 de-serialised version of the stored object. If no matching
+   *     cases are found then an empty Optional is returned.
+   * @throws CTPException - if a cloud exception was detected.
+   */
+  public Optional<CollectionCase> readNonHILatestCollectionCaseByUprn(final String uprn)
+      throws CTPException {
     // Run search
     String[] searchByUprnPath = new String[] {"address", "uprn"};
     List<CollectionCase> searchResults =
         cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
+    return filterLatestValidNonHiCollectionCaseSearchResults(searchResults);
+  }
 
-    return searchResults;
+  /**
+   * Filter search results returning Latest !addressInvalid non HI case
+   *
+   * @param searchResults - Search results found in dataStore by searching by uprn
+   * @return Optional of the resulting collection case or Empty
+   */
+  private Optional<CollectionCase> filterLatestValidNonHiCollectionCaseSearchResults(
+      final List<CollectionCase> searchResults) {
+    return searchResults
+        .stream()
+        .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
+        .filter(c -> !c.isAddressInvalid())
+        .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
   }
 
   /**

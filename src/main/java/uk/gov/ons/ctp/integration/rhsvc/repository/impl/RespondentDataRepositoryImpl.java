@@ -87,7 +87,23 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
+  @Deprecated
   public List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException {
     return retryableRespondentDataRepository.readCollectionCasesByUprn(uprn);
+  }
+
+  /**
+   * Read case objects from cloud based on its uprn. Filter by non HI, not addressInvalid, latest
+   * case
+   *
+   * @param uprn - is the uprn that the target case(s) must contain.
+   * @return - Optional containing 1 de-serialised version of the stored object. If no matching
+   *     cases are found then an empty Optional is returned.
+   * @throws CTPException - if a cloud exception was detected.
+   */
+  @Override
+  public Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(String uprn)
+      throws CTPException {
+    return retryableRespondentDataRepository.readNonHILatestCollectionCaseByUprn(uprn);
   }
 }

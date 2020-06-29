@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,8 +10,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
-import java.util.Arrays;
+=======
+>>>>>>> 9143c8fbddfa339e067d5eb576b4f5803c40d2f7
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -37,16 +38,19 @@ import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
+<<<<<<< HEAD
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
+import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
+import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
+=======
+>>>>>>> 9143c8fbddfa339e067d5eb576b4f5803c40d2f7
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -79,8 +83,8 @@ public class CaseServiceImplTest {
   @Test
   public void getCaseByUPRNFound() throws Exception {
 
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(0)));
 
     CollectionCase nonHICase = this.collectionCase.get(0);
 
@@ -101,25 +105,11 @@ public class CaseServiceImplTest {
         nonHICase.getAddress().getUprn(), Long.toString(rmCase.getAddress().getUprn().getValue()));
   }
 
-  /** Test throws a CTPException where only Invalid Address cases are returned from repository */
+  /** Test throws a CTPException where no valid Address cases are returned from repository */
   @Test(expected = CTPException.class)
   public void getInvalidAddressCaseByUPRNOnly() throws Exception {
-
-    List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
-    invalidAddressList.get(0).setAddressInvalid(Boolean.TRUE);
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(invalidAddressList);
-    caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
-  }
-
-  /** Test throws a CTPException where only HI cases are returned from repository */
-  @Test(expected = CTPException.class)
-  public void getOnlyHICaseByUPRNOnly() throws Exception {
-
-    List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
-    invalidAddressList.get(0).setCaseType("HI");
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(invalidAddressList);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenThrow(new CTPException(null));
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
@@ -136,8 +126,8 @@ public class CaseServiceImplTest {
     collectionCase.get(0).setCreatedDateTime(mid);
     collectionCase.get(1).setCreatedDateTime(latest); // EXPECTED
     collectionCase.get(2).setCreatedDateTime(earliest);
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(1)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -159,8 +149,8 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(0)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -183,8 +173,8 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID / EXPECTED
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(2)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -197,8 +187,8 @@ public class CaseServiceImplTest {
   @Test(expected = CTPException.class)
   public void getCaseByUPRNNotFound() throws Exception {
 
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(Collections.emptyList());
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(UPRN.asString()))
+        .thenReturn(Optional.empty());
 
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
@@ -302,6 +292,7 @@ public class CaseServiceImplTest {
 
     assertTrue(exceptionThrown);
   }
+<<<<<<< HEAD
 
   @Test
   public void testFulfilmentRequestBySMS_Household() throws Exception {
@@ -347,15 +338,15 @@ public class CaseServiceImplTest {
 
     // Create example product that we expect the product search to be called with
     Product expectedSearchProduct = new Product();
-    expectedSearchProduct.setRequestChannels(Arrays.asList(Product.RequestChannel.RH));
-    expectedSearchProduct.setRegions(Arrays.asList(Product.Region.E));
+    expectedSearchProduct.setRequestChannels(Collections.singletonList(RequestChannel.RH));
+    expectedSearchProduct.setRegions(Collections.singletonList(Region.E));
     expectedSearchProduct.setDeliveryChannel(DeliveryChannel.SMS);
     expectedSearchProduct.setFulfilmentCode("F1");
 
     // Simulate the behaviour of the ProductReference
     Product productToReturn = new Product();
     productToReturn.setFulfilmentCode("F1");
-    productToReturn.setCaseTypes(Arrays.asList(caseType));
+    productToReturn.setCaseTypes(Collections.singletonList(caseType));
     productToReturn.setIndividual(individual);
     List<Product> foundProducts = new ArrayList<>();
     foundProducts.add(productToReturn);
@@ -441,4 +432,6 @@ public class CaseServiceImplTest {
     }
     assertTrue(caughtException);
   }
+=======
+>>>>>>> 9143c8fbddfa339e067d5eb576b4f5803c40d2f7
 }

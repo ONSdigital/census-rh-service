@@ -2,11 +2,8 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -370,31 +367,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
    */
   private CollectionCase findValidNonHICase(String uprnAsString, String uacHash)
       throws CTPException {
-    List<CollectionCase> cases = dataRepo.readCollectionCasesByUprn(uprnAsString);
 
-    CollectionCase newestPrimaryCase = null;
-    if (cases.size() >= 1) {
-      // filter out just the non HI which are address valid and sort in ascending order by
-      // createdDateTime
-      List<CollectionCase> addressValidNonHICases =
-          cases
-              .stream()
-              .sorted(Comparator.comparing(CollectionCase::getCreatedDateTime))
-              .filter(c -> (!c.getCaseType().equals(CaseType.HI.name())))
-              .filter(c -> (!c.isAddressInvalid()))
-              .collect(Collectors.toList());
-      if (addressValidNonHICases.size() >= 1) {
-        // take the case last in the list ie the newest by createdDateTime
-        newestPrimaryCase = addressValidNonHICases.get(addressValidNonHICases.size() - 1);
-        if (addressValidNonHICases.size() > 1) {
-          // carry on with the latest case but log a warning as it indicates RM events have got
-          // out of step
-          log.with("UACHash", uacHash)
-              .with("UPRN", uprnAsString)
-              .warn("More than one active case found for UPRN");
-        }
-      }
-    }
-    return newestPrimaryCase;
+    Optional<CollectionCase> caseFound =
+        dataRepo.readNonHILatestValidCollectionCaseByUprn(uprnAsString);
+    return caseFound.orElse(null);
   }
 }

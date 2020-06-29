@@ -17,5 +17,8 @@ public interface RespondentDataRepository {
 
   Optional<CollectionCase> readCollectionCase(String caseId) throws CTPException;
 
-  List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException;
+  List<CollectionCase> readCollectionCasesByUprn(String uprn) throws CTPException;
+
+  Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(String uprn)
+      throws CTPException;
 }
