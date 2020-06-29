@@ -48,18 +48,18 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private ProductReference productReference;
 
   @Override
-  public CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprnValue)
+  public CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
       throws CTPException {
 
     Optional<CollectionCase> caseFound =
-        dataRepo.readNonHILatestValidCollectionCaseByUprn(uprnValue.asString());
+        dataRepo.readNonHILatestValidCollectionCaseByUprn(uprn.asString());
     if (caseFound.isPresent()) {
       log.with("case", caseFound.get().getId())
-          .with("uprn", uprnValue)
+          .with("uprn", uprn)
           .debug("non HI latest valid case retrieved for UPRN");
       return mapperFacade.map(caseFound.get(), CaseDTO.class);
     } else {
-      log.debug("No cases returned for uprn: " + uprnValue);
+      log.debug("No cases returned for uprn: " + uprn);
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
   }
