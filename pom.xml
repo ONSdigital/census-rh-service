@@ -54,11 +54,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aspects</artifactId>
-    </dependency>
-
-    <dependency>
        <groupId>org.springframework.boot</groupId>
        <artifactId>spring-boot-starter-integration</artifactId>
     </dependency>
@@ -96,7 +91,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.59</version>
+      <version>0.0.60</version>
     </dependency>
 
     <dependency>
@@ -115,7 +110,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>product-reference</artifactId>
-      <version>1.0.6</version>
+      <version>1.0.8</version>
     </dependency>
 
     <!-- ONS END -->

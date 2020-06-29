@@ -228,7 +228,6 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     caseNewAddress.setAddress(collectionCase.getAddress());
 
     NewAddress newAddress = new NewAddress();
-    newAddress.setSourceCaseId(caseId);
     newAddress.setCollectionCase(caseNewAddress);
 
     String transactionId =

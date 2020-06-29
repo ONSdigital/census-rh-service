@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.rhsvc.service;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
@@ -32,4 +33,6 @@ public interface CaseService {
   CaseDTO modifyAddress(final AddressChangeDTO address) throws CTPException;
 
   void fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO) throws CTPException;
+
+  void fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO) throws CTPException;
 }
