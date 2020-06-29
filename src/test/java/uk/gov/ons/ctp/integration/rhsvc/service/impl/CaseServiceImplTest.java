@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -10,10 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-<<<<<<< HEAD
 import java.util.ArrayList;
-=======
->>>>>>> 9143c8fbddfa339e067d5eb576b4f5803c40d2f7
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -38,19 +36,18 @@ import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
-<<<<<<< HEAD
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
-=======
->>>>>>> 9143c8fbddfa339e067d5eb576b4f5803c40d2f7
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -292,7 +289,6 @@ public class CaseServiceImplTest {
 
     assertTrue(exceptionThrown);
   }
-<<<<<<< HEAD
 
   @Test
   public void testFulfilmentRequestBySMS_Household() throws Exception {
@@ -432,6 +428,4 @@ public class CaseServiceImplTest {
     }
     assertTrue(caughtException);
   }
-=======
->>>>>>> 9143c8fbddfa339e067d5eb576b4f5803c40d2f7
 }
