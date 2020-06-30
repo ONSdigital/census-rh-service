@@ -28,7 +28,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   @Value("${cloud-storage.uac-schema-name}")
   private String uacSchemaName;
 
-  private String caseSchema;
+  String caseSchema;
   private String uacSchema;
 
   private static final String[] SEARCH_BY_UPRN_PATH = new String[] {"address", "uprn"};
