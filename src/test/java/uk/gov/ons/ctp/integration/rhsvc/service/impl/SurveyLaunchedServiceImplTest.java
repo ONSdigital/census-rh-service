@@ -39,7 +39,7 @@ public class SurveyLaunchedServiceImplTest {
 
     // Get hold of the event pay load that surveyLaunchedService created
     Mockito.verify(publisher)
-        .sendEvent(
+        .sendEventWithPersistance(
             eq(EventType.SURVEY_LAUNCHED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.AD),
@@ -63,7 +63,7 @@ public class SurveyLaunchedServiceImplTest {
 
     // Get hold of the event pay load that surveyLaunchedService created
     Mockito.verify(publisher)
-        .sendEvent(
+        .sendEventWithPersistance(
             eq(EventType.SURVEY_LAUNCHED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),
@@ -85,7 +85,7 @@ public class SurveyLaunchedServiceImplTest {
 
     // Get hold of the event pay load that surveyLaunchedService created
     Mockito.verify(publisher)
-        .sendEvent(
+        .sendEventWithPersistance(
             eq(EventType.SURVEY_LAUNCHED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),

@@ -35,8 +35,6 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
-// import uk.gov.ons.ctp.common.model.CaseType;
-
 /** Implementation to deal with Case data */
 @Service
 public class CaseServiceImpl implements CaseService {
@@ -147,7 +145,7 @@ public class CaseServiceImpl implements CaseService {
             .build();
 
     String transactionId =
-        eventPublisher.sendEvent(
+        eventPublisher.sendEventWithPersistance(
             EventType.ADDRESS_MODIFIED, Source.RESPONDENT_HOME, Channel.RH, addressModification);
 
     log.with("caseId", caseId)
@@ -183,7 +181,7 @@ public class CaseServiceImpl implements CaseService {
     // Build and send a fulfilment request event
     FulfilmentRequest fulfilmentRequestedPayload =
         createFulfilmentRequestPayload(product, requestBodyDTO.getTelNo(), caseDetails.get());
-    eventPublisher.sendEvent(
+    eventPublisher.sendEventWithPersistance(
         EventType.FULFILMENT_REQUESTED,
         Source.RESPONDENT_HOME,
         Channel.RH,

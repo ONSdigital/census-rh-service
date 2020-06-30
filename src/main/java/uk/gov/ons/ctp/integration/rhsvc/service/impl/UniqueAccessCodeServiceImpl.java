@@ -209,7 +209,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
             .build();
 
     String transactionId =
-        eventPublisher.sendEvent(
+        eventPublisher.sendEventWithPersistance(
             EventType.RESPONDENT_AUTHENTICATED, Source.RESPONDENT_HOME, Channel.RH, response);
 
     log.debug(
@@ -234,7 +234,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     newAddress.setCollectionCase(caseNewAddress);
 
     String transactionId =
-        eventPublisher.sendEvent(
+        eventPublisher.sendEventWithPersistance(
             EventType.NEW_ADDRESS_REPORTED, Source.RESPONDENT_HOME, Channel.RH, newAddress);
 
     log.with("caseId", caseId)
@@ -258,7 +258,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
             .build();
 
     String transactionId =
-        eventPublisher.sendEvent(
+        eventPublisher.sendEventWithPersistance(
             EventType.QUESTIONNAIRE_LINKED, Source.RESPONDENT_HOME, Channel.RH, response);
 
     log.with("CaseId", caseId)

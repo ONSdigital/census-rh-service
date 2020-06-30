@@ -19,6 +19,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
+import uk.gov.ons.ctp.common.event.persistence.FirestoreEventPersistence;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
@@ -47,9 +48,10 @@ public class RHSvcApplication {
   }
 
   @Bean
-  public EventPublisher eventPublisher(final RabbitTemplate rabbitTemplate) {
+  public EventPublisher eventPublisher(
+      final RabbitTemplate rabbitTemplate, final FirestoreEventPersistence eventPersistence) {
     EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
-    return new EventPublisher(sender);
+    return new EventPublisher(sender, eventPersistence);
   }
 
   @Bean
