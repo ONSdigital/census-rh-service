@@ -20,18 +20,18 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   private RetryableCloudDataStore cloudDataStore;
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
-  String gcpProject;
+  private String gcpProject;
 
   @Value("${cloud-storage.case-schema-name}")
-  String caseSchemaName;
+  private String caseSchemaName;
 
   @Value("${cloud-storage.uac-schema-name}")
-  String uacSchemaName;
+  private String uacSchemaName;
 
-  String caseSchema;
-  String uacSchema;
+  private String caseSchema;
+  private String uacSchema;
 
-  final String[] searchByUprnPath = new String[] {"address", "uprn"};
+  private static final String[] SEARCH_BY_UPRN_PATH = new String[] {"address", "uprn"};
 
   @PostConstruct
   public void init() {
@@ -92,21 +92,6 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   }
 
   /**
-   * Read case objects from cloud based on its uprn.
-   *
-   * @param uprn - is the uprn that the target case(s) must contain.
-   * @return - List containing 0 or more de-serialised version of the stored object. If no matching
-   *     cases are found then an empty List is returned.
-   * @throws CTPException - if a cloud exception was detected.
-   */
-  @Override
-  @Deprecated
-  public List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException {
-    // Run search
-    return cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
-  }
-
-  /**
    * Read case objects from cloud based on its uprn. Filter by non HI, not addressInvalid, latest
    * case
    *
@@ -116,10 +101,10 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
-  public Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(String uprn)
+  public Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(final String uprn)
       throws CTPException {
     List<CollectionCase> searchResults =
-        cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
+        cloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
     return filterLatestValidNonHiCollectionCaseSearchResults(searchResults);
   }
 
