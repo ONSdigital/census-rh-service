@@ -50,7 +50,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
   // Enums to capture the linking matrix of valid form type and case types.
   // Original table is from:
-  // https://collaborate2.ons.gov.uk/confluence/display/SDC/Auth.05+-+Unlinked+Authentication
+  // https://collaborate2.ons.gov.uk/confluence/display/SDC/RH+-+Authentication+-+Unlinked+UAC
   private enum LinkingCombination {
     H1(FormType.H, CaseType.HH),
     H2(FormType.H, CaseType.SPG),
@@ -58,7 +58,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     I1(FormType.I, CaseType.HH),
     I2(FormType.I, CaseType.SPG),
     I3(FormType.I, CaseType.CE),
-    C1(FormType.CE1, CaseType.CE);
+    C1(FormType.C, CaseType.CE);
 
     private FormType uacFormType;
     private CaseType caseCaseType;
@@ -308,7 +308,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     // Set address level for case
     if ((caseType == CaseType.CE || caseType == CaseType.SPG)
-        && uac.getFormType().equals(FormType.CE1.name())) {
+        && uac.getFormType().equals(FormType.C.name())) {
       address.setAddressLevel(AddressLevel.E.name());
     } else {
       address.setAddressLevel(AddressLevel.U.name());
@@ -328,7 +328,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     // linked
     // rather than disallowed. ie we will only link those combinations indicated as LINK:YES in the
     // matrix included in
-    // https://collaborate2.ons.gov.uk/confluence/display/SDC/Auth.05+-+Unlinked+Authentication
+    // https://collaborate2.ons.gov.uk/confluence/display/SDC/RH+-+Authentication+-+Unlinked+UAC
 
     FormType uacFormType = FormType.valueOf(uac.getFormType());
     CaseType caseCaseType = CaseType.valueOf(collectionCase.getCaseType());

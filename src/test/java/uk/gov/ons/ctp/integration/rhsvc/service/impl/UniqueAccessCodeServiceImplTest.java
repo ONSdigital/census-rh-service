@@ -594,7 +594,7 @@ public class UniqueAccessCodeServiceImplTest {
    * in the unlinked authentication wiki page.
    *
    * <p>The code is based on the permutations listed in:
-   * https://collaborate2.ons.gov.uk/confluence/display/SDC/Auth.05+-+Unlinked+Authentication#Matrix
+   * https://collaborate2.ons.gov.uk/confluence/display/SDC/RH+-+Authentication+-+Unlinked+UAC
    *
    * @throws CTPException
    */
@@ -611,9 +611,9 @@ public class UniqueAccessCodeServiceImplTest {
     doLinkingTest(FormType.I, CaseType.SPG, LinkingExpectation.OK);
     doLinkingTest(FormType.I, CaseType.CE, LinkingExpectation.OK);
 
-    doLinkingTest(FormType.CE1, CaseType.HH, LinkingExpectation.INVALID);
-    doLinkingTest(FormType.CE1, CaseType.SPG, LinkingExpectation.INVALID);
-    doLinkingTest(FormType.CE1, CaseType.CE, LinkingExpectation.OK);
+    doLinkingTest(FormType.C, CaseType.HH, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.C, CaseType.SPG, LinkingExpectation.INVALID);
+    doLinkingTest(FormType.C, CaseType.CE, LinkingExpectation.OK);
   }
 
   private void doLinkingTest(
