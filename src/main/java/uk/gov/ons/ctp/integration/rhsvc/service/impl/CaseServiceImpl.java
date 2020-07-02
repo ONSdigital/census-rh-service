@@ -3,14 +3,12 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -31,6 +29,7 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -50,25 +49,16 @@ public class CaseServiceImpl implements CaseService {
   public CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
       throws CTPException {
 
-    String uprnValue = Long.toString(uprn.getValue());
-    log.with("uprn", uprn).debug("Fetching case details by UPRN");
-
-    List<CollectionCase> rmCase = dataRepo.readCollectionCasesByUprn(uprnValue);
-    Optional<CollectionCase> result =
-        rmCase
-            .stream()
-            .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
-            .filter(c -> !c.isAddressInvalid())
-            .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
-
-    if (result.isPresent()) {
-      log.with("case", result.get().getId())
-          .with("uprn", uprnValue)
+    Optional<CollectionCase> caseFound =
+        dataRepo.readNonHILatestValidCollectionCaseByUprn(uprn.asString());
+    if (caseFound.isPresent()) {
+      log.with("case", caseFound.get().getId())
+          .with("uprn", uprn)
           .debug("non HI latest valid case retrieved for UPRN");
-      return mapperFacade.map(result.get(), CaseDTO.class);
+      return mapperFacade.map(caseFound.get(), CaseDTO.class);
     } else {
-      log.debug("No cases returned for uprn: " + uprnValue);
-      throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
+      log.debug("No cases returned for uprn: " + uprn);
+      throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
   }
 
@@ -161,79 +151,112 @@ public class CaseServiceImpl implements CaseService {
    */
   @Override
   public void fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO) throws CTPException {
-    UUID caseId = requestBodyDTO.getCaseId();
-
-    // Read case from firestore
-    Optional<CollectionCase> caseDetails = dataRepo.readCollectionCase(caseId.toString());
-    if (caseDetails.isEmpty()) {
-      log.with("caseId", caseId).info("Case not found");
-      String errorMessage = "Case not found: " + caseId;
-      throw new CTPException(Fault.RESOURCE_NOT_FOUND, errorMessage);
-    }
-
-    // Attempt to find the requested product
-    Product product = findProduct(caseDetails.get(), requestBodyDTO);
-    if (product == null) {
-      log.info("fulfilmentRequestBySMS can't find compatible product");
-      throw new CTPException(Fault.BAD_REQUEST, "Compatible product cannot be found");
-    }
-
-    // Build and send a fulfilment request event
-    FulfilmentRequest fulfilmentRequestedPayload =
-        createFulfilmentRequestPayload(product, requestBodyDTO.getTelNo(), caseDetails.get());
-    eventPublisher.sendEventWithPersistance(
-        EventType.FULFILMENT_REQUESTED,
-        Source.RESPONDENT_HOME,
-        Channel.RH,
-        fulfilmentRequestedPayload);
+    Contact contact = new Contact();
+    contact.setTelNo(requestBodyDTO.getTelNo());
+    createAndSendFulfilment(
+        DeliveryChannel.SMS,
+        contact,
+        requestBodyDTO.getCaseId(),
+        requestBodyDTO.getFulfilmentCode());
   }
 
-  // Search the ProductReference for the specified product
-  private Product findProduct(CollectionCase caseDetails, SMSFulfilmentRequestDTO requestBodyDTO)
+  @Override
+  public void fulfilmentRequestByPost(PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
+    Contact contact = new Contact();
+    contact.setTitle(requestBodyDTO.getTitle());
+    contact.setForename(requestBodyDTO.getForename());
+    contact.setSurname(requestBodyDTO.getSurname());
+    createAndSendFulfilment(
+        DeliveryChannel.POST,
+        contact,
+        requestBodyDTO.getCaseId(),
+        requestBodyDTO.getFulfilmentCode());
+  }
 
-    Region region = Region.valueOf(caseDetails.getAddress().getRegion());
+  private void createAndSendFulfilment(
+      DeliveryChannel deliveryChannel, Contact contact, UUID caseId, String fulfilmentCode)
+      throws CTPException {
+    log.with("fulfilmentCode", fulfilmentCode)
+        .with("deliveryChannel", deliveryChannel)
+        .debug("Entering createAndSendFulfilment");
+    FulfilmentRequest payload =
+        createFulfilmentRequestPayload(fulfilmentCode, deliveryChannel, caseId, contact);
+    eventPublisher.sendEventWithPersistance(
+        EventType.FULFILMENT_REQUESTED, Source.RESPONDENT_HOME, Channel.RH, payload);
+  }
 
+  private Product findProduct(String fulfilmentCode, DeliveryChannel deliveryChannel, Region region)
+      throws CTPException {
     log.with("region", region)
-        .with("deliveryChannel", DeliveryChannel.SMS)
-        .with("fulfilmentCode", requestBodyDTO.getFulfilmentCode())
+        .with("deliveryChannel", deliveryChannel)
+        .with("fulfilmentCode", fulfilmentCode)
         .debug("Attempting to find product.");
 
     // Build search criteria base on the cases details and the requested fulfilmentCode
     Product searchCriteria = new Product();
     searchCriteria.setRequestChannels(Collections.singletonList(RequestChannel.RH));
     searchCriteria.setRegions(Collections.singletonList(region));
-    searchCriteria.setDeliveryChannel(DeliveryChannel.SMS);
-    searchCriteria.setFulfilmentCode(requestBodyDTO.getFulfilmentCode());
+    searchCriteria.setDeliveryChannel(deliveryChannel);
+    searchCriteria.setFulfilmentCode(fulfilmentCode);
 
     // Attempt to find matching product
-    List<Product> products = productReference.searchProducts(searchCriteria);
-    if (products.size() == 0) {
-      return null;
-    }
-
-    return products.get(0);
+    return productReference
+        .searchProducts(searchCriteria)
+        .stream()
+        .findFirst()
+        .orElseThrow(
+            () -> {
+              log.with("searchCriteria", searchCriteria).warn("Compatible product cannot be found");
+              return new CTPException(Fault.BAD_REQUEST, "Compatible product cannot be found");
+            });
   }
 
   private FulfilmentRequest createFulfilmentRequestPayload(
-      Product product, String telephoneNumber, CollectionCase caseDetails) {
-    // Create the event payload request
+      String fulfilmentCode, Product.DeliveryChannel deliveryChannel, UUID caseId, Contact contact)
+      throws CTPException {
+    // Read case from firestore
+    CollectionCase caseDetails =
+        dataRepo
+            .readCollectionCase(caseId.toString())
+            .orElseThrow(
+                () -> {
+                  log.with("caseId", caseId).info("Case not found");
+                  return new CTPException(Fault.RESOURCE_NOT_FOUND, "Case not found: " + caseId);
+                });
+
+    // Attempt to find the requested product
+    Region region = Region.valueOf(caseDetails.getAddress().getRegion());
+    Product product = findProduct(fulfilmentCode, deliveryChannel, region);
+    boolean individual = product.getIndividual() == null ? false : product.getIndividual();
+
     FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
-    fulfilmentRequest.setCaseId(caseDetails.getId());
-    boolean isIndividual = false;
-    if (product.getIndividual() != null) {
-      isIndividual = product.getIndividual();
+    if (individual) {
+      if (deliveryChannel == DeliveryChannel.POST) {
+        validateContactName(contact);
+      }
+      if (product.getCaseTypes().contains(Product.CaseType.HH)) {
+        fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
+      }
     }
 
-    if (product.getCaseTypes().contains(Product.CaseType.HH) && isIndividual) {
-      fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
-    }
-    fulfilmentRequest.setFulfilmentCode(product.getFulfilmentCode());
-
-    // Use the phone number that was supplied for this fulfilment request
-    fulfilmentRequest.setContact(new Contact());
-    fulfilmentRequest.getContact().setTelNo(telephoneNumber);
-
+    fulfilmentRequest.setFulfilmentCode(fulfilmentCode);
+    fulfilmentRequest.setCaseId(caseId.toString());
+    fulfilmentRequest.setContact(contact);
+    fulfilmentRequest.setAddress(caseDetails.getAddress());
     return fulfilmentRequest;
+  }
+
+  private void validateContactName(Contact contact) throws CTPException {
+    if (StringUtils.isBlank(contact.getTitle())
+        || StringUtils.isBlank(contact.getForename())
+        || StringUtils.isBlank(contact.getSurname())) {
+
+      log.warn("Individual fields are required for the requested fulfilment");
+      throw new CTPException(
+          Fault.BAD_REQUEST,
+          "The fulfilment is for an individual so none of the following fields can be empty: "
+              + "'title', 'forename' and 'surname'");
+    }
   }
 }

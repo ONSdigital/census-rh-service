@@ -1,6 +1,9 @@
 package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -11,6 +14,7 @@ import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAd
 import static uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture.EXPECTED_JSON_CONTENT_TYPE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
@@ -28,6 +32,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -245,6 +250,7 @@ public class CaseEndpointUnitTest {
     String url = "/cases/" + smsFulfilmentRequest.getCaseId() + "/fulfilments/sms";
     String smsFulfilmentRequestAsJson = mapper.writeValueAsString(smsFulfilmentRequest);
     mockMvc.perform(postJson(url, smsFulfilmentRequestAsJson)).andExpect(status().isOk());
+    verify(caseService).fulfilmentRequestBySMS(any(SMSFulfilmentRequestDTO.class));
   }
 
   @Test
@@ -253,6 +259,7 @@ public class CaseEndpointUnitTest {
     smsFulfilmentRequest.setCaseId(UUID.randomUUID());
     String smsFulfilmentRequestAsJson = mapper.writeValueAsString(smsFulfilmentRequest);
     mockMvc.perform(postJson(url, smsFulfilmentRequestAsJson)).andExpect(status().isBadRequest());
+    verify(caseService, never()).fulfilmentRequestBySMS(any(SMSFulfilmentRequestDTO.class));
   }
 
   @Test
@@ -261,6 +268,7 @@ public class CaseEndpointUnitTest {
     smsFulfilmentRequest.setTelNo("abc123");
     String smsFulfilmentRequestAsJson = mapper.writeValueAsString(smsFulfilmentRequest);
     mockMvc.perform(postJson(url, smsFulfilmentRequestAsJson)).andExpect(status().isBadRequest());
+    verify(caseService, never()).fulfilmentRequestBySMS(any(SMSFulfilmentRequestDTO.class));
   }
 
   @Test
@@ -268,5 +276,56 @@ public class CaseEndpointUnitTest {
     String url = "/cases/81455015-28b1-4975-b2f1-540d0b8876b6/fulfilments/sms";
     String requestAsJson = "{ \"name\": \"Fred\" }";
     mockMvc.perform(postJson(url, requestAsJson)).andExpect(status().isBadRequest());
+    verify(caseService, never()).fulfilmentRequestBySMS(any(SMSFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldFulfilByPost() throws Exception {
+    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilment/post";
+    ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
+    verify(caseService).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldRejectFulfilByPostWithMismatchedCaseIds() throws Exception {
+    String url = "/cases/" + INCONSISTENT_CASEID + "/fulfilment/post";
+    ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isBadRequest());
+    verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldRejectFulfilByPostWithBadlyFormedCaseId() throws Exception {
+    String url = "/cases/abc/fulfilment/post";
+    ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isBadRequest());
+    verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldRejectFulfilByPostWithBadlyFormedDate() throws Exception {
+    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilment/post";
+    ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
+    json.put("dateTime", "2019:12:25 12:34:56");
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isBadRequest());
+    verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldRejectFulfilByPostWithMissingFulfilmentCode() throws Exception {
+    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilment/post";
+    ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
+    json.remove("fulfilmentCode");
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isBadRequest());
+    verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldRejectFulfilByPostWithIncorrectRequestBody() throws Exception {
+    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilment/post";
+    String json = "{ \"name\": \"Fred\" }";
+    mockMvc.perform(postJson(url, json)).andExpect(status().isBadRequest());
+    verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
   }
 }

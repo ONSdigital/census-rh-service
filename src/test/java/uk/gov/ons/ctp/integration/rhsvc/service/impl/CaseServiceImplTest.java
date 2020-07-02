@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,9 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -37,16 +33,12 @@ import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
-import uk.gov.ons.ctp.integration.common.product.model.Product;
-import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -79,8 +71,8 @@ public class CaseServiceImplTest {
   @Test
   public void getCaseByUPRNFound() throws Exception {
 
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(0)));
 
     CollectionCase nonHICase = this.collectionCase.get(0);
 
@@ -101,25 +93,11 @@ public class CaseServiceImplTest {
         nonHICase.getAddress().getUprn(), Long.toString(rmCase.getAddress().getUprn().getValue()));
   }
 
-  /** Test throws a CTPException where only Invalid Address cases are returned from repository */
+  /** Test throws a CTPException where no valid Address cases are returned from repository */
   @Test(expected = CTPException.class)
   public void getInvalidAddressCaseByUPRNOnly() throws Exception {
-
-    List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
-    invalidAddressList.get(0).setAddressInvalid(Boolean.TRUE);
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(invalidAddressList);
-    caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
-  }
-
-  /** Test throws a CTPException where only HI cases are returned from repository */
-  @Test(expected = CTPException.class)
-  public void getOnlyHICaseByUPRNOnly() throws Exception {
-
-    List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
-    invalidAddressList.get(0).setCaseType("HI");
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(invalidAddressList);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenThrow(new CTPException(null));
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
@@ -136,8 +114,8 @@ public class CaseServiceImplTest {
     collectionCase.get(0).setCreatedDateTime(mid);
     collectionCase.get(1).setCreatedDateTime(latest); // EXPECTED
     collectionCase.get(2).setCreatedDateTime(earliest);
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(1)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -159,8 +137,8 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(0)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -183,8 +161,8 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID / EXPECTED
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(2)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -197,8 +175,8 @@ public class CaseServiceImplTest {
   @Test(expected = CTPException.class)
   public void getCaseByUPRNNotFound() throws Exception {
 
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(Collections.emptyList());
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(UPRN.asString()))
+        .thenReturn(Optional.empty());
 
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
@@ -301,144 +279,5 @@ public class CaseServiceImplTest {
     verify(eventPublisher, times(0)).sendEventWithPersistance(any(), any(), any(), any());
 
     assertTrue(exceptionThrown);
-  }
-
-  @Test
-  public void testFulfilmentRequestBySMS_Household() throws Exception {
-    FulfilmentRequest actualFulfilmentRequest =
-        doFulfilmentRequestBySMS(Product.CaseType.HH, false);
-
-    /*
-       I am unsure how to proceed here. The removal of CaseType.HI means that
-       the *individual* flag needs to permeate into the CaseEndpoint, its related
-       services and DTOs. Which was not mentioned on the ticket. Probably what's intended
-       but I'm not going to change these APIs without consulting someone else
-    */
-
-    // Individual case id field should not be set for non-individual
-    assertNull(actualFulfilmentRequest.getIndividualCaseId());
-  }
-
-  @Test
-  public void testFulfilmentRequestBySMS_Individual() throws Exception {
-    FulfilmentRequest actualFulfilmentRequest = doFulfilmentRequestBySMS(Product.CaseType.HH, true);
-
-    // Individual case id field should be populated as case+product is for an individual
-    String individualUuid = actualFulfilmentRequest.getIndividualCaseId();
-    assertNotNull(individualUuid);
-    assertNotNull(UUID.fromString(individualUuid)); // must be valid UUID
-  }
-
-  private FulfilmentRequest doFulfilmentRequestBySMS(Product.CaseType caseType, boolean individual)
-      throws Exception {
-    // Setup case data with required case type
-    String caseTypeToSearch = individual ? "HI" : "HH";
-    CollectionCase caseDetails =
-        collectionCase
-            .stream()
-            .filter(c -> c.getCaseType().equals(caseTypeToSearch))
-            .findFirst()
-            .get();
-    caseDetails.getAddress().setAddressType(caseType.toString());
-    UUID caseId = UUID.fromString(caseDetails.getId());
-
-    // Simulate firestore
-    when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
-
-    // Create example product that we expect the product search to be called with
-    Product expectedSearchProduct = new Product();
-    expectedSearchProduct.setRequestChannels(Arrays.asList(Product.RequestChannel.RH));
-    expectedSearchProduct.setRegions(Arrays.asList(Product.Region.E));
-    expectedSearchProduct.setDeliveryChannel(DeliveryChannel.SMS);
-    expectedSearchProduct.setFulfilmentCode("F1");
-
-    // Simulate the behaviour of the ProductReference
-    Product productToReturn = new Product();
-    productToReturn.setFulfilmentCode("F1");
-    productToReturn.setCaseTypes(Arrays.asList(caseType));
-    productToReturn.setIndividual(individual);
-    List<Product> foundProducts = new ArrayList<>();
-    foundProducts.add(productToReturn);
-    when(productReference.searchProducts(eq(expectedSearchProduct))).thenReturn(foundProducts);
-
-    // Build request body
-    SMSFulfilmentRequestDTO requestBodyDTO = new SMSFulfilmentRequestDTO();
-    requestBodyDTO.setCaseId(caseId);
-    requestBodyDTO.setTelNo("07714111222");
-    requestBodyDTO.setFulfilmentCode("F1");
-    requestBodyDTO.setDateTime(new Date());
-
-    // Invoke method under test
-    caseSvc.fulfilmentRequestBySMS(requestBodyDTO);
-
-    // Grab the published event
-    ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
-    ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
-    ArgumentCaptor<Channel> channelCaptor = ArgumentCaptor.forClass(Channel.class);
-    ArgumentCaptor<FulfilmentRequest> fulfilmentRequestCaptor =
-        ArgumentCaptor.forClass(FulfilmentRequest.class);
-    verify(eventPublisher)
-        .sendEventWithPersistance(
-            eventTypeCaptor.capture(),
-            sourceCaptor.capture(),
-            channelCaptor.capture(),
-            fulfilmentRequestCaptor.capture());
-
-    // Validate message routing
-    assertEquals("FULFILMENT_REQUESTED", eventTypeCaptor.getValue().toString());
-    assertEquals("RESPONDENT_HOME", sourceCaptor.getValue().toString());
-    assertEquals("RH", channelCaptor.getValue().toString());
-
-    // Validate content of generated event
-    FulfilmentRequest actualFulfilmentRequest = fulfilmentRequestCaptor.getValue();
-    assertEquals("F1", actualFulfilmentRequest.getFulfilmentCode());
-    assertEquals(caseDetails.getId(), actualFulfilmentRequest.getCaseId());
-    assertEquals("07714111222", actualFulfilmentRequest.getContact().getTelNo());
-
-    return actualFulfilmentRequest;
-  }
-
-  @Test
-  public void fulfilmentRequestBySMS_unknownCase() throws Exception {
-    // Simulate firestore not finding the case
-    when(dataRepo.readCollectionCase(any())).thenReturn(Optional.empty());
-
-    // Build request
-    SMSFulfilmentRequestDTO requestBodyDTO = new SMSFulfilmentRequestDTO();
-    requestBodyDTO.setCaseId(UUID.fromString(collectionCase.get(0).getId()));
-
-    // Invoke method under test
-    boolean caughtException = false;
-    try {
-      caseSvc.fulfilmentRequestBySMS(requestBodyDTO);
-    } catch (Exception e) {
-      caughtException = true;
-      assertTrue(e.toString(), e.getMessage().contains("Case not found"));
-    }
-    assertTrue(caughtException);
-  }
-
-  @Test
-  public void fulfilmentRequestBySMS_unknownProduct() throws Exception {
-    // Simulate firestore
-    when(dataRepo.readCollectionCase(any())).thenReturn(Optional.of(collectionCase.get(0)));
-
-    // Simulate ProductReference not finding a product
-    when(productReference.searchProducts(any())).thenReturn(new ArrayList<>());
-
-    // Build request body
-    SMSFulfilmentRequestDTO requestBodyDTO = new SMSFulfilmentRequestDTO();
-    requestBodyDTO.setFulfilmentCode("XYZ");
-    requestBodyDTO.setCaseId(UUID.randomUUID());
-
-    // Invoke method under test
-    boolean caughtException = false;
-    try {
-      caseSvc.fulfilmentRequestBySMS(requestBodyDTO);
-    } catch (Exception e) {
-      caughtException = true;
-      assertTrue(e.toString(), e.getMessage().contains("Compatible product cannot be found"));
-    }
-    assertTrue(caughtException);
   }
 }
