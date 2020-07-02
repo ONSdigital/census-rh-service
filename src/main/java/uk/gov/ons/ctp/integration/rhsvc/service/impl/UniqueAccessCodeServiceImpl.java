@@ -125,19 +125,16 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     }
     UAC uac = uacOptional.get();
 
+    CollectionCase primaryCase;
     // Read the Case(s) for the UPRN from firestore if we can
     Optional<CollectionCase> primaryCaseOptional =
         dataRepo.readNonHILatestValidCollectionCaseByUprn(request.getUprn().asString());
-
-    CollectionCase primaryCase;
     if (primaryCaseOptional.isPresent()) {
       primaryCase = primaryCaseOptional.get();
       log.with(primaryCase.getId()).debug("Found existing case");
       validateUACCase(uac, primaryCase); // will abort here if invalid combo
-    }
-    // Create a new case if not found for the UPRN in Firestore
-    else {
-      // No case for the UPRN. Create a new case
+    } else {
+      // Create a new case as not found for the UPRN in Firestore
       CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
       primaryCase = createCase(primaryCaseType, uac, request);
       log.with("caseId", primaryCase.getId())
