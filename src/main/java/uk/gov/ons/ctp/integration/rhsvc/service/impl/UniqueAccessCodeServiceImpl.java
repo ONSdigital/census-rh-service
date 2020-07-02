@@ -2,11 +2,8 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import ma.glasnost.orika.MapperFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,12 +125,16 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     }
     UAC uac = uacOptional.get();
 
+    CollectionCase primaryCase;
     // Read the Case(s) for the UPRN from firestore if we can
-    CollectionCase primaryCase = findValidNonHICase(request.getUprn().asString(), uacHash);
-
-    // Create a new case if not found for the UPRN in Firestore
-    if (primaryCase == null) {
-      // No case for the UPRN. Create a new case
+    Optional<CollectionCase> primaryCaseOptional =
+        dataRepo.readNonHILatestValidCollectionCaseByUprn(request.getUprn().asString());
+    if (primaryCaseOptional.isPresent()) {
+      primaryCase = primaryCaseOptional.get();
+      log.with(primaryCase.getId()).debug("Found existing case");
+      validateUACCase(uac, primaryCase); // will abort here if invalid combo
+    } else {
+      // Create a new case as not found for the UPRN in Firestore
       CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
       primaryCase = createCase(primaryCaseType, uac, request);
       log.with("caseId", primaryCase.getId())
@@ -146,9 +147,6 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
       // tell RM we have created a case for the selected (HH|CE|SPG) address
       sendNewAddressEvent(primaryCase);
-    } else {
-      log.with(primaryCase.getId()).debug("Found existing case");
-      validateUACCase(uac, primaryCase); // will abort here if invalid combo
     }
 
     // for now assume that the UAC is to be linked to either the HH|CE|SPG case we found or the one
@@ -357,43 +355,5 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     uniqueAccessCodeDTO.setCaseStatus(caseStatus);
 
     return uniqueAccessCodeDTO;
-  }
-
-  /**
-   * Find the latest, address valid, non HI case whose address is at the provided UPRN
-   *
-   * @param uprnAsString the uprn to search cases by
-   * @param uacHash for logging
-   * @return the latest non HI case which is address valid
-   * @throws CTPException failed to read from firestore
-   */
-  private CollectionCase findValidNonHICase(String uprnAsString, String uacHash)
-      throws CTPException {
-    List<CollectionCase> cases = dataRepo.readCollectionCasesByUprn(uprnAsString);
-
-    CollectionCase newestPrimaryCase = null;
-    if (cases.size() >= 1) {
-      // filter out just the non HI which are address valid and sort in ascending order by
-      // createdDateTime
-      List<CollectionCase> addressValidNonHICases =
-          cases
-              .stream()
-              .sorted(Comparator.comparing(CollectionCase::getCreatedDateTime))
-              .filter(c -> (!c.getCaseType().equals(CaseType.HI.name())))
-              .filter(c -> (!c.isAddressInvalid()))
-              .collect(Collectors.toList());
-      if (addressValidNonHICases.size() >= 1) {
-        // take the case last in the list ie the newest by createdDateTime
-        newestPrimaryCase = addressValidNonHICases.get(addressValidNonHICases.size() - 1);
-        if (addressValidNonHICases.size() > 1) {
-          // carry on with the latest case but log a warning as it indicates RM events have got
-          // out of step
-          log.with("UACHash", uacHash)
-              .with("UPRN", uprnAsString)
-              .warn("More than one active case found for UPRN");
-        }
-      }
-    }
-    return newestPrimaryCase;
   }
 }

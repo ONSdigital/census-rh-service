@@ -10,7 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -72,8 +71,8 @@ public class CaseServiceImplTest {
   @Test
   public void getCaseByUPRNFound() throws Exception {
 
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(0)));
 
     CollectionCase nonHICase = this.collectionCase.get(0);
 
@@ -94,25 +93,11 @@ public class CaseServiceImplTest {
         nonHICase.getAddress().getUprn(), Long.toString(rmCase.getAddress().getUprn().getValue()));
   }
 
-  /** Test throws a CTPException where only Invalid Address cases are returned from repository */
+  /** Test throws a CTPException where no valid Address cases are returned from repository */
   @Test(expected = CTPException.class)
   public void getInvalidAddressCaseByUPRNOnly() throws Exception {
-
-    List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
-    invalidAddressList.get(0).setAddressInvalid(Boolean.TRUE);
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(invalidAddressList);
-    caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
-  }
-
-  /** Test throws a CTPException where only HI cases are returned from repository */
-  @Test(expected = CTPException.class)
-  public void getOnlyHICaseByUPRNOnly() throws Exception {
-
-    List<CollectionCase> invalidAddressList = Collections.singletonList(collectionCase.get(0));
-    invalidAddressList.get(0).setCaseType("HI");
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(invalidAddressList);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenThrow(new CTPException(null));
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
 
@@ -129,8 +114,8 @@ public class CaseServiceImplTest {
     collectionCase.get(0).setCreatedDateTime(mid);
     collectionCase.get(1).setCreatedDateTime(latest); // EXPECTED
     collectionCase.get(2).setCreatedDateTime(earliest);
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(1)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -152,8 +137,8 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(0)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -176,8 +161,8 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID / EXPECTED
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(collectionCase);
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+        .thenReturn(Optional.of(collectionCase.get(2)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
     assertEquals(
@@ -190,8 +175,8 @@ public class CaseServiceImplTest {
   @Test(expected = CTPException.class)
   public void getCaseByUPRNNotFound() throws Exception {
 
-    when(dataRepo.readCollectionCasesByUprn(Long.toString(UPRN.getValue())))
-        .thenReturn(Collections.emptyList());
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(UPRN.asString()))
+        .thenReturn(Optional.empty());
 
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }

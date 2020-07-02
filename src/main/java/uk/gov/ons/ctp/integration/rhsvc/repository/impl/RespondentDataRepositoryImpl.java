@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.cloud.RetryableCloudDataStore;
+import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -18,16 +20,18 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   private RetryableCloudDataStore cloudDataStore;
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
-  String gcpProject;
+  private String gcpProject;
 
   @Value("${cloud-storage.case-schema-name}")
-  String caseSchemaName;
+  private String caseSchemaName;
 
   @Value("${cloud-storage.uac-schema-name}")
-  String uacSchemaName;
+  private String uacSchemaName;
 
   String caseSchema;
-  String uacSchema;
+  private String uacSchema;
+
+  private static final String[] SEARCH_BY_UPRN_PATH = new String[] {"address", "uprn"};
 
   @PostConstruct
   public void init() {
@@ -88,19 +92,34 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   }
 
   /**
-   * Read case objects from cloud based on its uprn.
+   * Read case objects from cloud based on its uprn. Filter by non HI, not addressInvalid, latest
+   * case
    *
    * @param uprn - is the uprn that the target case(s) must contain.
-   * @return - List containing 0 or more de-serialised version of the stored object. If no matching
-   *     cases are found then an empty List is returned.
+   * @return - Optional containing 1 de-serialised version of the stored object. If no matching
+   *     cases are found then an empty Optional is returned.
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
-  public List<CollectionCase> readCollectionCasesByUprn(final String uprn) throws CTPException {
-    // Run search
-    String[] searchByUprnPath = new String[] {"address", "uprn"};
+  public Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(final String uprn)
+      throws CTPException {
     List<CollectionCase> searchResults =
-        cloudDataStore.search(CollectionCase.class, caseSchema, searchByUprnPath, uprn);
-    return searchResults;
+        cloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
+    return filterLatestValidNonHiCollectionCaseSearchResults(searchResults);
+  }
+
+  /**
+   * Filter search results returning Latest !addressInvalid non HI case
+   *
+   * @param searchResults - Search results found in dataStore by searching by uprn
+   * @return Optional of the resulting collection case or Empty
+   */
+  private Optional<CollectionCase> filterLatestValidNonHiCollectionCaseSearchResults(
+      final List<CollectionCase> searchResults) {
+    return searchResults
+        .stream()
+        .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
+        .filter(c -> !c.isAddressInvalid())
+        .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
   }
 }

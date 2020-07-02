@@ -3,15 +3,12 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -54,25 +51,16 @@ public class CaseServiceImpl implements CaseService {
   public CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
       throws CTPException {
 
-    String uprnValue = Long.toString(uprn.getValue());
-    log.with("uprn", uprn).debug("Fetching case details by UPRN");
-
-    List<CollectionCase> rmCase = dataRepo.readCollectionCasesByUprn(uprnValue);
-    Optional<CollectionCase> result =
-        rmCase
-            .stream()
-            .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
-            .filter(c -> !c.isAddressInvalid())
-            .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
-
-    if (result.isPresent()) {
-      log.with("case", result.get().getId())
-          .with("uprn", uprnValue)
+    Optional<CollectionCase> caseFound =
+        dataRepo.readNonHILatestValidCollectionCaseByUprn(uprn.asString());
+    if (caseFound.isPresent()) {
+      log.with("case", caseFound.get().getId())
+          .with("uprn", uprn)
           .debug("non HI latest valid case retrieved for UPRN");
-      return mapperFacade.map(result.get(), CaseDTO.class);
+      return mapperFacade.map(caseFound.get(), CaseDTO.class);
     } else {
-      log.debug("No cases returned for uprn: " + uprnValue);
-      throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
+      log.debug("No cases returned for uprn: " + uprn);
+      throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
   }
 

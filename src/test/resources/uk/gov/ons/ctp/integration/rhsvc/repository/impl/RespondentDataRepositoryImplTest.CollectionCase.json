@@ -1,0 +1,90 @@
+[
+	{
+		"id": "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4",
+		"caseType": "HH",
+		"caseRef": "10000000010 ",
+		"survey": "CENSUS",
+		"collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
+		"address": {
+			"addressLine1": "1 main street",
+			"addressLine2": "upper upperingham",
+			"addressLine3": "",
+			"townName": "upton",
+			"postcode": "UP103UP",
+			"region": "E",
+			"latitude": "50.863849",
+			"longitude": "-1.229710",
+			"uprn": "123456",
+			"addressType": "HH",
+			"estabType": "XXX"
+		},
+		"contact": {
+			"title": "Ms",
+			"forename": "jo",
+			"surname": "smith",
+			"telNo": "+447890000000"
+		},
+		"actionableFrom": "2011-08-12T20:17:46.384Z",
+		"addressInvalid": false,
+		"createdDateTime": "2020-06-01T20:17:46.384Z"
+	},
+	{
+		"id": "dc4477d1-dd3f-4c69-b182-7ff725dc9fa5",
+		"caseType": "HI",
+		"caseRef": "10000000011 ",
+		"survey": "CENSUS",
+		"collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
+		"address": {
+			"addressLine1": "1 main street",
+			"addressLine2": "upper upperingham",
+			"addressLine3": "",
+			"townName": "upton",
+			"postcode": "UP103UP",
+			"region": "E",
+			"latitude": "50.863849",
+			"longitude": "-1.229710",
+			"uprn": "123456",
+			"addressType": "HH",
+			"estabType": "XXX"
+		},
+		"contact": {
+			"title": "Mr",
+			"forename": "john",
+			"surname": "smith",
+			"telNo": "+447890000000"
+		},
+		"actionableFrom": "2011-08-12T20:17:46.384Z",
+		"addressInvalid": false,
+		"createdDateTime": "2020-06-01T20:17:46.384Z"
+	},
+	{
+		"id": "dc4477d1-dd3f-4c69-b183-7ff725dc9fa6",
+		"caseType": "HI",
+		"caseRef": "10000000012 ",
+		"survey": "CENSUS",
+		"collectionExerciseId": "a66de4dc-3c3b-11e9-b210-d663bd873d93",
+		"address": {
+			"addressLine1": "1 main street",
+			"addressLine2": "upper upperingham",
+			"addressLine3": "",
+			"townName": "upton",
+			"postcode": "UP103UP",
+			"region": "E",
+			"latitude": "50.863849",
+			"longitude": "-1.229710",
+			"uprn": "123456",
+			"addressType": "HH",
+			"estabType": "XXX"
+		},
+		"contact": {
+			"title": "Miss",
+			"forename": "elle",
+			"surname": "smith",
+			"telNo": "+447890000000"
+		},
+		"actionableFrom": "2011-08-12T20:17:46.384Z",
+		"addressInvalid": false,
+		"createdDateTime": "2020-06-01T20:17:46.384Z"
+	}
+]
+
