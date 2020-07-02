@@ -126,10 +126,17 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     UAC uac = uacOptional.get();
 
     // Read the Case(s) for the UPRN from firestore if we can
-    CollectionCase primaryCase = findValidNonHICase(request.getUprn().asString(), uacHash);
+    Optional<CollectionCase> primaryCaseOptional =
+        dataRepo.readNonHILatestValidCollectionCaseByUprn(request.getUprn().asString());
 
+    CollectionCase primaryCase;
+    if (primaryCaseOptional.isPresent()) {
+      primaryCase = primaryCaseOptional.get();
+      log.with(primaryCase.getId()).debug("Found existing case");
+      validateUACCase(uac, primaryCase); // will abort here if invalid combo
+    }
     // Create a new case if not found for the UPRN in Firestore
-    if (primaryCase == null) {
+    else {
       // No case for the UPRN. Create a new case
       CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
       primaryCase = createCase(primaryCaseType, uac, request);
@@ -143,9 +150,6 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
       // tell RM we have created a case for the selected (HH|CE|SPG) address
       sendNewAddressEvent(primaryCase);
-    } else {
-      log.with(primaryCase.getId()).debug("Found existing case");
-      validateUACCase(uac, primaryCase); // will abort here if invalid combo
     }
 
     // for now assume that the UAC is to be linked to either the HH|CE|SPG case we found or the one
@@ -354,21 +358,5 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     uniqueAccessCodeDTO.setCaseStatus(caseStatus);
 
     return uniqueAccessCodeDTO;
-  }
-
-  /**
-   * Find the latest, address valid, non HI case whose address is at the provided UPRN
-   *
-   * @param uprnAsString the uprn to search cases by
-   * @param uacHash for logging
-   * @return the latest non HI case which is address valid
-   * @throws CTPException failed to read from firestore
-   */
-  private CollectionCase findValidNonHICase(String uprnAsString, String uacHash)
-      throws CTPException {
-
-    Optional<CollectionCase> caseFound =
-        dataRepo.readNonHILatestValidCollectionCaseByUprn(uprnAsString);
-    return caseFound.orElse(null);
   }
 }
