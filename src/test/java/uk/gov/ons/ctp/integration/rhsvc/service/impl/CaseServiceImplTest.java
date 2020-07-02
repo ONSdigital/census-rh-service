@@ -70,7 +70,7 @@ public class CaseServiceImplTest {
 
   /** Setup tests */
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
     this.addressChangeDTO = FixtureHelper.loadClassFixtures(AddressChangeDTO[].class);
   }
