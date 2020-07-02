@@ -91,7 +91,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.60</version>
+      <version>0.0.62</version>
     </dependency>
 
     <dependency>
@@ -103,7 +103,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>test-framework</artifactId>
-      <version>0.0.16-SNAPSHOT-CR-997</version>
+      <version>0.0.17</version>
       <scope>test</scope>
     </dependency>
 
