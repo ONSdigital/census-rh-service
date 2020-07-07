@@ -135,7 +135,7 @@ public class CaseServiceImpl implements CaseService {
             .build();
 
     String transactionId =
-        eventPublisher.sendEventWithPersistance(
+        eventPublisher.sendEvent(
             EventType.ADDRESS_MODIFIED, Source.RESPONDENT_HOME, Channel.RH, addressModification);
 
     log.with("caseId", caseId)
@@ -182,7 +182,7 @@ public class CaseServiceImpl implements CaseService {
         .debug("Entering createAndSendFulfilment");
     FulfilmentRequest payload =
         createFulfilmentRequestPayload(fulfilmentCode, deliveryChannel, caseId, contact);
-    eventPublisher.sendEventWithPersistance(
+    eventPublisher.sendEvent(
         EventType.FULFILMENT_REQUESTED, Source.RESPONDENT_HOME, Channel.RH, payload);
   }
 

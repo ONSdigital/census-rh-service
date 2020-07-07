@@ -51,7 +51,7 @@ public class RHSvcApplication {
   public EventPublisher eventPublisher(
       final RabbitTemplate rabbitTemplate, final FirestoreEventPersistence eventPersistence) {
     EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
-    return new EventPublisher(sender, eventPersistence);
+    return EventPublisher.createWithEventPersistence(sender, eventPersistence);
   }
 
   @Bean

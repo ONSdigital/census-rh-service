@@ -195,7 +195,7 @@ public class CaseServiceImplTest {
     CaseDTO caseDTO = caseSvc.modifyAddress(addressChange);
 
     verify(eventPublisher, times(1))
-        .sendEventWithPersistance(
+        .sendEvent(
             eq(EventType.ADDRESS_MODIFIED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),
@@ -251,7 +251,7 @@ public class CaseServiceImplTest {
     }
 
     verify(dataRepo, times(1)).readCollectionCase(caseId);
-    verify(eventPublisher, times(0)).sendEventWithPersistance(any(), any(), any(), any());
+    verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertTrue(exceptionThrown);
   }
@@ -276,7 +276,7 @@ public class CaseServiceImplTest {
     }
 
     verify(dataRepo, times(1)).readCollectionCase(caseId);
-    verify(eventPublisher, times(0)).sendEventWithPersistance(any(), any(), any(), any());
+    verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertTrue(exceptionThrown);
   }

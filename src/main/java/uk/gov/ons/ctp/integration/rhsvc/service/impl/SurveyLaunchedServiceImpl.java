@@ -39,7 +39,7 @@ public class SurveyLaunchedServiceImpl implements SurveyLaunchedService {
     }
 
     String transactionId =
-        eventPublisher.sendEventWithPersistance(
+        eventPublisher.sendEvent(
             EventType.SURVEY_LAUNCHED, Source.RESPONDENT_HOME, channel, response);
 
     log.with("caseId", response.getCaseId())

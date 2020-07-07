@@ -98,7 +98,7 @@ public class UniqueAccessCodeServiceImplTest {
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(1)).readCollectionCase(CASE_ID);
     verify(eventPublisher, times(1))
-        .sendEventWithPersistance(
+        .sendEvent(
             eq(EventType.RESPONDENT_AUTHENTICATED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),
@@ -144,7 +144,7 @@ public class UniqueAccessCodeServiceImplTest {
     verify(dataRepo, times(1)).readCollectionCase(CASE_ID);
 
     verify(eventPublisher, times(1))
-        .sendEventWithPersistance(
+        .sendEvent(
             eq(EventType.RESPONDENT_AUTHENTICATED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),
@@ -181,7 +181,7 @@ public class UniqueAccessCodeServiceImplTest {
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(0)).readCollectionCase(CASE_ID);
     verify(eventPublisher, times(1))
-        .sendEventWithPersistance(
+        .sendEvent(
             eq(EventType.RESPONDENT_AUTHENTICATED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),
@@ -216,7 +216,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     verify(dataRepo, times(1)).readUAC(UAC_HASH);
     verify(dataRepo, times(0)).readCollectionCase(CASE_ID);
-    verify(eventPublisher, times(0)).sendEventWithPersistance(any(), any(), any(), any());
+    verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertTrue(exceptionThrown);
   }
@@ -661,7 +661,7 @@ public class UniqueAccessCodeServiceImplTest {
       String caseId, CaseType hh, String collectionExerciseId, Address expectedAddress) {
     ArgumentCaptor<NewAddress> newAddressCapture = ArgumentCaptor.forClass(NewAddress.class);
     verify(eventPublisher, times(1))
-        .sendEventWithPersistance(
+        .sendEvent(
             eq(EventType.NEW_ADDRESS_REPORTED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),
@@ -693,7 +693,7 @@ public class UniqueAccessCodeServiceImplTest {
     ArgumentCaptor<QuestionnaireLinkedDetails> questionnaireLinkedCapture =
         ArgumentCaptor.forClass(QuestionnaireLinkedDetails.class);
     verify(eventPublisher, times(1))
-        .sendEventWithPersistance(
+        .sendEvent(
             eq(EventType.QUESTIONNAIRE_LINKED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),
@@ -713,7 +713,7 @@ public class UniqueAccessCodeServiceImplTest {
     ArgumentCaptor<RespondentAuthenticatedResponse> payloadCapture =
         ArgumentCaptor.forClass(RespondentAuthenticatedResponse.class);
     verify(eventPublisher, times(1))
-        .sendEventWithPersistance(
+        .sendEvent(
             eq(EventType.RESPONDENT_AUTHENTICATED),
             eq(Source.RESPONDENT_HOME),
             eq(Channel.RH),
@@ -725,8 +725,7 @@ public class UniqueAccessCodeServiceImplTest {
   }
 
   private void verifyTotalNumberEventsSent(int expectedNumEventsSent) {
-    verify(eventPublisher, times(expectedNumEventsSent))
-        .sendEventWithPersistance(any(), any(), any(), any());
+    verify(eventPublisher, times(expectedNumEventsSent)).sendEvent(any(), any(), any(), any());
   }
 
   private void verifyLinkingResult(

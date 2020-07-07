@@ -289,7 +289,7 @@ public class CaseServiceImplFulfilmentTest {
     ArgumentCaptor<FulfilmentRequest> fulfilmentRequestCaptor =
         ArgumentCaptor.forClass(FulfilmentRequest.class);
     verify(eventPublisher)
-        .sendEventWithPersistance(
+        .sendEvent(
             eventTypeCaptor.capture(),
             sourceCaptor.capture(),
             channelCaptor.capture(),
