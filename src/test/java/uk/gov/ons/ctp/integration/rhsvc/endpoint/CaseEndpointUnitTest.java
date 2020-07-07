@@ -67,7 +67,7 @@ public class CaseEndpointUnitTest {
 
   /** Setup tests */
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(caseEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))

@@ -49,7 +49,7 @@ public class UniqueAccessCodeEndpointTest {
 
   /** Setup tests */
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(uacEndpoint)
             .setHandlerExceptionResolvers(mockAdviceFor(RestExceptionHandler.class))

@@ -91,19 +91,19 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.61</version>
+      <version>0.0.62</version>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>event-publisher</artifactId>
-      <version>0.0.37</version>
+      <version>0.0.39</version>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>test-framework</artifactId>
-      <version>0.0.14</version>
+      <version>0.0.17</version>
       <scope>test</scope>
     </dependency>
 

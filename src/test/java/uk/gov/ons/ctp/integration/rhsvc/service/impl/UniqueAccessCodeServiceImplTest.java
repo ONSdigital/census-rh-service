@@ -750,19 +750,19 @@ public class UniqueAccessCodeServiceImplTest {
     assertFalse(uniqueAccessCodeDTO.isHandDelivery());
   }
 
-  private UAC getUAC(String qualifier) throws Exception {
+  private UAC getUAC(String qualifier) {
     return FixtureHelper.loadClassFixtures(UAC[].class, qualifier).get(0);
   }
 
-  private CollectionCase getCase(String qualifier) throws Exception {
+  private CollectionCase getCase(String qualifier) {
     return FixtureHelper.loadClassFixtures(CollectionCase[].class, qualifier).get(0);
   }
 
-  private List<CollectionCase> getCases(String qualifier) throws Exception {
+  private List<CollectionCase> getCases(String qualifier) {
     return FixtureHelper.loadClassFixtures(CollectionCase[].class, qualifier);
   }
 
-  private UACLinkRequestDTO getRequest(String qualifier) throws Exception {
+  private UACLinkRequestDTO getRequest(String qualifier) {
     return FixtureHelper.loadClassFixtures(UACLinkRequestDTO[].class, qualifier).get(0);
   }
 }

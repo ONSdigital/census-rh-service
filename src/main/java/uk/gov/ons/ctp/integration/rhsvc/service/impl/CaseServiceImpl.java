@@ -34,8 +34,6 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
-// import uk.gov.ons.ctp.common.model.CaseType;
-
 /** Implementation to deal with Case data */
 @Service
 public class CaseServiceImpl implements CaseService {
