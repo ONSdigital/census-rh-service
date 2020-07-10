@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.util.StringToUPRNConverter;
 import uk.gov.ons.ctp.common.util.StringToUUIDConverter;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.util.StringToUPRNConverter;
 
 /** The bean mapper that maps to/from DTOs and repository entity types. */
 @Component

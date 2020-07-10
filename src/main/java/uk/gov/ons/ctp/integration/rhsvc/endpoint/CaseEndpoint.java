@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
 /** The REST controller to deal with Cases */

@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
@@ -39,7 +40,6 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseServiceImplTest {
@@ -175,7 +175,7 @@ public class CaseServiceImplTest {
   @Test(expected = CTPException.class)
   public void getCaseByUPRNNotFound() throws Exception {
 
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(UPRN.asString()))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
         .thenReturn(Optional.empty());
 
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);

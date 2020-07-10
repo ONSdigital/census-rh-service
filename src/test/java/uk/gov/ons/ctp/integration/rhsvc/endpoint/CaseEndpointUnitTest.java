@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -28,13 +29,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
 /** Unit Tests on endpoint for Case resources */
@@ -47,7 +48,6 @@ public class CaseEndpointUnitTest {
   private static final String ERROR_MESSAGE = "Failed to retrieve UPRN";
   private static final String INVALID_CODE = "VALIDATION_FAILED";
   private static final String INVALID_MESSAGE = "Provided json is incorrect.";
-  private static final String JSON_VALIDATION_FAILURE = "Provided json fails validation.";
   private static final String CASEID_UPRN_INCONSISTENT =
       "The UPRN of the referenced Case and the provided Address UPRN must be matching";
   private static final String CASEID_INCONSISTENT =
@@ -186,7 +186,7 @@ public class CaseEndpointUnitTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code", is(INVALID_CODE)))
-        .andExpect(jsonPath("$.error.message", is(INVALID_MESSAGE)));
+        .andExpect(jsonPath("$.error.message", containsString(INVALID_MESSAGE)));
   }
 
   /** Test returns bad request for missing address line 1 */
@@ -204,7 +204,7 @@ public class CaseEndpointUnitTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code", is(INVALID_CODE)))
-        .andExpect(jsonPath("$.error.message", is(JSON_VALIDATION_FAILURE)));
+        .andExpect(jsonPath("$.error.message", containsString(INVALID_MESSAGE)));
   }
 
   /** Test returns bad request for missing postcode */
@@ -222,7 +222,7 @@ public class CaseEndpointUnitTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code", is(INVALID_CODE)))
-        .andExpect(jsonPath("$.error.message", is(JSON_VALIDATION_FAILURE)));
+        .andExpect(jsonPath("$.error.message", containsString(INVALID_MESSAGE)));
   }
 
   /** Test returns bad request for inconsistent caseId and UPRN */

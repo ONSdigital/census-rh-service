@@ -1,16 +1,16 @@
 package uk.gov.ons.ctp.integration.rhsvc.representation;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.godaddy.logging.LoggingScope;
 import com.godaddy.logging.Scope;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
+import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 
 /** Representation of address data */
 @Data
 public class AddressDTO {
 
-  @JsonUnwrapped @NotNull private UniquePropertyReferenceNumber uprn;
+  @NotNull private UniquePropertyReferenceNumber uprn;
   @NotNull private String addressLine1;
 
   @LoggingScope(scope = Scope.SKIP)

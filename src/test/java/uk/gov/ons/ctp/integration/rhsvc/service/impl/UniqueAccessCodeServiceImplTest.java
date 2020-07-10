@@ -229,7 +229,8 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
 
     CollectionCase householdCase = getCase("household");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(request.getUprn().asString())))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
+            eq(Long.toString(request.getUprn().getValue()))))
         .thenReturn(Optional.of(householdCase));
 
     // Run code under test: Attempt linking
@@ -268,7 +269,8 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
 
     List<CollectionCase> householdCases = getCases("HHandHI");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(request.getUprn().asString())))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
+            eq(Long.toString(request.getUprn().getValue()))))
         .thenReturn(Optional.of(householdCases.get(0)));
 
     // Run code under test: Attempt linking
@@ -291,7 +293,8 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
 
     List<CollectionCase> householdCases = getCases("HH-addressInvalid");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(request.getUprn().asString())))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
+            eq(Long.toString(request.getUprn().getValue()))))
         .thenReturn(Optional.of(householdCases.get(1)));
 
     // Run code under test: Attempt linking
@@ -314,7 +317,8 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
 
     List<CollectionCase> householdCases = getCases("HH-multiples");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(request.getUprn().asString())))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
+            eq(Long.toString(request.getUprn().getValue()))))
         .thenReturn(Optional.of(householdCases.get(1)));
 
     // Run code under test: Attempt linking
@@ -332,7 +336,8 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(ceUAC));
 
     CollectionCase ceCase = getCase("CE");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(request.getUprn().asString())))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
+            eq(Long.toString(request.getUprn().getValue()))))
         .thenReturn(Optional.of(ceCase));
 
     // Run code under test: Attempt linking
@@ -360,7 +365,8 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(ceUAC));
 
     CollectionCase ceCase = getCase("SPG");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(request.getUprn().asString())))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
+            eq(Long.toString(request.getUprn().getValue()))))
         .thenReturn(Optional.of(ceCase));
 
     // Run code under test: Attempt linking
@@ -388,7 +394,8 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(individualUAC));
 
     CollectionCase householdCase = getCase("household");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(request.getUprn().asString())))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
+            eq(Long.toString(request.getUprn().getValue()))))
         .thenReturn(Optional.of(householdCase));
 
     // Run code under test: Attempt linking
@@ -526,7 +533,7 @@ public class UniqueAccessCodeServiceImplTest {
   }
 
   private void assertAddressesEqual(Address expected, AddressDTO actual) {
-    assertEquals(expected.getUprn(), actual.getUprn().asString());
+    assertEquals(expected.getUprn(), Long.toString(actual.getUprn().getValue()));
     assertEquals(expected.getAddressLine1(), actual.getAddressLine1());
     assertEquals(expected.getAddressLine2(), actual.getAddressLine2());
     assertEquals(expected.getAddressLine3(), actual.getAddressLine3());
@@ -580,7 +587,8 @@ public class UniqueAccessCodeServiceImplTest {
     CollectionCase caseToLinkTo = getCase("household");
     caseToLinkTo.setCaseType(caseCaseType.name());
     List<CollectionCase> cases = Stream.of(caseToLinkTo).collect(Collectors.toList());
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(request.getUprn().asString())))
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
+            eq(Long.toString(request.getUprn().getValue()))))
         .thenReturn(Optional.of(cases.get(0)));
 
     // Invoke code under test and decide if it threw an incompatible UAC/Case exception
@@ -613,7 +621,7 @@ public class UniqueAccessCodeServiceImplTest {
     expectedAddress.setTownName(request.getTownName());
     expectedAddress.setPostcode(request.getPostcode());
     expectedAddress.setRegion(request.getRegion().name());
-    expectedAddress.setUprn(request.getUprn().asString());
+    expectedAddress.setUprn(Long.toString(request.getUprn().getValue()));
     expectedAddress.setAddressType(caseType.name());
     expectedAddress.setAddressLevel(AddressLevel.U.name());
     expectedAddress.setEstabType(request.getEstabType());
