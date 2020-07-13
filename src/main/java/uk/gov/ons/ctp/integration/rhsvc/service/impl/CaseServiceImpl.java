@@ -9,6 +9,7 @@ import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -31,7 +32,6 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
 /** Implementation to deal with Case data */
@@ -50,7 +50,7 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
 
     Optional<CollectionCase> caseFound =
-        dataRepo.readNonHILatestValidCollectionCaseByUprn(uprn.asString());
+        dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(uprn.getValue()));
     if (caseFound.isPresent()) {
       log.with("case", caseFound.get().getId())
           .with("uprn", uprn)
