@@ -133,6 +133,18 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     if (primaryCaseOptional.isPresent()) {
       primaryCase = primaryCaseOptional.get();
       log.with(primaryCase.getId()).debug("Found existing case");
+
+      if (primaryCase.getId().equals(uac.getCaseId())) {
+        // The UAC is already linked to the target case. Return instead of sending duplicate events
+        UniqueAccessCodeDTO uniqueAccessCodeDTO =
+            createUniqueAccessCodeDTO(uac, Optional.of(primaryCase), CaseStatus.OK);
+
+        log.with(uacHash).with(primaryCase.getId()).debug("Already linked to case");
+        log.with(uacHash).with(uniqueAccessCodeDTO).debug("Exit linkUACCase()");
+
+        return uniqueAccessCodeDTO;
+      }
+
       validateUACCase(uac, primaryCase); // will abort here if invalid combo
     } else {
       // Create a new case as not found for the UPRN in Firestore
