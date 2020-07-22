@@ -490,7 +490,7 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("householdAddress");
 
     // Setup fake Case
-    CollectionCase caseToLinkTo = getCase("individual");
+    CollectionCase caseToLinkTo = getCase("CE");
     mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), caseToLinkTo);
 
     // Setup UAC which is already linked to the fake case
@@ -507,7 +507,7 @@ public class UniqueAccessCodeServiceImplTest {
     verifyTotalNumberEventsSent(0);
 
     verifyLinkingResult(
-        uniqueAccessCodeDTO, caseToLinkTo.getId(), CaseType.HI, individualUAC, caseToLinkTo);
+        uniqueAccessCodeDTO, caseToLinkTo.getId(), CaseType.CE, individualUAC, caseToLinkTo);
   }
 
   // Test that linking fails when the UAC is not found in Firestore
