@@ -126,6 +126,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     UAC uac = uacOptional.get();
 
     CollectionCase primaryCase;
+    boolean alreadyLinked = false;
+
     // Read the Case(s) for the UPRN from firestore if we can
     Optional<CollectionCase> primaryCaseOptional =
         dataRepo.readNonHILatestValidCollectionCaseByUprn(
@@ -133,6 +135,13 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     if (primaryCaseOptional.isPresent()) {
       primaryCase = primaryCaseOptional.get();
       log.with(primaryCase.getId()).debug("Found existing case");
+
+      if (primaryCase.getId().equals(uac.getCaseId())) {
+        // The UAC is already linked to the target case. Don't send duplicate events
+        log.with(uacHash).with(primaryCase.getId()).debug("Already linked to case");
+        alreadyLinked = true;
+      }
+
       validateUACCase(uac, primaryCase); // will abort here if invalid combo
     } else {
       // Create a new case as not found for the UPRN in Firestore
@@ -150,45 +159,50 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       sendNewAddressEvent(primaryCase);
     }
 
-    // for now assume that the UAC is to be linked to either the HH|CE|SPG case we found or the one
-    // we created
-    String caseId = primaryCase.getId();
-    uac.setCaseId(caseId);
+    UniqueAccessCodeDTO uniqueAccessCodeDTO;
+    if (alreadyLinked) {
+      uniqueAccessCodeDTO = createUniqueAccessCodeDTO(uac, Optional.of(primaryCase), CaseStatus.OK);
 
-    String individualCaseId = null;
-    CollectionCase individualCase = null;
+    } else {
+      // for now assume that the UAC is to be linked to either the HH|CE|SPG case we found or the
+      // one we created
+      String caseId = primaryCase.getId();
+      uac.setCaseId(caseId);
 
-    // if the uac indicates that the UAC is for a HI through the formType of I, we need to link the
-    // UAC to a new HI case
-    // instead of the HH case
-    if (primaryCase.getCaseType().equals(CaseType.HH.name())
-        && uac.getFormType().equals(FormType.I.name())) {
-      individualCase = createCase(CaseType.HI, uac, request);
-      individualCaseId = individualCase.getId();
-      log.with(individualCaseId).debug("Created individual case");
+      String individualCaseId = null;
+      CollectionCase individualCase = null;
 
-      dataRepo.writeCollectionCase(individualCase);
+      // if the uac indicates that the UAC is for a HI through the formType of I, we need to link
+      // the UAC to a new HI case instead of the HH case
+      if (primaryCase.getCaseType().equals(CaseType.HH.name())
+          && uac.getFormType().equals(FormType.I.name())) {
+        individualCase = createCase(CaseType.HI, uac, request);
+        individualCaseId = individualCase.getId();
+        log.with(individualCaseId).debug("Created individual case");
 
-      // if we are creating an individual case the UAC should be linked to that
-      uac.setCaseId(individualCaseId);
+        dataRepo.writeCollectionCase(individualCase);
+
+        // if we are creating an individual case the UAC should be linked to that
+        uac.setCaseId(individualCaseId);
+      }
+
+      // Our UAC will have been linked to one of:
+      // - The case we found by uprn in firestore
+      // - The HH|CE|SPG case we created when one was not found in firestore
+      // - The Individual case we created for one of the above
+      // so NOW persist it
+      dataRepo.writeUAC(uac);
+
+      sendQuestionnaireLinkedEvent(uac.getQuestionnaireId(), primaryCase.getId(), individualCaseId);
+
+      uniqueAccessCodeDTO =
+          createUniqueAccessCodeDTO(
+              uac,
+              individualCase != null ? Optional.of(individualCase) : Optional.of(primaryCase),
+              CaseStatus.OK);
+
+      sendRespondentAuthenticatedEvent(uniqueAccessCodeDTO);
     }
-
-    // Our UAC will have been linked to one of:
-    // - The case we found by uprn in firestore
-    // - The HH|CE|SPG case we created when one was not found in firestore
-    // - The Individual case we created for one of the above
-    // so NOW persist it
-    dataRepo.writeUAC(uac);
-
-    sendQuestionnaireLinkedEvent(uac.getQuestionnaireId(), primaryCase.getId(), individualCaseId);
-
-    UniqueAccessCodeDTO uniqueAccessCodeDTO =
-        createUniqueAccessCodeDTO(
-            uac,
-            individualCase != null ? Optional.of(individualCase) : Optional.of(primaryCase),
-            CaseStatus.OK);
-
-    sendRespondentAuthenticatedEvent(uniqueAccessCodeDTO);
 
     log.with(uacHash).with(uniqueAccessCodeDTO).debug("Exit linkUACCase()");
     return uniqueAccessCodeDTO;

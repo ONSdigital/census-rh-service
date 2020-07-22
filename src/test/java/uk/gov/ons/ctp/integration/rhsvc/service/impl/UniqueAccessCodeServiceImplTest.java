@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -31,6 +32,7 @@ import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.FormType;
+import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -226,12 +228,10 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+    mockDataRepoForReadUAC(UAC_HASH, householdUAC);
 
     CollectionCase householdCase = getCase("household");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            eq(Long.toString(request.getUprn().getValue()))))
-        .thenReturn(Optional.of(householdCase));
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), householdCase);
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -249,12 +249,7 @@ public class UniqueAccessCodeServiceImplTest {
     verifyTotalNumberEventsSent(2);
 
     verifyLinkingResult(
-        uniqueAccessCodeDTO,
-        householdCase.getId(),
-        CaseType.HH,
-        householdUAC,
-        householdCase.getAddress(),
-        householdCase);
+        uniqueAccessCodeDTO, householdCase.getId(), CaseType.HH, householdUAC, householdCase);
   }
   /**
    * Isolated assertion that the HH and not the HI
@@ -266,12 +261,10 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+    mockDataRepoForReadUAC(UAC_HASH, householdUAC);
 
-    List<CollectionCase> householdCases = getCases("HHandHI");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            eq(Long.toString(request.getUprn().getValue()))))
-        .thenReturn(Optional.of(householdCases.get(0)));
+    List<CollectionCase> cases = getCases("HHandHI");
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), cases.get(0));
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -290,12 +283,10 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+    mockDataRepoForReadUAC(UAC_HASH, householdUAC);
 
-    List<CollectionCase> householdCases = getCases("HH-addressInvalid");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            eq(Long.toString(request.getUprn().getValue()))))
-        .thenReturn(Optional.of(householdCases.get(1)));
+    List<CollectionCase> cases = getCases("HH-addressInvalid");
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), cases.get(1));
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -314,12 +305,10 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+    mockDataRepoForReadUAC(UAC_HASH, householdUAC);
 
-    List<CollectionCase> householdCases = getCases("HH-multiples");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            eq(Long.toString(request.getUprn().getValue()))))
-        .thenReturn(Optional.of(householdCases.get(1)));
+    List<CollectionCase> cases = getCases("HH-multiples");
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), cases.get(1));
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -333,12 +322,10 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("CEAddress");
 
     UAC ceUAC = getUAC("unlinkedCE");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(ceUAC));
+    mockDataRepoForReadUAC(UAC_HASH, ceUAC);
 
     CollectionCase ceCase = getCase("CE");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            eq(Long.toString(request.getUprn().getValue()))))
-        .thenReturn(Optional.of(ceCase));
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), ceCase);
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -353,8 +340,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     verifyTotalNumberEventsSent(2);
 
-    verifyLinkingResult(
-        uniqueAccessCodeDTO, ceCase.getId(), CaseType.CE, ceUAC, ceCase.getAddress(), ceCase);
+    verifyLinkingResult(uniqueAccessCodeDTO, ceCase.getId(), CaseType.CE, ceUAC, ceCase);
   }
 
   @Test
@@ -362,12 +348,10 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("SPGAddress");
 
     UAC ceUAC = getUAC("unlinkedHousehold");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(ceUAC));
+    mockDataRepoForReadUAC(UAC_HASH, ceUAC);
 
     CollectionCase ceCase = getCase("SPG");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            eq(Long.toString(request.getUprn().getValue()))))
-        .thenReturn(Optional.of(ceCase));
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), ceCase);
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -382,8 +366,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     verifyTotalNumberEventsSent(2);
 
-    verifyLinkingResult(
-        uniqueAccessCodeDTO, ceCase.getId(), CaseType.SPG, ceUAC, ceCase.getAddress(), ceCase);
+    verifyLinkingResult(uniqueAccessCodeDTO, ceCase.getId(), CaseType.SPG, ceUAC, ceCase);
   }
 
   @Test
@@ -391,12 +374,10 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("householdAddress");
 
     UAC individualUAC = getUAC("unlinkedIndividual");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(individualUAC));
+    mockDataRepoForReadUAC(UAC_HASH, individualUAC);
 
     CollectionCase householdCase = getCase("household");
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            eq(Long.toString(request.getUprn().getValue()))))
-        .thenReturn(Optional.of(householdCase));
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), householdCase);
 
     // Run code under test: Attempt linking
     UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
@@ -419,12 +400,7 @@ public class UniqueAccessCodeServiceImplTest {
     verifyTotalNumberEventsSent(2);
 
     verifyLinkingResult(
-        uniqueAccessCodeDTO,
-        newIndividualCase.getId(),
-        CaseType.HI,
-        individualUAC,
-        householdCase.getAddress(),
-        householdCase);
+        uniqueAccessCodeDTO, newIndividualCase.getId(), CaseType.HI, individualUAC, householdCase);
   }
 
   // Happy path test for linking when the UAC cannot be linked to an existing case, and one needs to
@@ -436,7 +412,7 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(householdUAC));
+    mockDataRepoForReadUAC(UAC_HASH, householdUAC);
 
     // Default - don't find any cases when searching by UPRN
 
@@ -462,13 +438,7 @@ public class UniqueAccessCodeServiceImplTest {
 
     verifyTotalNumberEventsSent(3);
 
-    verifyLinkingResult(
-        uniqueAccessCodeDTO,
-        newCase.getId(),
-        CaseType.HH,
-        householdUAC,
-        newCase.getAddress(),
-        newCase);
+    verifyLinkingResult(uniqueAccessCodeDTO, newCase.getId(), CaseType.HH, householdUAC, newCase);
   }
 
   // Happy path test for linking when the UAC doesn't link to an existing case, and one needs to be
@@ -479,7 +449,7 @@ public class UniqueAccessCodeServiceImplTest {
     UACLinkRequestDTO request = getRequest("householdAddress");
 
     UAC individualUAC = getUAC("unlinkedIndividual");
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(individualUAC));
+    mockDataRepoForReadUAC(UAC_HASH, individualUAC);
 
     // Don't find any cases when searching by UPRN
 
@@ -510,12 +480,34 @@ public class UniqueAccessCodeServiceImplTest {
     verifyTotalNumberEventsSent(3);
 
     verifyLinkingResult(
-        uniqueAccessCodeDTO,
-        newHiCase.getId(),
-        CaseType.HI,
-        individualUAC,
-        newCase.getAddress(),
-        newHiCase);
+        uniqueAccessCodeDTO, newHiCase.getId(), CaseType.HI, individualUAC, newHiCase);
+  }
+
+  // Happy path test for attempting to link a UAC to the case which it's already linked to.
+  // This should be detected and virtually no work will be done.
+  @Test
+  public void linkUACToCurrentCase() throws Exception {
+    UACLinkRequestDTO request = getRequest("householdAddress");
+
+    // Setup fake Case
+    CollectionCase caseToLinkTo = getCase("CE");
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), caseToLinkTo);
+
+    // Setup UAC which is already linked to the fake case
+    UAC individualUAC = getUAC("linkedIndividual");
+    individualUAC.setCaseId(caseToLinkTo.getId());
+    mockDataRepoForReadUAC(UAC_HASH, individualUAC);
+
+    // Run code under test: Attempt linking
+    UniqueAccessCodeDTO uniqueAccessCodeDTO = uacSvc.linkUACCase(UAC_HASH, request);
+
+    // Virtually nothing should be done. No case written, no UAC updated & no events sent
+    grabRepoWriteCollectionCaseValues(0);
+    Mockito.verify(dataRepo, times(0)).writeUAC(any());
+    verifyTotalNumberEventsSent(0);
+
+    verifyLinkingResult(
+        uniqueAccessCodeDTO, caseToLinkTo.getId(), CaseType.CE, individualUAC, caseToLinkTo);
   }
 
   // Test that linking fails when the UAC is not found in Firestore
@@ -578,18 +570,16 @@ public class UniqueAccessCodeServiceImplTest {
       FormType uacFormType, CaseType caseCaseType, LinkingExpectation linkAllowed)
       throws Exception {
     UACLinkRequestDTO request = getRequest("householdAddress");
+
     // Setup fake UAC
     UAC uacTest = getUAC("unlinkedHousehold"); // any old uac as form type to be overridden
     uacTest.setFormType(uacFormType.name());
-    when(dataRepo.readUAC(UAC_HASH)).thenReturn(Optional.of(uacTest));
+    mockDataRepoForReadUAC(UAC_HASH, uacTest);
 
     // Setup fake Case
     CollectionCase caseToLinkTo = getCase("household");
     caseToLinkTo.setCaseType(caseCaseType.name());
-    List<CollectionCase> cases = Stream.of(caseToLinkTo).collect(Collectors.toList());
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            eq(Long.toString(request.getUprn().getValue()))))
-        .thenReturn(Optional.of(cases.get(0)));
+    mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(request.getUprn(), caseToLinkTo);
 
     // Invoke code under test and decide if it threw an incompatible UAC/Case exception
     boolean incompatibleUACandCaseThrown;
@@ -610,6 +600,17 @@ public class UniqueAccessCodeServiceImplTest {
     } else if (linkAllowed == LinkingExpectation.INVALID && !incompatibleUACandCaseThrown) {
       fail();
     }
+  }
+
+  private void mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(
+      UniquePropertyReferenceNumber uprn, CollectionCase fakeCase) throws CTPException {
+    List<CollectionCase> cases = Stream.of(fakeCase).collect(Collectors.toList());
+    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(Long.toString(uprn.getValue()))))
+        .thenReturn(Optional.of(cases.get(0)));
+  }
+
+  private void mockDataRepoForReadUAC(String uacHash, UAC fakeUAC) throws CTPException {
+    when(dataRepo.readUAC(uacHash)).thenReturn(Optional.of(fakeUAC));
   }
 
   private Address createAddressFromLinkRequest(UACLinkRequestDTO request, CaseType caseType) {
@@ -741,7 +742,6 @@ public class UniqueAccessCodeServiceImplTest {
       String expectedCaseId,
       CaseType expectedCaseType,
       UAC uacTest,
-      Address address,
       CollectionCase caseTest) {
     assertEquals(UAC_HASH, uniqueAccessCodeDTO.getUacHash());
     assertTrue(uniqueAccessCodeDTO.isActive());
@@ -753,7 +753,7 @@ public class UniqueAccessCodeServiceImplTest {
     assertEquals(
         caseTest.getCollectionExerciseId(),
         uniqueAccessCodeDTO.getCollectionExerciseId().toString());
-    assertAddressesEqual(address, uniqueAccessCodeDTO.getAddress());
+    assertAddressesEqual(caseTest.getAddress(), uniqueAccessCodeDTO.getAddress());
     assertEquals(uacTest.getFormType(), uniqueAccessCodeDTO.getFormType());
     assertFalse(uniqueAccessCodeDTO.isHandDelivery());
   }
