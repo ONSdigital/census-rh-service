@@ -281,7 +281,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void shouldFulfilByPost() throws Exception {
-    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilment/post";
+    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilments/post";
     ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
     mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
     verify(caseService).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
@@ -289,7 +289,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void shouldRejectFulfilByPostWithMismatchedCaseIds() throws Exception {
-    String url = "/cases/" + INCONSISTENT_CASEID + "/fulfilment/post";
+    String url = "/cases/" + INCONSISTENT_CASEID + "/fulfilments/post";
     ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
     mockMvc.perform(postJson(url, json.toString())).andExpect(status().isBadRequest());
     verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
@@ -297,7 +297,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void shouldRejectFulfilByPostWithBadlyFormedCaseId() throws Exception {
-    String url = "/cases/abc/fulfilment/post";
+    String url = "/cases/abc/fulfilments/post";
     ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
     mockMvc.perform(postJson(url, json.toString())).andExpect(status().isBadRequest());
     verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
@@ -305,7 +305,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void shouldRejectFulfilByPostWithBadlyFormedDate() throws Exception {
-    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilment/post";
+    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilments/post";
     ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
     json.put("dateTime", "2019:12:25 12:34:56");
     mockMvc.perform(postJson(url, json.toString())).andExpect(status().isBadRequest());
@@ -314,7 +314,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void shouldRejectFulfilByPostWithMissingFulfilmentCode() throws Exception {
-    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilment/post";
+    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilments/post";
     ObjectNode json = FixtureHelper.loadClassObjectNode("postal");
     json.remove("fulfilmentCode");
     mockMvc.perform(postJson(url, json.toString())).andExpect(status().isBadRequest());
@@ -323,7 +323,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void shouldRejectFulfilByPostWithIncorrectRequestBody() throws Exception {
-    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilment/post";
+    String url = "/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/fulfilments/post";
     String json = "{ \"name\": \"Fred\" }";
     mockMvc.perform(postJson(url, json)).andExpect(status().isBadRequest());
     verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
