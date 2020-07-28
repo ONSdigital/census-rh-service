@@ -106,7 +106,7 @@ public class CaseEndpoint {
     caseService.fulfilmentRequestBySMS(requestBodyDTO);
   }
 
-  @RequestMapping(value = "/{caseId}/fulfilment/post", method = RequestMethod.POST)
+  @RequestMapping(value = "/{caseId}/fulfilments/post", method = RequestMethod.POST)
   @ResponseStatus(value = HttpStatus.OK)
   public void fulfilmentRequestByPost(
       @PathVariable(value = "caseId") final UUID caseId,
