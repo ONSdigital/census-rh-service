@@ -235,7 +235,7 @@ public class CaseServiceImpl implements CaseService {
       if (deliveryChannel == DeliveryChannel.POST) {
         validateContactName(contact);
       }
-      if (product.getCaseTypes().contains(Product.CaseType.HH)) {
+      if (Product.CaseType.HH.name().equals(caseDetails.getCaseType())) {
         fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
       }
     }
