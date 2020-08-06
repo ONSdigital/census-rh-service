@@ -9,6 +9,7 @@ import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -235,7 +236,7 @@ public class CaseServiceImpl implements CaseService {
       if (deliveryChannel == DeliveryChannel.POST) {
         validateContactName(contact);
       }
-      if (product.getCaseTypes().contains(Product.CaseType.HH)) {
+      if (CaseType.HH.name().equals(caseDetails.getCaseType())) {
         fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
       }
     }

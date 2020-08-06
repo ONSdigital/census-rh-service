@@ -92,18 +92,54 @@ public class CaseServiceImplFulfilmentTest {
   }
 
   @Test
+  public void shouldFulfilRequestBySmsForIndividualWhereProductHasMultipleCaseTypes()
+      throws Exception {
+    CollectionCase caseDetails = collectionCase.get(0);
+    FulfilmentRequest eventPayload =
+        doFulfilmentRequestBySMS(true, caseDetails, Product.CaseType.CE, Product.CaseType.HH);
+
+    // Individual case id field should be populated as case+product is for an individual
+    String individualUuid = eventPayload.getIndividualCaseId();
+    assertNotNull(individualUuid);
+    assertNotNull(UUID.fromString(individualUuid)); // must be valid UUID
+  }
+
+  @Test
   public void shouldFulfilRequestBySmsForIndividualSpecialCase() throws Exception {
     FulfilmentRequest eventPayload = doFulfilmentRequestBySMS(Product.CaseType.SPG, true);
+    assertNull(eventPayload.getIndividualCaseId());
+  }
+
+  @Test
+  public void shouldFulfilRequestBySmsForIndividualCE() throws Exception {
+    FulfilmentRequest eventPayload = doFulfilmentRequestBySMS(Product.CaseType.CE, true);
+    assertNull(eventPayload.getIndividualCaseId());
+  }
+
+  @Test
+  public void shouldFulfilRequestBySmsForIndividualCeWhereProductHasMultipleCaseTypes()
+      throws Exception {
+    CollectionCase caseDetails = collectionCase.get(0);
+    caseDetails.getAddress().setAddressType(Product.CaseType.CE.toString());
+    caseDetails.setCaseType(Product.CaseType.CE.toString());
+    FulfilmentRequest eventPayload =
+        doFulfilmentRequestBySMS(true, caseDetails, Product.CaseType.CE, Product.CaseType.HH);
     assertNull(eventPayload.getIndividualCaseId());
   }
 
   private FulfilmentRequest doFulfilmentRequestBySMS(Product.CaseType caseType, Boolean individual)
       throws Exception {
     CollectionCase caseDetails = selectCollectionCaseForTest(caseType, individual);
+    return doFulfilmentRequestBySMS(individual, caseDetails, caseType);
+  }
+
+  private FulfilmentRequest doFulfilmentRequestBySMS(
+      Boolean individual, CollectionCase caseDetails, Product.CaseType... caseTypes)
+      throws Exception {
     UUID caseId = UUID.fromString(caseDetails.getId());
     smsRequest.setCaseId(caseId);
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
-    mockProductSearch(caseType, individual, DeliveryChannel.SMS);
+    mockProductSearch(individual, DeliveryChannel.SMS, caseTypes);
     caseSvc.fulfilmentRequestBySMS(smsRequest);
     FulfilmentRequest eventPayload = getAndValidatePublishedEvent(caseDetails);
     assertEquals("07714111222", eventPayload.getContact().getTelNo());
@@ -161,19 +197,60 @@ public class CaseServiceImplFulfilmentTest {
   }
 
   @Test
+  public void shouldFulfilRequestByPostForIndividualWhereProductHasMultipleCaseTypes()
+      throws Exception {
+    CollectionCase caseDetails = collectionCase.get(0);
+    FulfilmentRequest eventPayload =
+        doFulfilmentRequestByPost(
+            true, caseDetails, "Mr", Product.CaseType.CE, Product.CaseType.HH);
+
+    // Individual case id field should be populated as case+product is for an individual
+    String individualUuid = eventPayload.getIndividualCaseId();
+    assertNotNull(individualUuid);
+    assertNotNull(UUID.fromString(individualUuid)); // must be valid UUID
+  }
+
+  @Test
   public void shouldFulfilRequestByPostForIndividualSpecialCase() throws Exception {
     FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.SPG, true, "Mrs");
+    assertNull(eventPayload.getIndividualCaseId());
+  }
+
+  @Test
+  public void shouldFulfilRequestByPostForIndividualCE() throws Exception {
+    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.CE, true, "Mr");
+    assertNull(eventPayload.getIndividualCaseId());
+  }
+
+  @Test
+  public void shouldFulfilRequestByPostForIndividualCeWhereProductHasMultipleCaseTypes()
+      throws Exception {
+    CollectionCase caseDetails = collectionCase.get(0);
+    caseDetails.getAddress().setAddressType(Product.CaseType.CE.toString());
+    caseDetails.setCaseType(Product.CaseType.CE.toString());
+    FulfilmentRequest eventPayload =
+        doFulfilmentRequestByPost(
+            true, caseDetails, "Mr", Product.CaseType.CE, Product.CaseType.HH);
     assertNull(eventPayload.getIndividualCaseId());
   }
 
   private FulfilmentRequest doFulfilmentRequestByPost(
       Product.CaseType caseType, Boolean individual, String requestorsTitle) throws Exception {
     CollectionCase caseDetails = selectCollectionCaseForTest(caseType, individual);
+    return doFulfilmentRequestByPost(individual, caseDetails, requestorsTitle, caseType);
+  }
+
+  private FulfilmentRequest doFulfilmentRequestByPost(
+      Boolean individual,
+      CollectionCase caseDetails,
+      String requestorsTitle,
+      Product.CaseType... caseTypes)
+      throws Exception {
     UUID caseId = UUID.fromString(caseDetails.getId());
     postalRequest.setCaseId(caseId);
     postalRequest.setTitle(requestorsTitle);
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
-    mockProductSearch(caseType, individual, DeliveryChannel.POST);
+    mockProductSearch(individual, DeliveryChannel.POST, caseTypes);
     caseSvc.fulfilmentRequestByPost(postalRequest);
     FulfilmentRequest eventPayload = getAndValidatePublishedEvent(caseDetails);
     Contact contact = eventPayload.getContact();
@@ -190,7 +267,7 @@ public class CaseServiceImplFulfilmentTest {
     UUID caseId = UUID.fromString(caseDetails.getId());
     postalRequest.setCaseId(caseId);
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
-    mockProductSearch(Product.CaseType.HH, true, DeliveryChannel.POST);
+    mockProductSearch(true, DeliveryChannel.POST, Product.CaseType.HH);
     CTPException e =
         assertThrows(CTPException.class, () -> caseSvc.fulfilmentRequestByPost(postalRequest));
     assertTrue(
@@ -253,11 +330,11 @@ public class CaseServiceImplFulfilmentTest {
   }
 
   private void mockProductSearch(
-      Product.CaseType caseType, Boolean individual, DeliveryChannel channel) throws Exception {
+      Boolean individual, DeliveryChannel channel, Product.CaseType... caseTypes) throws Exception {
     Product expectedSearchProduct = createProductForSearch(channel);
     Product productToReturn = new Product();
     productToReturn.setFulfilmentCode("F1");
-    productToReturn.setCaseTypes(Arrays.asList(caseType));
+    productToReturn.setCaseTypes(Arrays.asList(caseTypes));
     productToReturn.setIndividual(individual);
     when(productReference.searchProducts(eq(expectedSearchProduct)))
         .thenReturn(Arrays.asList(productToReturn));
@@ -274,6 +351,7 @@ public class CaseServiceImplFulfilmentTest {
             .findFirst()
             .get();
     caseDetails.getAddress().setAddressType(caseType.toString());
+    caseDetails.setCaseType(caseType.toString());
     return caseDetails;
   }
 
