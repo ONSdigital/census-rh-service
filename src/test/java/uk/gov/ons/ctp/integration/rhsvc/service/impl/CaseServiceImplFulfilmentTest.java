@@ -167,7 +167,7 @@ public class CaseServiceImplFulfilmentTest {
 
   @Test
   public void shouldFulfilRequestByPostForHousehold() throws Exception {
-    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.HH, false);
+    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.HH, false, "Mrs");
 
     // Individual case id field should not be set for non-individual
     assertNull(eventPayload.getIndividualCaseId());
@@ -176,13 +176,19 @@ public class CaseServiceImplFulfilmentTest {
   @Test
   public void shouldFulfilRequestByPostForHouseholdWhenProductReturnsNullIndividual()
       throws Exception {
-    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.HH, null);
+    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.HH, null, "Mrs");
+    assertNull(eventPayload.getIndividualCaseId());
+  }
+
+  @Test
+  public void shouldFulfilRequestByPostForHouseholdWithNullTitle() throws Exception {
+    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.HH, null, null);
     assertNull(eventPayload.getIndividualCaseId());
   }
 
   @Test
   public void shouldFulfilRequestByPostForIndividual() throws Exception {
-    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.HH, true);
+    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.HH, true, "Mrs");
 
     // Individual case id field should be populated as case+product is for an individual
     String individualUuid = eventPayload.getIndividualCaseId();
@@ -195,7 +201,8 @@ public class CaseServiceImplFulfilmentTest {
       throws Exception {
     CollectionCase caseDetails = collectionCase.get(0);
     FulfilmentRequest eventPayload =
-        doFulfilmentRequestByPost(true, caseDetails, Product.CaseType.CE, Product.CaseType.HH);
+        doFulfilmentRequestByPost(
+            true, caseDetails, "Mr", Product.CaseType.CE, Product.CaseType.HH);
 
     // Individual case id field should be populated as case+product is for an individual
     String individualUuid = eventPayload.getIndividualCaseId();
@@ -205,13 +212,13 @@ public class CaseServiceImplFulfilmentTest {
 
   @Test
   public void shouldFulfilRequestByPostForIndividualSpecialCase() throws Exception {
-    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.SPG, true);
+    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.SPG, true, "Mrs");
     assertNull(eventPayload.getIndividualCaseId());
   }
 
   @Test
   public void shouldFulfilRequestByPostForIndividualCE() throws Exception {
-    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.CE, true);
+    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.CE, true, "Mr");
     assertNull(eventPayload.getIndividualCaseId());
   }
 
@@ -222,35 +229,40 @@ public class CaseServiceImplFulfilmentTest {
     caseDetails.getAddress().setAddressType(Product.CaseType.CE.toString());
     caseDetails.setCaseType(Product.CaseType.CE.toString());
     FulfilmentRequest eventPayload =
-        doFulfilmentRequestByPost(true, caseDetails, Product.CaseType.CE, Product.CaseType.HH);
+        doFulfilmentRequestByPost(
+            true, caseDetails, "Mr", Product.CaseType.CE, Product.CaseType.HH);
     assertNull(eventPayload.getIndividualCaseId());
   }
 
-  private FulfilmentRequest doFulfilmentRequestByPost(Product.CaseType caseType, Boolean individual)
-      throws Exception {
+  private FulfilmentRequest doFulfilmentRequestByPost(
+      Product.CaseType caseType, Boolean individual, String requestorsTitle) throws Exception {
     CollectionCase caseDetails = selectCollectionCaseForTest(caseType, individual);
-    return doFulfilmentRequestByPost(individual, caseDetails, caseType);
+    return doFulfilmentRequestByPost(individual, caseDetails, requestorsTitle, caseType);
   }
 
   private FulfilmentRequest doFulfilmentRequestByPost(
-      Boolean individual, CollectionCase caseDetails, Product.CaseType... caseTypes)
+      Boolean individual,
+      CollectionCase caseDetails,
+      String requestorsTitle,
+      Product.CaseType... caseTypes)
       throws Exception {
     UUID caseId = UUID.fromString(caseDetails.getId());
     postalRequest.setCaseId(caseId);
+    postalRequest.setTitle(requestorsTitle);
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
     mockProductSearch(individual, DeliveryChannel.POST, caseTypes);
     caseSvc.fulfilmentRequestByPost(postalRequest);
     FulfilmentRequest eventPayload = getAndValidatePublishedEvent(caseDetails);
     Contact contact = eventPayload.getContact();
     assertNotNull(contact);
-    assertEquals("Mrs", contact.getTitle());
+    assertEquals(requestorsTitle, contact.getTitle());
     assertEquals("Ethel", contact.getForename());
     assertEquals("Brown", contact.getSurname());
     assertNull(contact.getTelNo());
     return eventPayload;
   }
 
-  private void assertRejectPostalFulfilmentForIndividualWithoutFullContact() throws Exception {
+  private void assertRejectPostalFulfilmentForIndividualWithoutContactName() throws Exception {
     CollectionCase caseDetails = selectCollectionCaseForTest(Product.CaseType.HH, true);
     UUID caseId = UUID.fromString(caseDetails.getId());
     postalRequest.setCaseId(caseId);
@@ -266,39 +278,27 @@ public class CaseServiceImplFulfilmentTest {
   }
 
   @Test
-  public void shouldRejectPostalFulfilmentForIndividualWithoutTitle() throws Exception {
-    postalRequest.setTitle(null);
-    assertRejectPostalFulfilmentForIndividualWithoutFullContact();
-  }
-
-  @Test
   public void shouldRejectPostalFulfilmentForIndividualWithoutForename() throws Exception {
     postalRequest.setForename(null);
-    assertRejectPostalFulfilmentForIndividualWithoutFullContact();
+    assertRejectPostalFulfilmentForIndividualWithoutContactName();
   }
 
   @Test
   public void shouldRejectPostalFulfilmentForIndividualWithoutSurname() throws Exception {
     postalRequest.setSurname(null);
-    assertRejectPostalFulfilmentForIndividualWithoutFullContact();
-  }
-
-  @Test
-  public void shouldRejectPostalFulfilmentForIndividualWithEmptyTitle() throws Exception {
-    postalRequest.setTitle("");
-    assertRejectPostalFulfilmentForIndividualWithoutFullContact();
+    assertRejectPostalFulfilmentForIndividualWithoutContactName();
   }
 
   @Test
   public void shouldRejectPostalFulfilmentForIndividualWithEmptyForename() throws Exception {
     postalRequest.setForename("");
-    assertRejectPostalFulfilmentForIndividualWithoutFullContact();
+    assertRejectPostalFulfilmentForIndividualWithoutContactName();
   }
 
   @Test
   public void shouldRejectPostalFulfilmentForIndividualWithEmptySurname() throws Exception {
     postalRequest.setSurname("");
-    assertRejectPostalFulfilmentForIndividualWithoutFullContact();
+    assertRejectPostalFulfilmentForIndividualWithoutContactName();
   }
 
   @Test
