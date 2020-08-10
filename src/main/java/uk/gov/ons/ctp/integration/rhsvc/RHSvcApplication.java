@@ -1,6 +1,12 @@
 package uk.gov.ons.ctp.integration.rhsvc;
 
 import com.godaddy.logging.LoggingConfigs;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.config.MeterFilterReply;
+import io.micrometer.stackdriver.StackdriverConfig;
+import io.micrometer.stackdriver.StackdriverMeterRegistry;
+import java.time.Duration;
 import javax.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -28,6 +34,18 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 @ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common"})
 @ImportResource("springintegration/main.xml")
 public class RHSvcApplication {
+
+  @Value("${queueconfig.event-exchange}")
+  private String eventExchange;
+
+  @Value("${management.metrics.export.stackdriver.project-id}")
+  private String stackdriverProjectId;
+
+  @Value("${management.metrics.export.stackdriver.enabled}")
+  private boolean stackdriverEnabled;
+
+  @Value("${management.metrics.export.stackdriver.step}")
+  private String stackdriverStep;
 
   /**
    * The main entry point for this application.
@@ -82,5 +100,55 @@ public class RHSvcApplication {
     if (useJsonLogging) {
       LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
     }
+  }
+
+  @Bean
+  StackdriverConfig stackdriverConfig() {
+    return new StackdriverConfig() {
+      @Override
+      public Duration step() {
+        return Duration.parse(stackdriverStep);
+      }
+
+      @Override
+      public boolean enabled() {
+        return stackdriverEnabled;
+      }
+
+      @Override
+      public String projectId() {
+        return stackdriverProjectId;
+      }
+
+      @Override
+      public String get(String key) {
+        return null;
+      }
+    };
+  }
+
+  @Bean
+  public MeterFilter meterFilter() {
+    return new MeterFilter() {
+      @Override
+      public MeterFilterReply accept(Meter.Id id) {
+        // RM use this to remove Rabbit clutter from the metrics as they have alternate means of
+        // monitoring it
+        // We will probable want to experiment with removing this to see what value we get from
+        // rabbit metrics
+        // a) once we have Grafana setup, and b) once we try out micrometer in a perf environment
+        if (id.getName().startsWith("rabbitmq")) {
+          return MeterFilterReply.DENY;
+        }
+        return MeterFilterReply.NEUTRAL;
+      }
+    };
+  }
+
+  @Bean
+  StackdriverMeterRegistry meterRegistry(StackdriverConfig stackdriverConfig) {
+
+    StackdriverMeterRegistry.builder(stackdriverConfig).build();
+    return StackdriverMeterRegistry.builder(stackdriverConfig).build();
   }
 }
