@@ -7,7 +7,7 @@
   <parent>
     <groupId>uk.gov.ons.ctp.integration</groupId>
     <artifactId>census-int-common-config</artifactId>
-    <version>0.0.15</version>
+    <version>0.0.16-CR-1018-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -101,7 +101,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.63</version>
+      <version>0.0.64-CR-1018-SNAPSHOT</version>
     </dependency>
 
     <dependency>
