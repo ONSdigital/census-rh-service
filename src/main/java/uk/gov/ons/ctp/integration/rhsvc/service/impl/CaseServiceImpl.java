@@ -64,6 +64,23 @@ public class CaseServiceImpl implements CaseService {
   }
 
   @Override
+  public Optional<CaseDTO> getLatestCaseByUPRN(UniquePropertyReferenceNumber uprn)
+      throws CTPException {
+    Optional<CaseDTO> result = Optional.empty();
+
+    Optional<CollectionCase> caseFound =
+        dataRepo.readLatestCollectionCaseByUprn(Long.toString(uprn.getValue()));
+    if (caseFound.isPresent()) {
+      log.with("case", caseFound.get().getId())
+          .with("uprn", uprn)
+          .debug("No need to create new case as existing case found by UPRN");
+      result = Optional.of(mapperFacade.map(caseFound.get(), CaseDTO.class));
+    }
+
+    return result;
+  }
+
+  @Override
   public CaseDTO modifyAddress(final AddressChangeDTO addressChanges) throws CTPException {
 
     String caseId = addressChanges.getCaseId().toString();

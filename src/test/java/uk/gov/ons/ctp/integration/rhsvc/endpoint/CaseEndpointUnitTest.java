@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -14,9 +15,11 @@ import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
 import static uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture.EXPECTED_JSON_CONTENT_TYPE;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +37,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.NewCaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -76,6 +80,79 @@ public class CaseEndpointUnitTest {
 
     this.smsFulfilmentRequest =
         FixtureHelper.loadClassFixtures(SMSFulfilmentRequestDTO[].class).get(0);
+  }
+
+  /** Test returns JSON for new case from valid new case request */
+  @Test
+  public void postCreateCase_OK() throws Exception {
+    NewCaseRequestDTO newCaseRequest =
+        FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+
+    CaseDTO existingCase = caseDTO.get(0);
+    Optional<CaseDTO> r = Optional.of(existingCase);
+    when(caseService.getLatestCaseByUPRN(any())).thenReturn(r);
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/cases/create")
+                .content(mapper.writeValueAsString(newCaseRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.caseId", is(existingCase.getCaseId().toString())));
+  }
+
+  @Test
+  public void postCreateCase_missingAddressLine1() throws Exception {
+    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+
+    request.setAddressLine1(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingTownName() throws Exception {
+    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+
+    request.setTownName(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingRegion() throws Exception {
+    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+
+    request.setRegion(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingPostcode() throws Exception {
+    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+
+    request.setPostcode(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingUprn() throws Exception {
+    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+
+    request.setUprn(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingEstabType() throws Exception {
+    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+
+    request.setEstabType(null);
+
+    submitInvalidNewCaseRequest(request);
   }
 
   /** Test returns valid JSON for valid UPRN */
@@ -327,5 +404,17 @@ public class CaseEndpointUnitTest {
     String json = "{ \"name\": \"Fred\" }";
     mockMvc.perform(postJson(url, json)).andExpect(status().isBadRequest());
     verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  private void submitInvalidNewCaseRequest(NewCaseRequestDTO newCaseRequest)
+      throws Exception, JsonProcessingException {
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/cases/create")
+                .content(mapper.writeValueAsString(newCaseRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code", is(INVALID_CODE)))
+        .andExpect(jsonPath("$.error.message", startsWith(INVALID_MESSAGE)));
   }
 }
