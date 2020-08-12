@@ -35,9 +35,6 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 @ImportResource("springintegration/main.xml")
 public class RHSvcApplication {
 
-  @Value("${queueconfig.event-exchange}")
-  private String eventExchange;
-
   @Value("${management.metrics.export.stackdriver.project-id}")
   private String stackdriverProjectId;
 
