@@ -75,23 +75,6 @@ public class CaseServiceImpl implements CaseService {
   }
 
   @Override
-  public Optional<CaseDTO> getLatestCaseByUPRN(UniquePropertyReferenceNumber uprn)
-      throws CTPException {
-    Optional<CaseDTO> result = Optional.empty();
-
-    Optional<CollectionCase> caseFound =
-        dataRepo.readLatestCollectionCaseByUprn(Long.toString(uprn.getValue()));
-    if (caseFound.isPresent()) {
-      log.with("case", caseFound.get().getId())
-          .with("uprn", uprn)
-          .debug("Existing case found by UPRN");
-      result = Optional.of(mapperFacade.map(caseFound.get(), CaseDTO.class));
-    }
-
-    return result;
-  }
-
-  @Override
   public CaseDTO createNewCase(CaseRequestDTO request) throws CTPException {
 
     Optional<CaseDTO> existingCase = getLatestCaseByUPRN(request.getUprn());
@@ -105,15 +88,15 @@ public class CaseServiceImpl implements CaseService {
       CaseType primaryCaseType = determinePrimaryCaseType(request);
       CollectionCase newCase = createCase(primaryCaseType, null /*PMB*/, request);
       log.with("caseId", newCase.getId())
-      .with("primaryCaseType", primaryCaseType)
-      .debug("Created new case");
-      
+          .with("primaryCaseType", primaryCaseType)
+          .debug("Created new case");
+
       // Store new case in Firestore
       dataRepo.writeCollectionCase(newCase);
-      
+
       // tell RM we have created a case for the selected (HH|CE|SPG) address
       sendNewAddressEvent(newCase);
-      
+
       caseToReturn = mapperFacade.map(newCase, CaseDTO.class);
     }
 
@@ -316,6 +299,22 @@ public class CaseServiceImpl implements CaseService {
     }
   }
 
+  private Optional<CaseDTO> getLatestCaseByUPRN(UniquePropertyReferenceNumber uprn)
+      throws CTPException {
+    Optional<CaseDTO> result = Optional.empty();
+
+    Optional<CollectionCase> caseFound =
+        dataRepo.readLatestCollectionCaseByUprn(Long.toString(uprn.getValue()));
+    if (caseFound.isPresent()) {
+      log.with("case", caseFound.get().getId())
+          .with("uprn", uprn)
+          .debug("Existing case found by UPRN");
+      result = Optional.of(mapperFacade.map(caseFound.get(), CaseDTO.class));
+    }
+
+    return result;
+  }
+
   private CaseType determinePrimaryCaseType(CaseRequestDTO request) {
     String caseTypeStr = null;
 
@@ -357,8 +356,7 @@ public class CaseServiceImpl implements CaseService {
     address.setEstabType(request.getEstabType());
 
     // Set address level for case
-    if ((caseType == CaseType.CE || caseType == CaseType.SPG)) {
-      // PMB && uac.getFormType().equals(FormType.C.name())) {
+    if (caseType == CaseType.CE) {
       address.setAddressLevel(AddressLevel.E.name());
     } else {
       address.setAddressLevel(AddressLevel.U.name());

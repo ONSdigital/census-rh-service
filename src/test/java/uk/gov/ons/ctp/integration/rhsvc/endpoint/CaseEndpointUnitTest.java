@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,8 +87,7 @@ public class CaseEndpointUnitTest {
     CaseRequestDTO newCaseRequest = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
 
     CaseDTO existingCase = caseDTO.get(0);
-    Optional<CaseDTO> r = Optional.of(existingCase);
-    when(caseService.getLatestCaseByUPRN(any())).thenReturn(r);
+    when(caseService.createNewCase(any())).thenReturn(existingCase);
 
     mockMvc
         .perform(

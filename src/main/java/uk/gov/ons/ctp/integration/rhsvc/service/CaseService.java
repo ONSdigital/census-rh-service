@@ -1,6 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
-import java.util.Optional;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
@@ -24,15 +23,6 @@ public interface CaseService {
    */
   CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
       throws CTPException;
-
-  /**
-   * Attempts to read the latest case from cloud storage by UPRN.
-   *
-   * @param uprn is the uprn we need to search by.
-   * @return Optional CaseDTO with any found case.
-   * @throws CTPException if anything went wrong.
-   */
-  Optional<CaseDTO> getLatestCaseByUPRN(UniquePropertyReferenceNumber uprn) throws CTPException;
 
   CaseDTO createNewCase(CaseRequestDTO requestBodyDTO) throws CTPException;
 
