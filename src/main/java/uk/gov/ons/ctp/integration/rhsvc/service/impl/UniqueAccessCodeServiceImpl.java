@@ -29,7 +29,7 @@ import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UACLinkRequestDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
 import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
@@ -113,7 +113,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   }
 
   @Override
-  public UniqueAccessCodeDTO linkUACCase(String uacHash, UACLinkRequestDTO request)
+  public UniqueAccessCodeDTO linkUACCase(String uacHash, CaseRequestDTO request)
       throws CTPException {
     log.with(uacHash).with(request).debug("Enter linkUACCase()");
 
@@ -145,7 +145,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       validateUACCase(uac, primaryCase); // will abort here if invalid combo
     } else {
       // Create a new case as not found for the UPRN in Firestore
-      CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
+      CaseType primaryCaseType = determinePrimaryCaseType(request);
       primaryCase = createCase(primaryCaseType, uac, request);
       log.with("caseId", primaryCase.getId())
           .with("primaryCaseType", primaryCaseType)
@@ -279,7 +279,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         .debug("QuestionnaireLinked event published");
   }
 
-  private CaseType determinePrimaryCaseType(UACLinkRequestDTO request, UAC uac) {
+  private CaseType determinePrimaryCaseType(CaseRequestDTO request) {
     String caseTypeStr = null;
 
     EstabType estabType = EstabType.forCode(request.getEstabType());
@@ -297,7 +297,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   }
 
   // Build a new case to store and send to RM via the NewAddressReported event.
-  private CollectionCase createCase(CaseType caseType, UAC uac, UACLinkRequestDTO request) {
+  private CollectionCase createCase(CaseType caseType, UAC uac, CaseRequestDTO request) {
     CollectionCase newCase = new CollectionCase();
 
     newCase.setId(UUID.randomUUID().toString());

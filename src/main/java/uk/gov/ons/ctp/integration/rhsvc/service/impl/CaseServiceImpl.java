@@ -9,7 +9,10 @@ import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.domain.AddressLevel;
+import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -17,20 +20,27 @@ import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
+import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
+import uk.gov.ons.ctp.common.event.model.NewAddress;
+import uk.gov.ons.ctp.common.event.model.UAC;
+import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -41,6 +51,7 @@ public class CaseServiceImpl implements CaseService {
 
   private static final Logger log = LoggerFactory.getLogger(CaseServiceImpl.class);
 
+  @Autowired private AppConfig appConfig;
   @Autowired private RespondentDataRepository dataRepo;
   @Autowired private MapperFacade mapperFacade;
   @Autowired private EventPublisher eventPublisher;
@@ -73,11 +84,40 @@ public class CaseServiceImpl implements CaseService {
     if (caseFound.isPresent()) {
       log.with("case", caseFound.get().getId())
           .with("uprn", uprn)
-          .debug("No need to create new case as existing case found by UPRN");
+          .debug("Existing case found by UPRN");
       result = Optional.of(mapperFacade.map(caseFound.get(), CaseDTO.class));
     }
 
     return result;
+  }
+
+  @Override
+  public CaseDTO createNewCase(CaseRequestDTO request) throws CTPException {
+
+    Optional<CaseDTO> existingCase = getLatestCaseByUPRN(request.getUprn());
+
+    CaseDTO caseToReturn;
+    if (existingCase.isPresent()) {
+      // Don't need to create a new case, as we found one with the same UPRN
+      caseToReturn = existingCase.get();
+    } else {
+      // Create a new case as not found for the UPRN in Firestore
+      CaseType primaryCaseType = determinePrimaryCaseType(request);
+      CollectionCase newCase = createCase(primaryCaseType, null /*PMB*/, request);
+      log.with("caseId", newCase.getId())
+      .with("primaryCaseType", primaryCaseType)
+      .debug("Created new case");
+      
+      // Store new case in Firestore
+      dataRepo.writeCollectionCase(newCase);
+      
+      // tell RM we have created a case for the selected (HH|CE|SPG) address
+      sendNewAddressEvent(newCase);
+      
+      caseToReturn = mapperFacade.map(newCase, CaseDTO.class);
+    }
+
+    return caseToReturn;
   }
 
   @Override
@@ -274,5 +314,85 @@ public class CaseServiceImpl implements CaseService {
           "The fulfilment is for an individual so none of the following fields can be empty: "
               + "'forename' and 'surname'");
     }
+  }
+
+  private CaseType determinePrimaryCaseType(CaseRequestDTO request) {
+    String caseTypeStr = null;
+
+    EstabType estabType = EstabType.forCode(request.getEstabType());
+    Optional<AddressType> addressTypeForEstab = estabType.getAddressType();
+    if (addressTypeForEstab.isPresent()) {
+      // 1st choice. Set based on the establishment description
+      caseTypeStr = addressTypeForEstab.get().name(); // ie the equivalent
+    } else {
+      caseTypeStr = request.getAddressType().name(); // trust AIMS
+    }
+
+    CaseType caseType = CaseType.valueOf(caseTypeStr);
+
+    return caseType;
+  }
+
+  // Build a new case to store and send to RM via the NewAddressReported event.
+  private CollectionCase createCase(CaseType caseType, UAC uac, CaseRequestDTO request) {
+    CollectionCase newCase = new CollectionCase();
+
+    newCase.setId(UUID.randomUUID().toString());
+    newCase.setCollectionExerciseId(appConfig.getCollectionExerciseId());
+    newCase.setHandDelivery(false);
+    newCase.setSurvey("CENSUS");
+    newCase.setCaseType(caseType.name());
+    newCase.setAddressInvalid(false);
+    newCase.setCreatedDateTime(DateTimeUtil.nowUTC());
+
+    Address address = new Address();
+    address.setAddressLine1(request.getAddressLine1());
+    address.setAddressLine2(request.getAddressLine2());
+    address.setAddressLine3(request.getAddressLine3());
+    address.setTownName(request.getTownName());
+    address.setRegion(request.getRegion().name());
+    address.setPostcode(request.getPostcode());
+    address.setUprn(Long.toString(request.getUprn().getValue()));
+    address.setAddressType(caseType.name());
+    address.setEstabType(request.getEstabType());
+
+    // Set address level for case
+    if ((caseType == CaseType.CE || caseType == CaseType.SPG)) {
+      // PMB && uac.getFormType().equals(FormType.C.name())) {
+      address.setAddressLevel(AddressLevel.E.name());
+    } else {
+      address.setAddressLevel(AddressLevel.U.name());
+    }
+
+    newCase.setAddress(address);
+
+    log.with("caseId", newCase.getId())
+        .with("caseType", caseType)
+        .debug("Have populated CollectionCase object");
+
+    return newCase;
+  }
+
+  private void sendNewAddressEvent(CollectionCase collectionCase) {
+    String caseId = collectionCase.getId();
+    log.with("caseId", caseId).info("Generating NewAddressReported event");
+
+    CollectionCaseNewAddress caseNewAddress = new CollectionCaseNewAddress();
+    caseNewAddress.setId(caseId);
+    caseNewAddress.setCaseType(collectionCase.getCaseType());
+    caseNewAddress.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
+    caseNewAddress.setSurvey("CENSUS");
+    caseNewAddress.setAddress(collectionCase.getAddress());
+
+    NewAddress newAddress = new NewAddress();
+    newAddress.setCollectionCase(caseNewAddress);
+
+    String transactionId =
+        eventPublisher.sendEvent(
+            EventType.NEW_ADDRESS_REPORTED, Source.RESPONDENT_HOME, Channel.RH, newAddress);
+
+    log.with("caseId", caseId)
+        .with("transactionId", transactionId)
+        .debug("NewAddressReported event published");
   }
 }

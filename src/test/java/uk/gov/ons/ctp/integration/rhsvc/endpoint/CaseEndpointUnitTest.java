@@ -37,7 +37,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.NewCaseRequestDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -85,8 +85,7 @@ public class CaseEndpointUnitTest {
   /** Test returns JSON for new case from valid new case request */
   @Test
   public void postCreateCase_OK() throws Exception {
-    NewCaseRequestDTO newCaseRequest =
-        FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+    CaseRequestDTO newCaseRequest = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
 
     CaseDTO existingCase = caseDTO.get(0);
     Optional<CaseDTO> r = Optional.of(existingCase);
@@ -103,7 +102,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void postCreateCase_missingAddressLine1() throws Exception {
-    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
 
     request.setAddressLine1(null);
 
@@ -112,7 +111,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void postCreateCase_missingTownName() throws Exception {
-    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
 
     request.setTownName(null);
 
@@ -121,7 +120,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void postCreateCase_missingRegion() throws Exception {
-    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
 
     request.setRegion(null);
 
@@ -130,7 +129,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void postCreateCase_missingPostcode() throws Exception {
-    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
 
     request.setPostcode(null);
 
@@ -139,7 +138,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void postCreateCase_missingUprn() throws Exception {
-    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
 
     request.setUprn(null);
 
@@ -148,7 +147,7 @@ public class CaseEndpointUnitTest {
 
   @Test
   public void postCreateCase_missingEstabType() throws Exception {
-    NewCaseRequestDTO request = FixtureHelper.loadClassFixtures(NewCaseRequestDTO[].class).get(0);
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
 
     request.setEstabType(null);
 
@@ -406,7 +405,7 @@ public class CaseEndpointUnitTest {
     verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
   }
 
-  private void submitInvalidNewCaseRequest(NewCaseRequestDTO newCaseRequest)
+  private void submitInvalidNewCaseRequest(CaseRequestDTO newCaseRequest)
       throws Exception, JsonProcessingException {
     mockMvc
         .perform(

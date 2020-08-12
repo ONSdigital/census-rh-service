@@ -51,7 +51,7 @@ import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UACLinkRequestDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
 
@@ -225,7 +225,7 @@ public class UniqueAccessCodeServiceImplTest {
 
   @Test
   public void linkHouseholdUACToExistingHouseholdCase() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
     mockDataRepoForReadUAC(UAC_HASH, householdUAC);
@@ -258,7 +258,7 @@ public class UniqueAccessCodeServiceImplTest {
    */
   @Test
   public void linkHouseholdUACToSingleHousehold() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
     mockDataRepoForReadUAC(UAC_HASH, householdUAC);
@@ -280,7 +280,7 @@ public class UniqueAccessCodeServiceImplTest {
    */
   @Test
   public void linkHouseholdUACToValidHousehold() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
     mockDataRepoForReadUAC(UAC_HASH, householdUAC);
@@ -302,7 +302,7 @@ public class UniqueAccessCodeServiceImplTest {
    */
   @Test
   public void linkHouseholdUACtoLatestValidHousehold() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
     mockDataRepoForReadUAC(UAC_HASH, householdUAC);
@@ -319,7 +319,7 @@ public class UniqueAccessCodeServiceImplTest {
 
   @Test
   public void linkCE1UACToExistingCECase() throws Exception {
-    UACLinkRequestDTO request = getRequest("CEAddress");
+    CaseRequestDTO request = getRequest("CEAddress");
 
     UAC ceUAC = getUAC("unlinkedCE");
     mockDataRepoForReadUAC(UAC_HASH, ceUAC);
@@ -345,7 +345,7 @@ public class UniqueAccessCodeServiceImplTest {
 
   @Test
   public void linkHouseholdUACToExistingSPGCase() throws Exception {
-    UACLinkRequestDTO request = getRequest("SPGAddress");
+    CaseRequestDTO request = getRequest("SPGAddress");
 
     UAC ceUAC = getUAC("unlinkedHousehold");
     mockDataRepoForReadUAC(UAC_HASH, ceUAC);
@@ -371,7 +371,7 @@ public class UniqueAccessCodeServiceImplTest {
 
   @Test
   public void linkIndividualUACToExistingHouseholdCase() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     UAC individualUAC = getUAC("unlinkedIndividual");
     mockDataRepoForReadUAC(UAC_HASH, individualUAC);
@@ -409,7 +409,7 @@ public class UniqueAccessCodeServiceImplTest {
   // UAC is HH so no new HI case is created.
   @Test
   public void linkHouseholdUACToNewHouseholdCase() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     UAC householdUAC = getUAC("unlinkedHousehold");
     mockDataRepoForReadUAC(UAC_HASH, householdUAC);
@@ -446,7 +446,7 @@ public class UniqueAccessCodeServiceImplTest {
   // As the UAC is HI a new HI case is also created.
   @Test
   public void linkIndividualUACToNewHouseholdCase() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     UAC individualUAC = getUAC("unlinkedIndividual");
     mockDataRepoForReadUAC(UAC_HASH, individualUAC);
@@ -487,7 +487,7 @@ public class UniqueAccessCodeServiceImplTest {
   // This should be detected and virtually no work will be done.
   @Test
   public void linkUACToCurrentCase() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     // Setup fake Case
     CollectionCase caseToLinkTo = getCase("CE");
@@ -513,7 +513,7 @@ public class UniqueAccessCodeServiceImplTest {
   // Test that linking fails when the UAC is not found in Firestore
   @Test
   public void attemptToLinkUACtoUnknownCase() throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     try {
       uacSvc.linkUACCase(UAC_HASH, request);
@@ -569,7 +569,7 @@ public class UniqueAccessCodeServiceImplTest {
   private void doLinkingTest(
       FormType uacFormType, CaseType caseCaseType, LinkingExpectation linkAllowed)
       throws Exception {
-    UACLinkRequestDTO request = getRequest("householdAddress");
+    CaseRequestDTO request = getRequest("householdAddress");
 
     // Setup fake UAC
     UAC uacTest = getUAC("unlinkedHousehold"); // any old uac as form type to be overridden
@@ -613,7 +613,7 @@ public class UniqueAccessCodeServiceImplTest {
     when(dataRepo.readUAC(uacHash)).thenReturn(Optional.of(fakeUAC));
   }
 
-  private Address createAddressFromLinkRequest(UACLinkRequestDTO request, CaseType caseType) {
+  private Address createAddressFromLinkRequest(CaseRequestDTO request, CaseType caseType) {
     Address expectedAddress = new Address();
 
     expectedAddress.setAddressLine1(request.getAddressLine1());
@@ -770,7 +770,7 @@ public class UniqueAccessCodeServiceImplTest {
     return FixtureHelper.loadClassFixtures(CollectionCase[].class, qualifier);
   }
 
-  private UACLinkRequestDTO getRequest(String qualifier) {
-    return FixtureHelper.loadClassFixtures(UACLinkRequestDTO[].class, qualifier).get(0);
+  private CaseRequestDTO getRequest(String qualifier) {
+    return FixtureHelper.loadClassFixtures(CaseRequestDTO[].class, qualifier).get(0);
   }
 }

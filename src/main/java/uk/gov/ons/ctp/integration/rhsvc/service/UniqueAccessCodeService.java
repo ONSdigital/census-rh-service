@@ -1,7 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UACLinkRequestDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 
 /** Service responsible for UAC requests */
@@ -24,5 +24,5 @@ public interface UniqueAccessCodeService {
    * @return UniqueAccessCodeDTO representing data for UAC.
    * @throws CTPException something went wrong.
    */
-  UniqueAccessCodeDTO linkUACCase(String uacHash, UACLinkRequestDTO request) throws CTPException;
+  UniqueAccessCodeDTO linkUACCase(String uacHash, CaseRequestDTO request) throws CTPException;
 }
