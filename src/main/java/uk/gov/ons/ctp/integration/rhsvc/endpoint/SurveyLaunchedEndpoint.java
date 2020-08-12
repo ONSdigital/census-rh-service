@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import io.micrometer.core.annotation.Timed;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import uk.gov.ons.ctp.integration.rhsvc.service.SurveyLaunchedService;
  * The REST endpoint controller for the Respondent Home service. This class covers top level
  * endpoints.
  */
+@Timed
 @RestController
 @RequestMapping(value = "/", produces = "application/json")
 public final class SurveyLaunchedEndpoint {

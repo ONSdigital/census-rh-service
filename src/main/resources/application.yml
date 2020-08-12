@@ -18,68 +18,32 @@ logging:
 collectionExerciseId : 34d7f3bb-91c9-45d0-bb2d-90afce4fc790
 
 management:
-  health:
-    rabbit:
-      enabled: false 
   endpoints:
-    enabled-by-default: true
+    enabled-by-default: false
     web:
       base-path: /
-  info:
-    env:
-      enabled: true 
-    build:
-      enabled: true 
-    git:
-      mode: SIMPLE 
-      enabled: true 
-    defaults:
-      enabled: true
+      exposure:
+        include: info, health
   endpoint:
-    auditevents:
-      enabled: false
-    beans:
-      enabled: false
-    caches:
-      enabled: false
-    conditions:
-      enabled: false
-    configprops:
-      enabled: false
-    env:
-      enabled: false
-    flyway:
-      enabled: false
+    info:
+      enabled: true 
     health:
-      enabled: false
-    httptrace:
-      enabled: false
-    integrationgraph:
-      enabled: false
-    loggers:
-      enabled: false
-    liquibase:
-      enabled: false
-    metrics:
-      enabled: false
-    mappings:
-      enabled: false
-    scheduledtasks:
-      enabled: false
-    sessions:
-      enabled: false
-    shutdown:
-      enabled: false
-    threaddump:
-      enabled: false
-    heapdump:
-      enabled: false
-    jolokia:
-      enabled: false
-    logfile:
-      enabled: false
-    prometheus:
-      enabled: false
+      enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+      slo:
+        "[http.server.requests]": 10ms, 100ms
+      percentiles:
+        "[http.server.requests]": 0.5, 0.75, 0.95, 0.98, 0.99, 0.999, 1.0
+    tags:
+      application: RespondentHomeService
+    export:
+      stackdriver:
+        project-id: ${GOOGLE_CLOUD_PROJECT}
+        enabled: true
+        step: PT2M
 
 server:
   port: 8071
