@@ -1,9 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +40,6 @@ import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
@@ -73,6 +70,8 @@ public class CaseServiceImplTest {
 
   @Spy private AppConfig appConfig = new AppConfig();
 
+  private TestUtil testUtil;
+
   private List<CollectionCase> collectionCase;
   private List<AddressChangeDTO> addressChangeDTO;
 
@@ -84,6 +83,8 @@ public class CaseServiceImplTest {
 
     appConfig.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
     ReflectionTestUtils.setField(caseSvc, "appConfig", appConfig);
+
+    testUtil = new TestUtil(dataRepo, eventPublisher);
   }
 
   /** Test returns valid CaseDTO for valid UPRN */
@@ -316,7 +317,7 @@ public class CaseServiceImplTest {
 
     // Verify that returned case holds details for the pre-existing case
     AddressLevel expectedAddressLevel = AddressLevel.U;
-    assertCaseDTO(existingCase, newCase, expectedAddressLevel);
+    testUtil.validateCaseDTO(existingCase, expectedAddressLevel, newCase);
 
     // Verify nothing written to Firestore and no events sent
     verify(dataRepo, times(0)).writeCollectionCase(any());
@@ -355,87 +356,11 @@ public class CaseServiceImplTest {
     Address expectedAddress = mapperFacade.map(request, Address.class);
 
     // Verify returned case
-    verifyCaseDTO(newCase, expectedCaseType, expectedAddress, expectedAddressLevel);
+    testUtil.validateCaseDTO(expectedCaseType, expectedAddress, expectedAddressLevel, newCase);
 
-    verifyCaseSavedToFirestore(expectedCaseType, expectedAddress);
+    testUtil.verifyCollectionCaseSavedToFirestore(expectedCaseType, expectedAddress);
 
-    TestUtil.verifyNewAddressEventSent(
-        eventPublisher, newCase.getCaseId().toString(), expectedCaseType, expectedAddress);
-  }
-
-  private void verifyCaseDTO(
-      CaseDTO newCase,
-      CaseType expectedCaseType,
-      Address expectedAddress,
-      AddressLevel expectedAddressLevel) {
-    CollectionCase expectedCollectionCase = new CollectionCase();
-    expectedCollectionCase.setId(newCase.getCaseId().toString());
-    expectedCollectionCase.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
-    expectedCollectionCase.setCaseType(expectedCaseType.name());
-    expectedCollectionCase.setAddress(expectedAddress);
-
-    assertCaseDTO(expectedCollectionCase, newCase, expectedAddressLevel);
-  }
-
-  private void assertCaseDTO(
-      CollectionCase existingCase, CaseDTO newCase, AddressLevel expectedAddressLevel) {
-    assertEquals(existingCase.getId(), newCase.getCaseId().toString());
-    assertEquals(existingCase.getCaseType(), newCase.getCaseType());
-    assertEquals(existingCase.getAddress().getAddressType(), newCase.getAddressType());
-    assertAddressDTO(existingCase.getAddress(), newCase.getAddress());
-    assertEquals(existingCase.getAddress().getAddressType(), newCase.getAddressType());
-    assertEquals(existingCase.getAddress().getRegion(), newCase.getRegion());
-    assertEquals(expectedAddressLevel.toString(), newCase.getAddressLevel());
-    assertEquals(existingCase.getId(), newCase.getCaseId().toString());
-  }
-
-  private void assertAddressDTO(Address expected, AddressDTO actual) {
-    assertEquals(new UniquePropertyReferenceNumber(expected.getUprn()), actual.getUprn());
-    assertEquals(expected.getAddressLine1(), actual.getAddressLine1());
-    assertEquals(expected.getAddressLine2(), actual.getAddressLine2());
-    assertEquals(expected.getAddressLine3(), actual.getAddressLine3());
-    assertEquals(expected.getTownName(), actual.getTownName());
-    assertEquals(expected.getPostcode(), actual.getPostcode());
-  }
-
-  private void verifyCaseSavedToFirestore(CaseType expectedCaseType, Address expectedAddress)
-      throws CTPException {
-    ArgumentCaptor<CollectionCase> firestoreCaptor = ArgumentCaptor.forClass(CollectionCase.class);
-    verify(dataRepo, times(1)).writeCollectionCase(firestoreCaptor.capture());
-
-    validateCase(
-        firestoreCaptor.getValue(),
-        expectedCaseType,
-        expectedAddress); // PMB verify that all fields are checked
-  }
-
-  // PMB dedupe
-  private void validateCase(
-      CollectionCase newCase, CaseType expectedCaseType, Address expectedAddress) {
-    assertNotNull(UUID.fromString(newCase.getId()));
-    assertNull(newCase.getCaseRef());
-    assertEquals(expectedCaseType.name(), newCase.getCaseType());
-    assertEquals("CENSUS", newCase.getSurvey());
-    assertEquals(COLLECTION_EXERCISE_ID, newCase.getCollectionExerciseId());
-    assertEquals(new Contact(), newCase.getContact());
-    assertNull(newCase.getActionableFrom());
-    assertFalse(newCase.isHandDelivery());
-    assertFalse(newCase.isAddressInvalid());
-    // PMB Needed?    assertEquals(Integer.valueOf(0), newCase.getCeExpectedCapacity());
-    assertNotNull(newCase.getCreatedDateTime());
-
-    Address actualAddress = newCase.getAddress();
-    assertEquals(expectedAddress.getAddressLine1(), actualAddress.getAddressLine1());
-    assertEquals(expectedAddress.getAddressLine2(), actualAddress.getAddressLine2());
-    assertEquals(expectedAddress.getAddressLine3(), actualAddress.getAddressLine3());
-    assertEquals(expectedAddress.getTownName(), actualAddress.getTownName());
-    assertEquals(expectedAddress.getPostcode(), actualAddress.getPostcode());
-    assertEquals(expectedAddress.getRegion(), actualAddress.getRegion());
-    assertEquals(expectedAddress.getUprn(), actualAddress.getUprn());
-    assertEquals(expectedAddress.getEstabType(), actualAddress.getEstabType());
-    assertNull(expectedAddress.getOrganisationName());
-    assertEquals(expectedAddress.getAddressType(), actualAddress.getAddressType());
-    assertEquals(expectedAddress.getAddressLevel(), actualAddress.getAddressLevel());
-    assertEquals(expectedAddress, actualAddress);
+    testUtil.verifyNewAddressEventSent(
+        newCase.getCaseId().toString(), expectedCaseType, expectedAddress);
   }
 }

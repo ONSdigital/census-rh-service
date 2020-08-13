@@ -2,7 +2,6 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -41,7 +40,6 @@ import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
-import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.QuestionnaireLinkedDetails;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
@@ -74,11 +72,15 @@ public class UniqueAccessCodeServiceImplTest {
 
   @Spy private AppConfig appConfig = new AppConfig();
 
+  private TestUtil testUtil;
+
   /** Setup tests */
   @Before
   public void setUp() throws Exception {
     appConfig.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
     ReflectionTestUtils.setField(uacSvc, "appConfig", appConfig);
+
+    testUtil = new TestUtil(dataRepo, eventPublisher);
   }
 
   @Test
@@ -385,7 +387,7 @@ public class UniqueAccessCodeServiceImplTest {
     // Verify that new individual case has been created
     List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
     CollectionCase newIndividualCase = newCases.get(0);
-    validateCase(newIndividualCase, CaseType.HI, expectedAddress);
+    testUtil.validateCase(CaseType.HI, expectedAddress, newIndividualCase);
 
     verifyUACUpdated(UAC_HASH, newIndividualCase.getId());
 
@@ -423,10 +425,9 @@ public class UniqueAccessCodeServiceImplTest {
     // Verify that a new case has been created
     List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(1);
     CollectionCase newCase = newCases.get(0);
-    validateCase(newCase, CaseType.HH, expectedAddress);
+    testUtil.validateCase(CaseType.HH, expectedAddress, newCase);
 
-    TestUtil.verifyNewAddressEventSent(
-        eventPublisher, newCase.getId(), CaseType.HH, expectedAddress);
+    testUtil.verifyNewAddressEventSent(newCase.getId(), CaseType.HH, expectedAddress);
 
     verifyUACUpdated(UAC_HASH, newCase.getId());
 
@@ -462,11 +463,10 @@ public class UniqueAccessCodeServiceImplTest {
     List<CollectionCase> newCases = grabRepoWriteCollectionCaseValues(2);
     CollectionCase newCase = newCases.get(0);
     CollectionCase newHiCase = newCases.get(1);
-    validateCase(newCase, CaseType.HH, expectedAddressHH);
-    validateCase(newHiCase, CaseType.HI, expectedAddressHI);
+    testUtil.validateCase(CaseType.HH, expectedAddressHH, newCase);
+    testUtil.validateCase(CaseType.HI, expectedAddressHI, newHiCase);
 
-    TestUtil.verifyNewAddressEventSent(
-        eventPublisher, newCase.getId(), CaseType.HH, expectedAddressHH);
+    testUtil.verifyNewAddressEventSent(newCase.getId(), CaseType.HH, expectedAddressHH);
 
     verifyUACUpdated(UAC_HASH, newHiCase.getId());
 
@@ -636,33 +636,6 @@ public class UniqueAccessCodeServiceImplTest {
     verify(dataRepo, times(expectedNumberCasesCreated)).writeCollectionCase(caseCapture.capture());
 
     return caseCapture.getAllValues();
-  }
-
-  private void validateCase(
-      CollectionCase newCase, CaseType expectedCaseType, Address expectedAddress) {
-    assertNull(newCase.getCaseRef());
-    assertEquals(expectedCaseType.name(), newCase.getCaseType());
-    assertEquals("CENSUS", newCase.getSurvey());
-    assertEquals(COLLECTION_EXERCISE_ID, newCase.getCollectionExerciseId());
-    assertEquals(new Contact(), newCase.getContact());
-    assertNull(newCase.getActionableFrom());
-    assertFalse(newCase.isHandDelivery());
-    assertNotNull(newCase.getCreatedDateTime());
-    assertFalse(newCase.isAddressInvalid());
-    // PMB Needed?    assertEquals(Integer.valueOf(0), newCase.getCeExpectedCapacity());
-
-    Address actualAddress = newCase.getAddress();
-    assertEquals(expectedAddress.getAddressLine1(), actualAddress.getAddressLine1());
-    assertEquals(expectedAddress.getAddressLine2(), actualAddress.getAddressLine2());
-    assertEquals(expectedAddress.getAddressLine3(), actualAddress.getAddressLine3());
-    assertEquals(expectedAddress.getTownName(), actualAddress.getTownName());
-    assertEquals(expectedAddress.getRegion(), actualAddress.getRegion());
-    assertEquals(expectedAddress.getPostcode(), actualAddress.getPostcode());
-    assertEquals(expectedAddress.getUprn(), actualAddress.getUprn());
-    assertEquals(expectedAddress.getAddressType(), actualAddress.getAddressType());
-    assertEquals(expectedAddress.getEstabType(), actualAddress.getEstabType());
-    assertEquals(expectedAddress.getAddressLevel(), actualAddress.getAddressLevel());
-    assertEquals(expectedAddress, actualAddress);
   }
 
   private void verifyUACUpdated(String uacHash, String expectedCaseId) throws CTPException {

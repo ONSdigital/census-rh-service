@@ -306,6 +306,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     newCase.setSurvey("CENSUS");
     newCase.setCaseType(caseType.name());
     newCase.setAddressInvalid(false);
+    newCase.setCeExpectedCapacity(0);
     newCase.setCreatedDateTime(DateTimeUtil.nowUTC());
 
     Address address = new Address();

@@ -349,6 +349,7 @@ public class CaseServiceImpl implements CaseService {
     newCase.setSurvey("CENSUS");
     newCase.setCaseType(caseType.name());
     newCase.setAddressInvalid(false);
+    newCase.setCeExpectedCapacity(0);
     newCase.setCreatedDateTime(DateTimeUtil.nowUTC());
 
     Address address = new Address();
