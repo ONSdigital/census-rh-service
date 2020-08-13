@@ -1,7 +1,9 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,28 +26,40 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.domain.AddressLevel;
+import uk.gov.ons.ctp.common.domain.AddressType;
+import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
+import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaseServiceImplTest {
 
   private static final UniquePropertyReferenceNumber UPRN =
       new UniquePropertyReferenceNumber("123456");
+
+  // the actual census id as per the application.yml and also RM
+  private static final String COLLECTION_EXERCISE_ID = "34d7f3bb-91c9-45d0-bb2d-90afce4fc790";
 
   @InjectMocks private CaseServiceImpl caseSvc;
 
@@ -57,6 +71,8 @@ public class CaseServiceImplTest {
 
   @Mock private ProductReference productReference;
 
+  @Spy private AppConfig appConfig = new AppConfig();
+
   private List<CollectionCase> collectionCase;
   private List<AddressChangeDTO> addressChangeDTO;
 
@@ -65,6 +81,9 @@ public class CaseServiceImplTest {
   public void setUp() {
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
     this.addressChangeDTO = FixtureHelper.loadClassFixtures(AddressChangeDTO[].class);
+
+    appConfig.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
+    ReflectionTestUtils.setField(caseSvc, "appConfig", appConfig);
   }
 
   /** Test returns valid CaseDTO for valid UPRN */
@@ -279,5 +298,144 @@ public class CaseServiceImplTest {
     verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
 
     assertTrue(exceptionThrown);
+  }
+
+  @Test
+  public void createNewCase_withExistingCase() throws Exception {
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+    String uprn = Long.toString(request.getUprn().getValue());
+
+    // There is already an existing case with that uprn
+    CollectionCase existingCase = FixtureHelper.loadClassFixtures(CollectionCase[].class).get(0);
+    existingCase.getAddress().setUprn(uprn);
+    Optional<CollectionCase> existingCaseResult = Optional.of(existingCase);
+    when(dataRepo.readLatestCollectionCaseByUprn(eq(uprn))).thenReturn(existingCaseResult);
+
+    // Invoke code under test
+    CaseDTO newCase = caseSvc.createNewCase(request);
+
+    // Verify that returned case holds details for the pre-existing case
+    AddressLevel expectedAddressLevel = AddressLevel.U;
+    assertCaseDTO(existingCase, newCase, expectedAddressLevel);
+
+    // Verify nothing written to Firestore and no events sent
+    verify(dataRepo, times(0)).writeCollectionCase(any());
+    verify(eventPublisher, times(0)).sendEvent(any(), any(), any(), any());
+  }
+
+  @Test
+  public void createNewCase_CE() throws Exception {
+    doCreateNewCaseTest(EstabType.HOLIDAY_PARK, AddressType.CE, CaseType.CE, AddressLevel.E);
+  }
+
+  @Test
+  public void createNewCase_HH() throws Exception {
+    doCreateNewCaseTest(EstabType.HOUSEHOLD, AddressType.HH, CaseType.HH, AddressLevel.U);
+  }
+
+  @Test
+  public void createNewCase_withNoAddressTypeForEstab() throws Exception {
+    // In this test the Address type will be used to set the case type
+    doCreateNewCaseTest(EstabType.OTHER, AddressType.SPG, CaseType.SPG, AddressLevel.U);
+  }
+
+  private void doCreateNewCaseTest(
+      EstabType estabType,
+      AddressType addressType,
+      CaseType expectedCaseType,
+      AddressLevel expectedAddressLevel)
+      throws Exception {
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+    request.setEstabType(estabType.getCode());
+    request.setAddressType(addressType);
+
+    // Invoke code under test
+    CaseDTO newCase = caseSvc.createNewCase(request);
+
+    Address expectedAddress = mapperFacade.map(request, Address.class);
+
+    // Verify returned case
+    verifyCaseDTO(newCase, expectedCaseType, expectedAddress, expectedAddressLevel);
+
+    verifyCaseSavedToFirestore(expectedCaseType, expectedAddress);
+
+    TestUtil.verifyNewAddressEventSent(
+        eventPublisher, newCase.getCaseId().toString(), expectedCaseType, expectedAddress);
+  }
+
+  private void verifyCaseDTO(
+      CaseDTO newCase,
+      CaseType expectedCaseType,
+      Address expectedAddress,
+      AddressLevel expectedAddressLevel) {
+    CollectionCase expectedCollectionCase = new CollectionCase();
+    expectedCollectionCase.setId(newCase.getCaseId().toString());
+    expectedCollectionCase.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
+    expectedCollectionCase.setCaseType(expectedCaseType.name());
+    expectedCollectionCase.setAddress(expectedAddress);
+
+    assertCaseDTO(expectedCollectionCase, newCase, expectedAddressLevel);
+  }
+
+  private void assertCaseDTO(
+      CollectionCase existingCase, CaseDTO newCase, AddressLevel expectedAddressLevel) {
+    assertEquals(existingCase.getId(), newCase.getCaseId().toString());
+    assertEquals(existingCase.getCaseType(), newCase.getCaseType());
+    assertEquals(existingCase.getAddress().getAddressType(), newCase.getAddressType());
+    assertAddressDTO(existingCase.getAddress(), newCase.getAddress());
+    assertEquals(existingCase.getAddress().getAddressType(), newCase.getAddressType());
+    assertEquals(existingCase.getAddress().getRegion(), newCase.getRegion());
+    assertEquals(expectedAddressLevel.toString(), newCase.getAddressLevel());
+    assertEquals(existingCase.getId(), newCase.getCaseId().toString());
+  }
+
+  private void assertAddressDTO(Address expected, AddressDTO actual) {
+    assertEquals(new UniquePropertyReferenceNumber(expected.getUprn()), actual.getUprn());
+    assertEquals(expected.getAddressLine1(), actual.getAddressLine1());
+    assertEquals(expected.getAddressLine2(), actual.getAddressLine2());
+    assertEquals(expected.getAddressLine3(), actual.getAddressLine3());
+    assertEquals(expected.getTownName(), actual.getTownName());
+    assertEquals(expected.getPostcode(), actual.getPostcode());
+  }
+
+  private void verifyCaseSavedToFirestore(CaseType expectedCaseType, Address expectedAddress)
+      throws CTPException {
+    ArgumentCaptor<CollectionCase> firestoreCaptor = ArgumentCaptor.forClass(CollectionCase.class);
+    verify(dataRepo, times(1)).writeCollectionCase(firestoreCaptor.capture());
+
+    validateCase(
+        firestoreCaptor.getValue(),
+        expectedCaseType,
+        expectedAddress); // PMB verify that all fields are checked
+  }
+
+  // PMB dedupe
+  private void validateCase(
+      CollectionCase newCase, CaseType expectedCaseType, Address expectedAddress) {
+    assertNotNull(UUID.fromString(newCase.getId()));
+    assertNull(newCase.getCaseRef());
+    assertEquals(expectedCaseType.name(), newCase.getCaseType());
+    assertEquals("CENSUS", newCase.getSurvey());
+    assertEquals(COLLECTION_EXERCISE_ID, newCase.getCollectionExerciseId());
+    assertEquals(new Contact(), newCase.getContact());
+    assertNull(newCase.getActionableFrom());
+    assertFalse(newCase.isHandDelivery());
+    assertFalse(newCase.isAddressInvalid());
+    // PMB Needed?    assertEquals(Integer.valueOf(0), newCase.getCeExpectedCapacity());
+    assertNotNull(newCase.getCreatedDateTime());
+
+    Address actualAddress = newCase.getAddress();
+    assertEquals(expectedAddress.getAddressLine1(), actualAddress.getAddressLine1());
+    assertEquals(expectedAddress.getAddressLine2(), actualAddress.getAddressLine2());
+    assertEquals(expectedAddress.getAddressLine3(), actualAddress.getAddressLine3());
+    assertEquals(expectedAddress.getTownName(), actualAddress.getTownName());
+    assertEquals(expectedAddress.getPostcode(), actualAddress.getPostcode());
+    assertEquals(expectedAddress.getRegion(), actualAddress.getRegion());
+    assertEquals(expectedAddress.getUprn(), actualAddress.getUprn());
+    assertEquals(expectedAddress.getEstabType(), actualAddress.getEstabType());
+    assertNull(expectedAddress.getOrganisationName());
+    assertEquals(expectedAddress.getAddressType(), actualAddress.getAddressType());
+    assertEquals(expectedAddress.getAddressLevel(), actualAddress.getAddressLevel());
+    assertEquals(expectedAddress, actualAddress);
   }
 }

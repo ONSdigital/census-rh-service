@@ -85,10 +85,10 @@ public class CaseServiceImpl implements CaseService {
       caseToReturn = existingCase.get();
     } else {
       // Create a new case as not found for the UPRN in Firestore
-      CaseType primaryCaseType = determinePrimaryCaseType(request);
-      CollectionCase newCase = createCase(primaryCaseType, null /*PMB*/, request);
+      CaseType caseType = determinePrimaryCaseType(request);
+      CollectionCase newCase = createCase(caseType, null /*PMB*/, request);
       log.with("caseId", newCase.getId())
-          .with("primaryCaseType", primaryCaseType)
+          .with("primaryCaseType", caseType)
           .debug("Created new case");
 
       // Store new case in Firestore
@@ -98,6 +98,13 @@ public class CaseServiceImpl implements CaseService {
       sendNewAddressEvent(newCase);
 
       caseToReturn = mapperFacade.map(newCase, CaseDTO.class);
+    }
+
+    // Set address level for case
+    if (caseToReturn.getCaseType().equals(CaseType.CE.name())) {
+      caseToReturn.setAddressLevel(AddressLevel.E.name());
+    } else {
+      caseToReturn.setAddressLevel(AddressLevel.U.name());
     }
 
     return caseToReturn;
@@ -354,14 +361,6 @@ public class CaseServiceImpl implements CaseService {
     address.setUprn(Long.toString(request.getUprn().getValue()));
     address.setAddressType(caseType.name());
     address.setEstabType(request.getEstabType());
-
-    // Set address level for case
-    if (caseType == CaseType.CE) {
-      address.setAddressLevel(AddressLevel.E.name());
-    } else {
-      address.setAddressLevel(AddressLevel.U.name());
-    }
-
     newCase.setAddress(address);
 
     log.with("caseId", newCase.getId())
