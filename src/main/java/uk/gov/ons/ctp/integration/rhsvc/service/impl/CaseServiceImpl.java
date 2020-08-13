@@ -20,17 +20,12 @@ import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
 import uk.gov.ons.ctp.common.event.model.AddressModification;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseCompact;
-import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.Contact;
 import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
-import uk.gov.ons.ctp.common.event.model.NewAddress;
-import uk.gov.ons.ctp.common.event.model.UAC;
-import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
@@ -85,8 +80,9 @@ public class CaseServiceImpl implements CaseService {
       caseToReturn = existingCase.get();
     } else {
       // Create a new case as not found for the UPRN in Firestore
-      CaseType caseType = determinePrimaryCaseType(request);
-      CollectionCase newCase = createCase(caseType, null /*PMB*/, request);
+      CaseType caseType = determineCaseType(request);
+      CollectionCase newCase =
+          ServiceUtil.createCase(request, caseType, appConfig.getCollectionExerciseId());
       log.with("caseId", newCase.getId())
           .with("primaryCaseType", caseType)
           .debug("Created new case");
@@ -95,7 +91,7 @@ public class CaseServiceImpl implements CaseService {
       dataRepo.writeCollectionCase(newCase);
 
       // tell RM we have created a case for the selected (HH|CE|SPG) address
-      sendNewAddressEvent(newCase);
+      ServiceUtil.sendNewAddressEvent(eventPublisher, newCase);
 
       caseToReturn = mapperFacade.map(newCase, CaseDTO.class);
     }
@@ -322,7 +318,7 @@ public class CaseServiceImpl implements CaseService {
     return result;
   }
 
-  private CaseType determinePrimaryCaseType(CaseRequestDTO request) {
+  private CaseType determineCaseType(CaseRequestDTO request) {
     String caseTypeStr = null;
 
     EstabType estabType = EstabType.forCode(request.getEstabType());
@@ -337,60 +333,5 @@ public class CaseServiceImpl implements CaseService {
     CaseType caseType = CaseType.valueOf(caseTypeStr);
 
     return caseType;
-  }
-
-  // Build a new case to store and send to RM via the NewAddressReported event.
-  private CollectionCase createCase(CaseType caseType, UAC uac, CaseRequestDTO request) {
-    CollectionCase newCase = new CollectionCase();
-
-    newCase.setId(UUID.randomUUID().toString());
-    newCase.setCollectionExerciseId(appConfig.getCollectionExerciseId());
-    newCase.setHandDelivery(false);
-    newCase.setSurvey("CENSUS");
-    newCase.setCaseType(caseType.name());
-    newCase.setAddressInvalid(false);
-    newCase.setCeExpectedCapacity(0);
-    newCase.setCreatedDateTime(DateTimeUtil.nowUTC());
-
-    Address address = new Address();
-    address.setAddressLine1(request.getAddressLine1());
-    address.setAddressLine2(request.getAddressLine2());
-    address.setAddressLine3(request.getAddressLine3());
-    address.setTownName(request.getTownName());
-    address.setRegion(request.getRegion().name());
-    address.setPostcode(request.getPostcode());
-    address.setUprn(Long.toString(request.getUprn().getValue()));
-    address.setAddressType(caseType.name());
-    address.setEstabType(request.getEstabType());
-    newCase.setAddress(address);
-
-    log.with("caseId", newCase.getId())
-        .with("caseType", caseType)
-        .debug("Have populated CollectionCase object");
-
-    return newCase;
-  }
-
-  private void sendNewAddressEvent(CollectionCase collectionCase) {
-    String caseId = collectionCase.getId();
-    log.with("caseId", caseId).info("Generating NewAddressReported event");
-
-    CollectionCaseNewAddress caseNewAddress = new CollectionCaseNewAddress();
-    caseNewAddress.setId(caseId);
-    caseNewAddress.setCaseType(collectionCase.getCaseType());
-    caseNewAddress.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
-    caseNewAddress.setSurvey("CENSUS");
-    caseNewAddress.setAddress(collectionCase.getAddress());
-
-    NewAddress newAddress = new NewAddress();
-    newAddress.setCollectionCase(caseNewAddress);
-
-    String transactionId =
-        eventPublisher.sendEvent(
-            EventType.NEW_ADDRESS_REPORTED, Source.RESPONDENT_HOME, Channel.RH, newAddress);
-
-    log.with("caseId", caseId)
-        .with("transactionId", transactionId)
-        .debug("NewAddressReported event published");
   }
 }
