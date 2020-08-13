@@ -16,8 +16,8 @@ import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 
 /**
- * This class aims to prevent code duplication by holding code which is common to more than 
- * one service.
+ * This class aims to prevent code duplication by holding code which is common to more than one
+ * service.
  */
 public class ServiceUtil {
   private static final Logger log = LoggerFactory.getLogger(ServiceUtil.class);
