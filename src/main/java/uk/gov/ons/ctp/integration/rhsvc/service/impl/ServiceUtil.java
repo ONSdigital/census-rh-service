@@ -32,7 +32,7 @@ public class ServiceUtil {
     newCase.setSurvey("CENSUS");
     newCase.setCaseType(caseType.name());
     newCase.setAddressInvalid(false);
-    newCase.setCeExpectedCapacity(0);
+    newCase.setCeExpectedCapacity(caseType == CaseType.CE ? 1 : 0);
     newCase.setCreatedDateTime(DateTimeUtil.nowUTC());
 
     Address address = new Address();

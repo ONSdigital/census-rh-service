@@ -109,12 +109,10 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   }
 
   /**
-   * Read the latest case from cloud storage based on its uprn. In this method there is no filtering
-   * of the results.
+   * Read the latest case from cloud storage based on its uprn.
    *
    * @param uprn - is the uprn that the target case(s) must contain.
-   * @return - Optional containing 1 de-serialised version of the stored object. If no matching
-   *     cases are found then an empty Optional is returned.
+   * @return - Optional containing the latest case or Empty.
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override

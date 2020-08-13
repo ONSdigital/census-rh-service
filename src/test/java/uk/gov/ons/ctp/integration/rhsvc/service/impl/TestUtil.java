@@ -75,6 +75,13 @@ public class TestUtil {
   }
 
   void validateCase(CaseType expectedCaseType, Address expectedAddress, CollectionCase newCase) {
+    Integer expectedCeExpectedCapacity;
+    if (expectedCaseType == CaseType.CE) {
+      expectedCeExpectedCapacity = 1;
+    } else {
+      expectedCeExpectedCapacity = 0;
+    }
+
     assertNotNull(UUID.fromString(newCase.getId()));
     assertNull(newCase.getCaseRef());
     assertEquals(expectedCaseType.name(), newCase.getCaseType());
@@ -84,7 +91,7 @@ public class TestUtil {
     assertNull(newCase.getActionableFrom());
     assertFalse(newCase.isHandDelivery());
     assertFalse(newCase.isAddressInvalid());
-    assertEquals(Integer.valueOf(0), newCase.getCeExpectedCapacity());
+    assertEquals(expectedCeExpectedCapacity, newCase.getCeExpectedCapacity());
     assertNotNull(newCase.getCreatedDateTime());
 
     Address actualAddress = newCase.getAddress();
