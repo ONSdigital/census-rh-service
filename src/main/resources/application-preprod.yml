@@ -6,5 +6,5 @@ logging:
   useJson: true
 
 messaging:
-  consumingThreads: 30
-  prefetchCount: 10
+  consumingThreads: 60
+  prefetchCount: 1

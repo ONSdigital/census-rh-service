@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import io.micrometer.core.annotation.Timed;
 import java.util.UUID;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
 
 /** The REST controller to deal with Cases */
+@Timed
 @RestController
 @RequestMapping(value = "/cases", produces = "application/json")
 public class CaseEndpoint {
