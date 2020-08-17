@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.UUID;
+import lombok.experimental.UtilityClass;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
@@ -19,6 +20,7 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
  * This class aims to prevent code duplication by holding code which is common to more than one
  * service.
  */
+@UtilityClass
 public class ServiceUtil {
   private static final Logger log = LoggerFactory.getLogger(ServiceUtil.class);
 
@@ -32,7 +34,8 @@ public class ServiceUtil {
     newCase.setSurvey("CENSUS");
     newCase.setCaseType(caseType.name());
     newCase.setAddressInvalid(false);
-    newCase.setCeExpectedCapacity(caseType == CaseType.CE ? 1 : 0);
+    newCase.setCeExpectedCapacity(
+        caseType == CaseType.CE ? 1 : 0); // If a CE then it must have at least 1 resident
     newCase.setCreatedDateTime(DateTimeUtil.nowUTC());
 
     Address address = new Address();
@@ -59,6 +62,7 @@ public class ServiceUtil {
     caseNewAddress.setCaseType(collectionCase.getCaseType());
     caseNewAddress.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
     caseNewAddress.setSurvey("CENSUS");
+    caseNewAddress.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
     caseNewAddress.setAddress(collectionCase.getAddress());
 
     NewAddress newAddress = new NewAddress();
