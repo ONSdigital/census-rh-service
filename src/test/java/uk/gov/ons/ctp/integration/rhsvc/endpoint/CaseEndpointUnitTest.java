@@ -2,6 +2,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -34,6 +35,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -76,6 +78,77 @@ public class CaseEndpointUnitTest {
 
     this.smsFulfilmentRequest =
         FixtureHelper.loadClassFixtures(SMSFulfilmentRequestDTO[].class).get(0);
+  }
+
+  /** Test returns JSON for new case from valid new case request */
+  @Test
+  public void postCreateCase_OK() throws Exception {
+    CaseRequestDTO newCaseRequest = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+
+    CaseDTO existingCase = caseDTO.get(0);
+    when(caseService.createNewCase(any())).thenReturn(existingCase);
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/cases/create")
+                .content(mapper.writeValueAsString(newCaseRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.caseId", is(existingCase.getCaseId().toString())));
+  }
+
+  @Test
+  public void postCreateCase_missingAddressLine1() throws Exception {
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+
+    request.setAddressLine1(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingTownName() throws Exception {
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+
+    request.setTownName(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingRegion() throws Exception {
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+
+    request.setRegion(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingPostcode() throws Exception {
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+
+    request.setPostcode(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingUprn() throws Exception {
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+
+    request.setUprn(null);
+
+    submitInvalidNewCaseRequest(request);
+  }
+
+  @Test
+  public void postCreateCase_missingEstabType() throws Exception {
+    CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
+
+    request.setEstabType(null);
+
+    submitInvalidNewCaseRequest(request);
   }
 
   /** Test returns valid JSON for valid UPRN */
@@ -327,5 +400,16 @@ public class CaseEndpointUnitTest {
     String json = "{ \"name\": \"Fred\" }";
     mockMvc.perform(postJson(url, json)).andExpect(status().isBadRequest());
     verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  private void submitInvalidNewCaseRequest(CaseRequestDTO newCaseRequest) throws Exception {
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/cases/create")
+                .content(mapper.writeValueAsString(newCaseRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code", is(INVALID_CODE)))
+        .andExpect(jsonPath("$.error.message", startsWith(INVALID_MESSAGE)));
   }
 }

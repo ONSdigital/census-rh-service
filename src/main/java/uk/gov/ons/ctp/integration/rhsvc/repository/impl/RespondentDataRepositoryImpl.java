@@ -109,6 +109,25 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   }
 
   /**
+   * Read the latest case from cloud storage based on its uprn.
+   *
+   * @param uprn - is the uprn that the target case(s) must contain.
+   * @return - Optional containing the latest case or Empty.
+   * @throws CTPException - if a cloud exception was detected.
+   */
+  @Override
+  public Optional<CollectionCase> readLatestCollectionCaseByUprn(final String uprn)
+      throws CTPException {
+    List<CollectionCase> searchResults =
+        cloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
+
+    Optional<CollectionCase> latestCase =
+        searchResults.stream().max(Comparator.comparing(CollectionCase::getCreatedDateTime));
+
+    return latestCase;
+  }
+
+  /**
    * Filter search results returning Latest !addressInvalid non HI case
    *
    * @param searchResults - Search results found in dataStore by searching by uprn

@@ -155,4 +155,37 @@ public class RespondentDataRepositoryImplTest {
         Optional.of(collectionCase.get(2)),
         target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
   }
+
+  /** Returns Empty Optional where no cases are returned from repository */
+  @Test
+  public void readLatestCollectionCaseByUprn_noCasesFound() throws Exception {
+
+    final List<CollectionCase> emptyList = new ArrayList<>();
+    when(mockCloudDataStore.search(
+            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
+        .thenReturn(emptyList);
+
+    Assert.assertEquals(
+        "Expects Empty Optional",
+        Optional.empty(),
+        target.readLatestCollectionCaseByUprn(UPRN_STRING));
+  }
+
+  /** Test which gets multiple cases from repo and returns the latest one. */
+  @Test
+  public void readLatestCollectionCaseByUprn_multipleCasesFound() throws Exception {
+
+    final Date earliest = new Date();
+    final Date mid = DateUtils.addDays(new Date(), 1);
+    final Date latest = DateUtils.addDays(new Date(), 2);
+    collectionCase.get(0).setCreatedDateTime(mid);
+    collectionCase.get(1).setCreatedDateTime(latest);
+    collectionCase.get(2).setCreatedDateTime(earliest);
+    when(mockCloudDataStore.search(
+            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
+        .thenReturn(collectionCase);
+
+    assertEquals(
+        Optional.of(collectionCase.get(1)), target.readLatestCollectionCaseByUprn(UPRN_STRING));
+  }
 }

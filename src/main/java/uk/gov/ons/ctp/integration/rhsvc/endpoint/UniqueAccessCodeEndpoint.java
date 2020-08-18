@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UACLinkRequestDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
 
@@ -55,7 +55,7 @@ public class UniqueAccessCodeEndpoint {
    */
   @RequestMapping(value = "/{uacHash}/link", method = RequestMethod.POST)
   public ResponseEntity<UniqueAccessCodeDTO> linkUACtoCase(
-      @PathVariable("uacHash") final String uacHash, @Valid @RequestBody UACLinkRequestDTO request)
+      @PathVariable("uacHash") final String uacHash, @Valid @RequestBody CaseRequestDTO request)
       throws CTPException {
 
     log.with("uacHash", uacHash).info("Entering POST linkUACtoCase");

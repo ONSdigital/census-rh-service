@@ -18,4 +18,6 @@ public interface RespondentDataRepository {
 
   Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(String uprn)
       throws CTPException;
+
+  Optional<CollectionCase> readLatestCollectionCaseByUprn(String uprn) throws CTPException;
 }

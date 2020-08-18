@@ -4,6 +4,7 @@ import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 
@@ -22,6 +23,8 @@ public interface CaseService {
    */
   CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
       throws CTPException;
+
+  CaseDTO createNewCase(CaseRequestDTO requestBodyDTO) throws CTPException;
 
   /**
    * Change address for a Case

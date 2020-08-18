@@ -10,26 +10,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
-import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
-import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.CollectionCaseNewAddress;
 import uk.gov.ons.ctp.common.event.model.NewAddress;
 import uk.gov.ons.ctp.common.event.model.QuestionnaireLinkedDetails;
 import uk.gov.ons.ctp.common.event.model.RespondentAuthenticatedResponse;
 import uk.gov.ons.ctp.common.event.model.UAC;
-import uk.gov.ons.ctp.common.time.DateTimeUtil;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
-import uk.gov.ons.ctp.integration.rhsvc.representation.UACLinkRequestDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.UniqueAccessCodeDTO.CaseStatus;
 import uk.gov.ons.ctp.integration.rhsvc.service.UniqueAccessCodeService;
@@ -113,7 +109,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   }
 
   @Override
-  public UniqueAccessCodeDTO linkUACCase(String uacHash, UACLinkRequestDTO request)
+  public UniqueAccessCodeDTO linkUACCase(String uacHash, CaseRequestDTO request)
       throws CTPException {
     log.with(uacHash).with(request).debug("Enter linkUACCase()");
 
@@ -145,8 +141,10 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       validateUACCase(uac, primaryCase); // will abort here if invalid combo
     } else {
       // Create a new case as not found for the UPRN in Firestore
-      CaseType primaryCaseType = determinePrimaryCaseType(request, uac);
-      primaryCase = createCase(primaryCaseType, uac, request);
+      CaseType primaryCaseType = ServiceUtil.determineCaseType(request);
+      primaryCase =
+          ServiceUtil.createCase(request, primaryCaseType, appConfig.getCollectionExerciseId());
+      primaryCase.getAddress().setAddressLevel(determineAddressLevel(primaryCaseType, uac).name());
       log.with("caseId", primaryCase.getId())
           .with("primaryCaseType", primaryCaseType)
           .debug("Created new case");
@@ -176,7 +174,9 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       // the UAC to a new HI case instead of the HH case
       if (primaryCase.getCaseType().equals(CaseType.HH.name())
           && uac.getFormType().equals(FormType.I.name())) {
-        individualCase = createCase(CaseType.HI, uac, request);
+        individualCase =
+            ServiceUtil.createCase(request, CaseType.HI, appConfig.getCollectionExerciseId());
+        individualCase.getAddress().setAddressLevel(determineAddressLevel(CaseType.HI, uac).name());
         individualCaseId = individualCase.getId();
         log.with(individualCaseId).debug("Created individual case");
 
@@ -279,61 +279,18 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
         .debug("QuestionnaireLinked event published");
   }
 
-  private CaseType determinePrimaryCaseType(UACLinkRequestDTO request, UAC uac) {
-    String caseTypeStr = null;
-
-    EstabType estabType = EstabType.forCode(request.getEstabType());
-    Optional<AddressType> addressTypeForEstab = estabType.getAddressType();
-    if (addressTypeForEstab.isPresent()) {
-      // 1st choice. Set based on the establishment description
-      caseTypeStr = addressTypeForEstab.get().name(); // ie the equivalent
-    } else {
-      caseTypeStr = request.getAddressType().name(); // trust AIMS
-    }
-
-    CaseType caseType = CaseType.valueOf(caseTypeStr);
-
-    return caseType;
-  }
-
-  // Build a new case to store and send to RM via the NewAddressReported event.
-  private CollectionCase createCase(CaseType caseType, UAC uac, UACLinkRequestDTO request) {
-    CollectionCase newCase = new CollectionCase();
-
-    newCase.setId(UUID.randomUUID().toString());
-    newCase.setCollectionExerciseId(appConfig.getCollectionExerciseId());
-    newCase.setHandDelivery(false);
-    newCase.setSurvey("CENSUS");
-    newCase.setCaseType(caseType.name());
-    newCase.setAddressInvalid(false);
-    newCase.setCreatedDateTime(DateTimeUtil.nowUTC());
-
-    Address address = new Address();
-    address.setAddressLine1(request.getAddressLine1());
-    address.setAddressLine2(request.getAddressLine2());
-    address.setAddressLine3(request.getAddressLine3());
-    address.setTownName(request.getTownName());
-    address.setRegion(request.getRegion().name());
-    address.setPostcode(request.getPostcode());
-    address.setUprn(Long.toString(request.getUprn().getValue()));
-    address.setAddressType(caseType.name());
-    address.setEstabType(request.getEstabType());
+  private AddressLevel determineAddressLevel(CaseType caseType, UAC uac) {
+    AddressLevel addressLevel;
 
     // Set address level for case
     if ((caseType == CaseType.CE || caseType == CaseType.SPG)
         && uac.getFormType().equals(FormType.C.name())) {
-      address.setAddressLevel(AddressLevel.E.name());
+      addressLevel = AddressLevel.E;
     } else {
-      address.setAddressLevel(AddressLevel.U.name());
+      addressLevel = AddressLevel.U;
     }
 
-    newCase.setAddress(address);
-
-    log.with("caseId", newCase.getId())
-        .with("caseType", caseType)
-        .debug("Have populated CollectionCase object");
-
-    return newCase;
+    return addressLevel;
   }
 
   private void validateUACCase(UAC uac, CollectionCase collectionCase) throws CTPException {

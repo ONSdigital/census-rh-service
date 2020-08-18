@@ -19,6 +19,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -31,6 +32,29 @@ public class CaseEndpoint {
   private static final Logger log = LoggerFactory.getLogger(CaseEndpoint.class);
 
   @Autowired private CaseService caseService;
+
+  /**
+   * the POST end point to request the creation of a new case.
+   *
+   * @param requestBodyDTO contains the UPRN and address details for the new case.
+   * @return a CaseDTO for the new case, or details of an existing case if it has the same UPRN as
+   *     the request.
+   * @throws CTPException if something goes wrong.
+   */
+  @RequestMapping(value = "/create", method = RequestMethod.POST)
+  @ResponseStatus(value = HttpStatus.OK)
+  public ResponseEntity<CaseDTO> createNewCase(@Valid @RequestBody CaseRequestDTO requestBodyDTO)
+      throws CTPException {
+    String methodName = "createNewCase";
+    log.with("UPRN", requestBodyDTO.getUprn())
+        .with("requestBody", requestBodyDTO)
+        .info("Entering POST {}", methodName);
+
+    CaseDTO caseToReturn = caseService.createNewCase(requestBodyDTO);
+
+    log.with("UPRN", requestBodyDTO.getUprn()).debug("Exit POST {}", methodName);
+    return ResponseEntity.ok(caseToReturn);
+  }
 
   /**
    * the GET end point to return the latest valid Non HI Case by UPRN
@@ -104,8 +128,8 @@ public class CaseEndpoint {
         .info("Entering POST {}", methodName);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
-    log.with("pathParam.caseId", caseId).debug("Exit POST {}", methodName);
     caseService.fulfilmentRequestBySMS(requestBodyDTO);
+    log.with("pathParam.caseId", caseId).debug("Exit POST {}", methodName);
   }
 
   @RequestMapping(value = "/{caseId}/fulfilments/post", method = RequestMethod.POST)
@@ -120,7 +144,7 @@ public class CaseEndpoint {
         .info("Entering POST {}", methodName);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
-    log.with("pathParam.caseId", caseId).debug("Exit POST {}", methodName);
     caseService.fulfilmentRequestByPost(requestBodyDTO);
+    log.with("pathParam.caseId", caseId).debug("Exit POST {}", methodName);
   }
 }

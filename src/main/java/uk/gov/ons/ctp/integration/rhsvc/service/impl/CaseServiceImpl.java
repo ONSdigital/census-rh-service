@@ -9,6 +9,7 @@ import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -28,9 +29,11 @@ import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.common.product.model.Product.Region;
 import uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -41,6 +44,7 @@ public class CaseServiceImpl implements CaseService {
 
   private static final Logger log = LoggerFactory.getLogger(CaseServiceImpl.class);
 
+  @Autowired private AppConfig appConfig;
   @Autowired private RespondentDataRepository dataRepo;
   @Autowired private MapperFacade mapperFacade;
   @Autowired private EventPublisher eventPublisher;
@@ -61,6 +65,43 @@ public class CaseServiceImpl implements CaseService {
       log.debug("No cases returned for uprn: " + uprn);
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
+  }
+
+  @Override
+  public CaseDTO createNewCase(CaseRequestDTO request) throws CTPException {
+
+    Optional<CaseDTO> existingCase = getLatestCaseByUPRN(request.getUprn());
+
+    CaseDTO caseToReturn;
+    if (existingCase.isPresent()) {
+      // Don't need to create a new case, as we found one with the same UPRN
+      caseToReturn = existingCase.get();
+    } else {
+      // Create a new case as not found for the UPRN in Firestore
+      CaseType caseType = ServiceUtil.determineCaseType(request);
+      CollectionCase newCase =
+          ServiceUtil.createCase(request, caseType, appConfig.getCollectionExerciseId());
+      log.with("caseId", newCase.getId())
+          .with("primaryCaseType", caseType)
+          .debug("Created new case");
+
+      // Store new case in Firestore
+      dataRepo.writeCollectionCase(newCase);
+
+      // tell RM we have created a case for the selected (HH|CE|SPG) address
+      ServiceUtil.sendNewAddressEvent(eventPublisher, newCase);
+
+      caseToReturn = mapperFacade.map(newCase, CaseDTO.class);
+    }
+
+    // Set address level for case
+    if (caseToReturn.getCaseType().equals(CaseType.CE.name())) {
+      caseToReturn.setAddressLevel(AddressLevel.E.name());
+    } else {
+      caseToReturn.setAddressLevel(AddressLevel.U.name());
+    }
+
+    return caseToReturn;
   }
 
   @Override
@@ -257,5 +298,21 @@ public class CaseServiceImpl implements CaseService {
           "The fulfilment is for an individual so none of the following fields can be empty: "
               + "'forename' and 'surname'");
     }
+  }
+
+  private Optional<CaseDTO> getLatestCaseByUPRN(UniquePropertyReferenceNumber uprn)
+      throws CTPException {
+    Optional<CaseDTO> result = Optional.empty();
+
+    Optional<CollectionCase> caseFound =
+        dataRepo.readLatestCollectionCaseByUprn(Long.toString(uprn.getValue()));
+    if (caseFound.isPresent()) {
+      log.with("case", caseFound.get().getId())
+          .with("uprn", uprn)
+          .debug("Existing case found by UPRN");
+      result = Optional.of(mapperFacade.map(caseFound.get(), CaseDTO.class));
+    }
+
+    return result;
   }
 }
