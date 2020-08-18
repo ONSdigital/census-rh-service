@@ -10,9 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
-import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
-import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
@@ -80,7 +78,7 @@ public class CaseServiceImpl implements CaseService {
       caseToReturn = existingCase.get();
     } else {
       // Create a new case as not found for the UPRN in Firestore
-      CaseType caseType = determineCaseType(request);
+      CaseType caseType = ServiceUtil.determineCaseType(request);
       CollectionCase newCase =
           ServiceUtil.createCase(request, caseType, appConfig.getCollectionExerciseId());
       log.with("caseId", newCase.getId())
@@ -316,22 +314,5 @@ public class CaseServiceImpl implements CaseService {
     }
 
     return result;
-  }
-
-  private CaseType determineCaseType(CaseRequestDTO request) {
-    String caseTypeStr = null;
-
-    EstabType estabType = EstabType.forCode(request.getEstabType());
-    Optional<AddressType> addressTypeForEstab = estabType.getAddressType();
-    if (addressTypeForEstab.isPresent()) {
-      // 1st choice. Set based on the establishment description
-      caseTypeStr = addressTypeForEstab.get().name(); // ie the equivalent
-    } else {
-      caseTypeStr = request.getAddressType().name(); // trust AIMS
-    }
-
-    CaseType caseType = CaseType.valueOf(caseTypeStr);
-
-    return caseType;
   }
 }

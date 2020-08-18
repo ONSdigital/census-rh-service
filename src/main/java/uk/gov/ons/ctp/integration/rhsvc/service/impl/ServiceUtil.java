@@ -2,9 +2,12 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.experimental.UtilityClass;
+import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
@@ -23,6 +26,23 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
 @UtilityClass
 public class ServiceUtil {
   private static final Logger log = LoggerFactory.getLogger(ServiceUtil.class);
+
+  static CaseType determineCaseType(CaseRequestDTO request) {
+    String caseTypeStr = null;
+
+    EstabType estabType = EstabType.forCode(request.getEstabType());
+    Optional<AddressType> addressTypeForEstab = estabType.getAddressType();
+    if (addressTypeForEstab.isPresent()) {
+      // 1st choice. Set based on the establishment description
+      caseTypeStr = addressTypeForEstab.get().name(); // ie the equivalent
+    } else {
+      caseTypeStr = request.getAddressType().name(); // trust AIMS
+    }
+
+    CaseType caseType = CaseType.valueOf(caseTypeStr);
+
+    return caseType;
+  }
 
   static CollectionCase createCase(
       CaseRequestDTO request, CaseType caseType, String collectionExerciseId) {

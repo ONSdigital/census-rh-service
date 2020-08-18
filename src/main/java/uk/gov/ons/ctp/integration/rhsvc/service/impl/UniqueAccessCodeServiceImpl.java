@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
-import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
-import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
@@ -143,7 +141,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       validateUACCase(uac, primaryCase); // will abort here if invalid combo
     } else {
       // Create a new case as not found for the UPRN in Firestore
-      CaseType primaryCaseType = determinePrimaryCaseType(request);
+      CaseType primaryCaseType = ServiceUtil.determineCaseType(request);
       primaryCase =
           ServiceUtil.createCase(request, primaryCaseType, appConfig.getCollectionExerciseId());
       primaryCase.getAddress().setAddressLevel(determineAddressLevel(primaryCaseType, uac).name());
@@ -279,23 +277,6 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
     log.with("CaseId", caseId)
         .with("transactionId", transactionId)
         .debug("QuestionnaireLinked event published");
-  }
-
-  private CaseType determinePrimaryCaseType(CaseRequestDTO request) {
-    String caseTypeStr = null;
-
-    EstabType estabType = EstabType.forCode(request.getEstabType());
-    Optional<AddressType> addressTypeForEstab = estabType.getAddressType();
-    if (addressTypeForEstab.isPresent()) {
-      // 1st choice. Set based on the establishment description
-      caseTypeStr = addressTypeForEstab.get().name(); // ie the equivalent
-    } else {
-      caseTypeStr = request.getAddressType().name(); // trust AIMS
-    }
-
-    CaseType caseType = CaseType.valueOf(caseTypeStr);
-
-    return caseType;
   }
 
   private AddressLevel determineAddressLevel(CaseType caseType, UAC uac) {
