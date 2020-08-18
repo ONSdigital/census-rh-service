@@ -404,7 +404,7 @@ public class CaseEndpointUnitTest {
   }
 
   private void submitInvalidNewCaseRequest(CaseRequestDTO newCaseRequest)
-      throws Exception, JsonProcessingException {
+      throws Exception {
     mockMvc
         .perform(
             MockMvcRequestBuilders.post("/cases/create")
