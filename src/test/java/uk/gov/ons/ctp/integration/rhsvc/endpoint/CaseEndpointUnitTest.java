@@ -15,7 +15,6 @@ import static uk.gov.ons.ctp.common.MvcHelper.postJson;
 import static uk.gov.ons.ctp.common.utility.MockMvcControllerAdviceHelper.mockAdviceFor;
 import static uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture.EXPECTED_JSON_CONTENT_TYPE;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
@@ -403,8 +402,7 @@ public class CaseEndpointUnitTest {
     verify(caseService, never()).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
   }
 
-  private void submitInvalidNewCaseRequest(CaseRequestDTO newCaseRequest)
-      throws Exception {
+  private void submitInvalidNewCaseRequest(CaseRequestDTO newCaseRequest) throws Exception {
     mockMvc
         .perform(
             MockMvcRequestBuilders.post("/cases/create")
