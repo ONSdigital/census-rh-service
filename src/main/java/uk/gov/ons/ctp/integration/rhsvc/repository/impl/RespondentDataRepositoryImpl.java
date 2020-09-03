@@ -13,6 +13,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
+import uk.gov.ons.ctp.integration.rhsvc.representation.WebformPersistedDTO;
 
 /** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
 @Service
@@ -28,8 +29,12 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   @Value("${cloud-storage.uac-schema-name}")
   private String uacSchemaName;
 
+  @Value("${cloud-storage.webform-schema-name}")
+  private String webformSchemaName;
+
   String caseSchema;
   private String uacSchema;
+  private String webformSchema;
 
   private static final String[] SEARCH_BY_UPRN_PATH = new String[] {"address", "uprn"};
 
@@ -37,6 +42,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   public void init() {
     caseSchema = gcpProject + "-" + caseSchemaName.toLowerCase();
     uacSchema = gcpProject + "-" + uacSchemaName.toLowerCase();
+    webformSchema = gcpProject + "-" + webformSchemaName.toLowerCase();
   }
 
   @Autowired
@@ -77,6 +83,18 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
     String id = collectionCase.getId();
     cloudDataStore.storeObject(caseSchema, id, collectionCase, id);
+  }
+
+  /**
+   * Writes webform data into the cloud data store.
+   *
+   * @param webformPersistedDTO - holds the webform data to save in the cloud.
+   * @throws CTPException - if a cloud exception was detected.
+   */
+  @Override
+  public void writeWebform(WebformPersistedDTO webformPersistedDTO) throws CTPException {
+    String id = webformPersistedDTO.getId();
+    cloudDataStore.storeObject(webformSchema, id, webformPersistedDTO, id);
   }
 
   /**

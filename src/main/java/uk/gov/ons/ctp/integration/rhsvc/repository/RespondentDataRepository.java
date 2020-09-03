@@ -4,6 +4,7 @@ import java.util.Optional;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.representation.WebformPersistedDTO;
 
 /** Repository for Respondent Data */
 public interface RespondentDataRepository {
@@ -11,6 +12,8 @@ public interface RespondentDataRepository {
   void writeUAC(UAC uac) throws CTPException;
 
   void writeCollectionCase(CollectionCase collectionCase) throws CTPException;
+
+  void writeWebform(WebformPersistedDTO webformPersistedDTO) throws CTPException;
 
   Optional<UAC> readUAC(String universalAccessCode) throws CTPException;
 
