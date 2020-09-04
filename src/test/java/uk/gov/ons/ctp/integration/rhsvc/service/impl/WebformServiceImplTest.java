@@ -36,7 +36,7 @@ public class WebformServiceImplTest {
     webformService.webformCapture(webformDTO);
     long timestampAfter = System.currentTimeMillis();
 
-    // Get hold of the event pay load that surveyLaunchedService created
+    // Get hold of the webform data written to the repo
     Mockito.verify(dataRepo).writeWebform(webformPersistedCaptor.capture());
     WebformPersistedDTO webformPersisted = webformPersistedCaptor.getValue();
 
