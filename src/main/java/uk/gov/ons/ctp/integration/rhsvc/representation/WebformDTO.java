@@ -34,9 +34,9 @@ public class WebformDTO implements Serializable {
 
   @NotNull private WebformLanguage language;
 
-  @NotNull private String name; // PMB Length ?
+  @NotNull private String name;
 
-  @NotNull private String description; // PMB Length ?
+  @NotNull private String description;
 
   @NotNull private String email;
 }
