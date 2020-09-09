@@ -285,7 +285,6 @@ public class CaseServiceImpl implements CaseService {
     fulfilmentRequest.setFulfilmentCode(fulfilmentCode);
     fulfilmentRequest.setCaseId(caseId.toString());
     fulfilmentRequest.setContact(contact);
-    fulfilmentRequest.setAddress(caseDetails.getAddress());
     return fulfilmentRequest;
   }
 
