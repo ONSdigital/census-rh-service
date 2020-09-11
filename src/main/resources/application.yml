@@ -30,6 +30,13 @@ management:
     health:
       enabled: true
   metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+      slo:
+        "[http.server.requests]": 100ms
+      percentiles:
+        "[http.server.requests]": 0.5, 1.0
     tags:
       application: RespondentHomeService
     export:
