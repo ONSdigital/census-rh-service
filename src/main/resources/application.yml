@@ -43,7 +43,7 @@ management:
       stackdriver:
         project-id: ${GOOGLE_CLOUD_PROJECT}
         enabled: true
-        step: PT2M
+        step: PT4M
 
 server:
   port: 8071

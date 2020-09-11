@@ -53,7 +53,7 @@ public class RHSvcApplication {
    * @param args runtime command line args
    */
   public static void main(final String[] args) {
-    log.warn("PMB. Starting. v3");
+    log.warn("PMB. Starting. v4");
     SpringApplication.run(RHSvcApplication.class, args);
   }
 
@@ -113,7 +113,6 @@ public class RHSvcApplication {
 
       @Override
       public boolean enabled() {
-        log.warn("PMB. StackdriverEnabled=" + stackdriverEnabled);
         return stackdriverEnabled;
       }
 
