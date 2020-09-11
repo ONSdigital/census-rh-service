@@ -1,11 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc;
 
-import com.godaddy.logging.LoggingConfigs;
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.core.instrument.config.MeterFilterReply;
-import io.micrometer.stackdriver.StackdriverConfig;
-import io.micrometer.stackdriver.StackdriverMeterRegistry;
 import java.time.Duration;
 import javax.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -22,6 +16,14 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
+import com.godaddy.logging.LoggingConfigs;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.config.MeterFilterReply;
+import io.micrometer.stackdriver.StackdriverConfig;
+import io.micrometer.stackdriver.StackdriverMeterRegistry;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
@@ -34,6 +36,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 @ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common"})
 @ImportResource("springintegration/main.xml")
 public class RHSvcApplication {
+  private static final Logger log = LoggerFactory.getLogger(RHSvcApplication.class);
 
   @Value("${management.metrics.export.stackdriver.project-id}")
   private String stackdriverProjectId;
@@ -50,6 +53,7 @@ public class RHSvcApplication {
    * @param args runtime command line args
    */
   public static void main(final String[] args) {
+    log.warn("PMB. Starting. v3");
     SpringApplication.run(RHSvcApplication.class, args);
   }
 
@@ -109,6 +113,7 @@ public class RHSvcApplication {
 
       @Override
       public boolean enabled() {
+        log.warn("PMB. StackdriverEnabled=" + stackdriverEnabled);
         return stackdriverEnabled;
       }
 

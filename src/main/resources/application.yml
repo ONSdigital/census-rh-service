@@ -32,7 +32,7 @@ management:
   metrics:
     distribution:
       percentiles-histogram:
-        "[http.server.requests]": true
+        "[http.server.requests]": false
       slo:
         "[http.server.requests]": 100ms
       percentiles:
