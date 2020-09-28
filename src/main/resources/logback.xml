@@ -61,14 +61,8 @@
         <nestedField>
           <fieldName>data</fieldName>
           <providers>
-            <arguments>
-              <includeNonStructuredArguments>true
-              </includeNonStructuredArguments>
-              <nonStructuredArgumentsFieldPrefix>prefix
-              </nonStructuredArgumentsFieldPrefix>
-            </arguments>
-        <tags />
-        <logstashMarkers />
+            <tags />
+            <logstashMarkers />
           </providers>
         </nestedField>
       </providers>
