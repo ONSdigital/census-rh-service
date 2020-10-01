@@ -84,6 +84,9 @@ public class CaseServiceImpl implements CaseService {
       log.with("caseId", newCase.getId())
           .with("primaryCaseType", caseType)
           .debug("Created new case");
+      String addressLevel = caseType.equals(CaseType.CE)
+              ? AddressLevel.E.name() : AddressLevel.U.name();
+      newCase.getAddress().setAddressLevel(addressLevel);
 
       // Store new case in Firestore
       dataRepo.writeCollectionCase(newCase);
@@ -92,13 +95,6 @@ public class CaseServiceImpl implements CaseService {
       ServiceUtil.sendNewAddressEvent(eventPublisher, newCase);
 
       caseToReturn = mapperFacade.map(newCase, CaseDTO.class);
-    }
-
-    // Set address level for case
-    if (caseToReturn.getCaseType().equals(CaseType.CE.name())) {
-      caseToReturn.setAddressLevel(AddressLevel.E.name());
-    } else {
-      caseToReturn.setAddressLevel(AddressLevel.U.name());
     }
 
     return caseToReturn;

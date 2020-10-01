@@ -42,7 +42,6 @@ public class TestUtil {
   void validateCaseDTO(
       CaseType expectedCaseType,
       Address expectedAddress,
-      AddressLevel expectedAddressLevel,
       CaseDTO actualCase) {
     CollectionCase expectedCollectionCase = new CollectionCase();
     expectedCollectionCase.setId(actualCase.getCaseId().toString());
@@ -50,18 +49,18 @@ public class TestUtil {
     expectedCollectionCase.setCaseType(expectedCaseType.name());
     expectedCollectionCase.setAddress(expectedAddress);
 
-    validateCaseDTO(expectedCollectionCase, expectedAddressLevel, actualCase);
+    validateCaseDTO(expectedCollectionCase, actualCase);
   }
 
   void validateCaseDTO(
-      CollectionCase expectedCase, AddressLevel expectedAddressLevel, CaseDTO actualCase) {
+      CollectionCase expectedCase, CaseDTO actualCase) {
     assertEquals(expectedCase.getId(), actualCase.getCaseId().toString());
     assertEquals(expectedCase.getCaseType(), actualCase.getCaseType());
     assertEquals(expectedCase.getAddress().getAddressType(), actualCase.getAddressType());
     validateAddressDTO(expectedCase.getAddress(), actualCase.getAddress());
     assertEquals(expectedCase.getAddress().getAddressType(), actualCase.getAddressType());
     assertEquals(expectedCase.getAddress().getRegion(), actualCase.getRegion());
-    assertEquals(expectedAddressLevel.toString(), actualCase.getAddressLevel());
+    assertEquals(expectedCase.getAddress().getAddressLevel(), actualCase.getAddressLevel());
     assertEquals(expectedCase.getId(), actualCase.getCaseId().toString());
   }
 
