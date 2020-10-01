@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 
 import java.util.UUID;
 import org.mockito.ArgumentCaptor;
-import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -39,10 +38,7 @@ public class TestUtil {
     this.eventPublisher = eventPublisher;
   }
 
-  void validateCaseDTO(
-      CaseType expectedCaseType,
-      Address expectedAddress,
-      CaseDTO actualCase) {
+  void validateCaseDTO(CaseType expectedCaseType, Address expectedAddress, CaseDTO actualCase) {
     CollectionCase expectedCollectionCase = new CollectionCase();
     expectedCollectionCase.setId(actualCase.getCaseId().toString());
     expectedCollectionCase.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
@@ -52,8 +48,7 @@ public class TestUtil {
     validateCaseDTO(expectedCollectionCase, actualCase);
   }
 
-  void validateCaseDTO(
-      CollectionCase expectedCase, CaseDTO actualCase) {
+  void validateCaseDTO(CollectionCase expectedCase, CaseDTO actualCase) {
     assertEquals(expectedCase.getId(), actualCase.getCaseId().toString());
     assertEquals(expectedCase.getCaseType(), actualCase.getCaseType());
     assertEquals(expectedCase.getAddress().getAddressType(), actualCase.getAddressType());
