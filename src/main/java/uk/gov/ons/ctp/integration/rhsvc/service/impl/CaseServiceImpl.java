@@ -9,7 +9,6 @@ import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -92,13 +91,6 @@ public class CaseServiceImpl implements CaseService {
       ServiceUtil.sendNewAddressEvent(eventPublisher, newCase);
 
       caseToReturn = mapperFacade.map(newCase, CaseDTO.class);
-    }
-
-    // Set address level for case
-    if (caseToReturn.getCaseType().equals(CaseType.CE.name())) {
-      caseToReturn.setAddressLevel(AddressLevel.E.name());
-    } else {
-      caseToReturn.setAddressLevel(AddressLevel.U.name());
     }
 
     return caseToReturn;

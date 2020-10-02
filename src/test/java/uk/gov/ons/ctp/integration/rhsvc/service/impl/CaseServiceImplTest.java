@@ -316,8 +316,7 @@ public class CaseServiceImplTest {
     CaseDTO newCase = caseSvc.createNewCase(request);
 
     // Verify that returned case holds details for the pre-existing case
-    AddressLevel expectedAddressLevel = AddressLevel.U;
-    testUtil.validateCaseDTO(existingCase, expectedAddressLevel, newCase);
+    testUtil.validateCaseDTO(existingCase, newCase);
 
     // Verify nothing written to Firestore and no events sent
     verify(dataRepo, times(0)).writeCollectionCase(any());
@@ -354,9 +353,10 @@ public class CaseServiceImplTest {
     CaseDTO newCase = caseSvc.createNewCase(request);
 
     Address expectedAddress = mapperFacade.map(request, Address.class);
+    expectedAddress.setAddressLevel(expectedAddressLevel.name());
 
     // Verify returned case
-    testUtil.validateCaseDTO(expectedCaseType, expectedAddress, expectedAddressLevel, newCase);
+    testUtil.validateCaseDTO(expectedCaseType, expectedAddress, newCase);
 
     testUtil.verifyCollectionCaseSavedToFirestore(expectedCaseType, expectedAddress);
 
