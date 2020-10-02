@@ -5,6 +5,7 @@ import com.godaddy.logging.LoggerFactory;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.experimental.UtilityClass;
+import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.AddressType;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
@@ -68,6 +69,8 @@ public class ServiceUtil {
     address.setUprn(Long.toString(request.getUprn().getValue()));
     address.setAddressType(caseType.name());
     address.setEstabType(request.getEstabType());
+    address.setAddressLevel(
+        caseType.equals(CaseType.CE) ? AddressLevel.E.name() : AddressLevel.U.name());
     newCase.setAddress(address);
 
     return newCase;

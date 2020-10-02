@@ -9,7 +9,6 @@ import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -84,9 +83,6 @@ public class CaseServiceImpl implements CaseService {
       log.with("caseId", newCase.getId())
           .with("primaryCaseType", caseType)
           .debug("Created new case");
-      String addressLevel =
-          caseType.equals(CaseType.CE) ? AddressLevel.E.name() : AddressLevel.U.name();
-      newCase.getAddress().setAddressLevel(addressLevel);
 
       // Store new case in Firestore
       dataRepo.writeCollectionCase(newCase);
