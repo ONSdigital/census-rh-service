@@ -79,6 +79,7 @@ public class FulfilmentsServiceImplTest {
     assertNull(capturedExampleProduct.getFulfilmentCode());
     assertNull(capturedExampleProduct.getDescription());
     assertNull(capturedExampleProduct.getHandler());
+    assertNull(capturedExampleProduct.getLanguage());
 
     // ACTUALLY verify that getFulfilments() returns the value it got from the ProductReference
     // search
@@ -93,5 +94,6 @@ public class FulfilmentsServiceImplTest {
     assertEquals(product.getProductGroup(), theResult.getProductGroup());
     assertEquals(product.getRegions(), theResult.getRegions());
     assertEquals(product.getHandler(), theResult.getHandler());
+    assertEquals(product.getLanguage(), theResult.getLanguage());
   }
 }
