@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 
 import java.util.UUID;
 import org.mockito.ArgumentCaptor;
-import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -39,29 +38,24 @@ public class TestUtil {
     this.eventPublisher = eventPublisher;
   }
 
-  void validateCaseDTO(
-      CaseType expectedCaseType,
-      Address expectedAddress,
-      AddressLevel expectedAddressLevel,
-      CaseDTO actualCase) {
+  void validateCaseDTO(CaseType expectedCaseType, Address expectedAddress, CaseDTO actualCase) {
     CollectionCase expectedCollectionCase = new CollectionCase();
     expectedCollectionCase.setId(actualCase.getCaseId().toString());
     expectedCollectionCase.setCollectionExerciseId(COLLECTION_EXERCISE_ID);
     expectedCollectionCase.setCaseType(expectedCaseType.name());
     expectedCollectionCase.setAddress(expectedAddress);
 
-    validateCaseDTO(expectedCollectionCase, expectedAddressLevel, actualCase);
+    validateCaseDTO(expectedCollectionCase, actualCase);
   }
 
-  void validateCaseDTO(
-      CollectionCase expectedCase, AddressLevel expectedAddressLevel, CaseDTO actualCase) {
+  void validateCaseDTO(CollectionCase expectedCase, CaseDTO actualCase) {
     assertEquals(expectedCase.getId(), actualCase.getCaseId().toString());
     assertEquals(expectedCase.getCaseType(), actualCase.getCaseType());
     assertEquals(expectedCase.getAddress().getAddressType(), actualCase.getAddressType());
     validateAddressDTO(expectedCase.getAddress(), actualCase.getAddress());
     assertEquals(expectedCase.getAddress().getAddressType(), actualCase.getAddressType());
     assertEquals(expectedCase.getAddress().getRegion(), actualCase.getRegion());
-    assertEquals(expectedAddressLevel.toString(), actualCase.getAddressLevel());
+    assertEquals(expectedCase.getAddress().getAddressLevel(), actualCase.getAddressLevel());
     assertEquals(expectedCase.getId(), actualCase.getCaseId().toString());
   }
 

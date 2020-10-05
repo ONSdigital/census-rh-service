@@ -30,15 +30,9 @@ management:
     health:
       enabled: true
   metrics:
-    distribution:
-      percentiles-histogram:
-        "[http.server.requests]": true
-      slo:
-        "[http.server.requests]": 10ms, 100ms
-      percentiles:
-        "[http.server.requests]": 0.5, 0.75, 0.95, 0.98, 0.99, 0.999, 1.0
     tags:
       application: RespondentHomeService
+      pod: ${HOSTNAME}
     export:
       stackdriver:
         project-id: ${GOOGLE_CLOUD_PROJECT}
