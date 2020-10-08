@@ -10,7 +10,6 @@ import static uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryCh
 import static uk.gov.ons.ctp.integration.common.product.model.Product.ProductGroup.UAC;
 import static uk.gov.ons.ctp.integration.common.product.model.Product.Region.E;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -73,7 +72,6 @@ public final class FulfilmentsEndpointUnitTest {
 
   @Test
   public void fulfilmentsReqestAllParameters() throws Exception {
-    List<ProductDTO> emptyList = new ArrayList<>();
     Mockito.when(fulfilmentsService.getFulfilments(Arrays.asList(HH), E, SMS, UAC, true))
         .thenReturn(productDTO);
     ResultActions action =
