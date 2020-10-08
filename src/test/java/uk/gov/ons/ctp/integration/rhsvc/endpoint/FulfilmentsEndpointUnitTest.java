@@ -86,9 +86,10 @@ public final class FulfilmentsEndpointUnitTest {
 
   @Test
   public void fulfilmentsReqestWithInvalidCaseType() throws Exception {
-    ResultActions action = mockMvc.perform(getJson("/fulfilments?caseType=X"))
-       .andExpect(status().isBadRequest())
-       .andExpect(jsonPath("$.error.code", is("VALIDATION_FAILED")));
+    mockMvc
+        .perform(getJson("/fulfilments?caseType=X"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error.code", is("VALIDATION_FAILED")));
   }
 
   @Test
