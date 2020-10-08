@@ -1,0 +1,18 @@
+[
+	{
+		"fulfilmentCode": "P_OR_H1",
+		"productGroup": "QUESTIONNAIRE",
+		"description": "Household Questionnaire for England",
+		"caseTypes": [
+			"HH",
+			"SPG"
+		],
+		"individual": false,
+		"regions": [
+			"E"
+		],
+		"deliveryChannel": "POST",
+		"handler": "QM",
+		"language": "E"
+	}
+]

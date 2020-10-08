@@ -46,6 +46,9 @@ public class FulfilmentsServiceImplTest {
             .regions(Arrays.asList(Region.E))
             .deliveryChannel(DeliveryChannel.SMS)
             .productGroup(Product.ProductGroup.UAC)
+            .language(Product.Language.E)
+            .handler(Product.Handler.NOTIFY)
+            .individual(true)
             .build();
     List<Product> mockedResults = Arrays.asList(product);
     Mockito.when(productReference.searchProducts(any())).thenReturn(mockedResults);
