@@ -46,6 +46,9 @@ public class FulfilmentsServiceImplTest {
             .regions(Arrays.asList(Region.E))
             .deliveryChannel(DeliveryChannel.SMS)
             .productGroup(Product.ProductGroup.UAC)
+            .language(Product.Language.E)
+            .handler(Product.Handler.NOTIFY)
+            .individual(true)
             .build();
     List<Product> mockedResults = Arrays.asList(product);
     Mockito.when(productReference.searchProducts(any())).thenReturn(mockedResults);
@@ -79,6 +82,7 @@ public class FulfilmentsServiceImplTest {
     assertNull(capturedExampleProduct.getFulfilmentCode());
     assertNull(capturedExampleProduct.getDescription());
     assertNull(capturedExampleProduct.getHandler());
+    assertNull(capturedExampleProduct.getLanguage());
 
     // ACTUALLY verify that getFulfilments() returns the value it got from the ProductReference
     // search
@@ -93,5 +97,6 @@ public class FulfilmentsServiceImplTest {
     assertEquals(product.getProductGroup(), theResult.getProductGroup());
     assertEquals(product.getRegions(), theResult.getRegions());
     assertEquals(product.getHandler(), theResult.getHandler());
+    assertEquals(product.getLanguage(), theResult.getLanguage());
   }
 }

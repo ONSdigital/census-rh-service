@@ -11,7 +11,7 @@ public class ProductDTO {
   private String fulfilmentCode;
   private Product.ProductGroup productGroup;
   private String description;
-  private String language;
+  private Product.Language language;
   private List<Product.CaseType> caseTypes;
   private Boolean individual;
   private List<Product.Region> regions;
