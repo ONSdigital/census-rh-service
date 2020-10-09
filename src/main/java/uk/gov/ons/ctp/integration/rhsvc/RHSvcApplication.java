@@ -1,6 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc;
 
 import com.godaddy.logging.LoggingConfigs;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.config.MeterFilterReply;
@@ -14,6 +16,10 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
+import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
@@ -64,9 +70,12 @@ public class RHSvcApplication {
 
   @Bean
   public EventPublisher eventPublisher(
-      final RabbitTemplate rabbitTemplate, final FirestoreEventPersistence eventPersistence) {
+      final RabbitTemplate rabbitTemplate,
+      final FirestoreEventPersistence eventPersistence,
+      final Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
     EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
-    return EventPublisher.createWithEventPersistence(sender, eventPersistence);
+    CircuitBreaker circuitBreaker = circuitBreakerFactory.create("eventSendCircuitBreaker");
+    return EventPublisher.createWithEventPersistence(sender, eventPersistence, circuitBreaker);
   }
 
   @Bean
@@ -76,6 +85,19 @@ public class RHSvcApplication {
     template.setExchange("events");
     template.setChannelTransacted(true);
     return template;
+  }
+
+  @Bean
+  public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
+    TimeLimiterConfig timeLimiterConfig =
+        TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build();
+    return factory ->
+        factory.configureDefault(
+            id ->
+                new Resilience4JConfigBuilder(id)
+                    .timeLimiterConfig(timeLimiterConfig)
+                    .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+                    .build());
   }
 
   /**

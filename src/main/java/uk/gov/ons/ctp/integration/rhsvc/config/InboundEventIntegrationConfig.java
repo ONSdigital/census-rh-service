@@ -30,9 +30,8 @@ public class InboundEventIntegrationConfig {
   @Autowired private AppConfig appConfig;
 
   /**
-   * Configure a backoff for what happens when rabbitMQ goes down.
-   * This allows us to do less thrashing than the default when there is a rabbit problem
-   * thus reducing load on the system.
+   * Configure a backoff for what happens when rabbitMQ goes down. This allows us to do less
+   * thrashing than the default when there is a rabbit problem thus reducing load on the system.
    *
    * @return backoff object
    */
@@ -42,15 +41,14 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Configure the retry behaviour for when a message throws a RuntimeException while
-   * it is being processed in our event processing code.
-   * <p>
-   * Note that this does not apply to when Rabbit goes down, just problems with the
-   * subsequent processing throwing an unchecked exception (of the type that Spring
-   * might emit).
-   * <p>
-   * Note also that the retry policy is configured with "maximum attempts" so for instance
-   * if "conMaxAttempts" is 3 , then there will be at most 2 retries after the initial attempt.
+   * Configure the retry behaviour for when a message throws a RuntimeException while it is being
+   * processed in our event processing code.
+   *
+   * <p>Note that this does not apply to when Rabbit goes down, just problems with the subsequent
+   * processing throwing an unchecked exception (of the type that Spring might emit).
+   *
+   * <p>Note also that the retry policy is configured with "maximum attempts" so for instance if
+   * "conMaxAttempts" is 3 , then there will be at most 2 retries after the initial attempt.
    *
    * @return retry template
    */
@@ -69,8 +67,8 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Create advice bean for the listener, containing the retry configuration, and
-   * specify that if the retry fails, to place the message in the DLQ.
+   * Create advice bean for the listener, containing the retry configuration, and specify that if
+   * the retry fails, to place the message in the DLQ.
    *
    * @param retryTemplate retryTemplate
    * @return retry advice for the listener.
@@ -85,8 +83,8 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Configure a listener container for the Case events.
-   * This listens for Case events on the rabbit case queue.
+   * Configure a listener container for the Case events. This listens for Case events on the rabbit
+   * case queue.
    *
    * @param connectionFactory connection factory
    * @param eventRetryAdvice retry advice
@@ -106,8 +104,8 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Configure a listener container for the UAC events.
-   * This listens for UAC events on the rabbit UAC queue.
+   * Configure a listener container for the UAC events. This listens for UAC events on the rabbit
+   * UAC queue.
    *
    * @param connectionFactory connection factory
    * @param eventRetryAdvice retry advice
@@ -166,8 +164,8 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Create a message converter specifically for CASE JSON events to be converted
-   * to CaseEvent java objects.
+   * Create a message converter specifically for CASE JSON events to be converted to CaseEvent java
+   * objects.
    *
    * @param customObjectMapper object mapper
    * @return JSON converted
@@ -179,8 +177,8 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Create a message converter specifically for UAC JSON events to be converted
-   * to UACEvent java objects.
+   * Create a message converter specifically for UAC JSON events to be converted to UACEvent java
+   * objects.
    *
    * @param customObjectMapper object mapper
    * @return JSON converted
@@ -211,9 +209,7 @@ public class InboundEventIntegrationConfig {
     return new DirectChannel();
   }
 
-  /**
-   * @return channel for accepting case events
-   */
+  /** @return channel for accepting case events */
   @Bean
   public MessageChannel acceptCaseEvent() {
     DirectChannel channel = new DirectChannel();
@@ -221,9 +217,7 @@ public class InboundEventIntegrationConfig {
     return channel;
   }
 
-  /**
-   * @return channel for accepting UAC events
-   */
+  /** @return channel for accepting UAC events */
   @Bean
   public MessageChannel acceptUACEvent() {
     DirectChannel channel = new DirectChannel();
