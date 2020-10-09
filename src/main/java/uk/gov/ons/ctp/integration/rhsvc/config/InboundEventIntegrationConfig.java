@@ -29,11 +29,31 @@ import uk.gov.ons.ctp.common.retry.CTPRetryPolicy;
 public class InboundEventIntegrationConfig {
   @Autowired private AppConfig appConfig;
 
+  /**
+   * Configure a backoff for what happens when rabbitMQ goes down.
+   * This allows us to do less thrashing than the default when there is a rabbit problem
+   * thus reducing load on the system.
+   *
+   * @return backoff object
+   */
   @Bean
   public BackOff rabbitDownBackOff() {
     return new ExponentialBackOff();
   }
 
+  /**
+   * Configure the retry behaviour for when a message throws a RuntimeException while
+   * it is being processed in our event processing code.
+   * <p>
+   * Note that this does not apply to when Rabbit goes down, just problems with the
+   * subsequent processing throwing an unchecked exception (of the type that Spring
+   * might emit).
+   * <p>
+   * Note also that the retry policy is configured with "maximum attempts" so for instance
+   * if "conMaxAttempts" is 3 , then there will be at most 2 retries after the initial attempt.
+   *
+   * @return retry template
+   */
   @Bean
   public RetryTemplate retryTemplate() {
     MessagingConfig messaging = appConfig.getMessaging();
@@ -49,14 +69,11 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Create advice bean.
-   *
-   * <p>NOTE: Not expected to store to a transactional resource such as a database, if need rollback
-   * on a transactional datastore for instance look into using
-   * StatefulRetryOperationsInterceptorFactoryBean
+   * Create advice bean for the listener, containing the retry configuration, and
+   * specify that if the retry fails, to place the message in the DLQ.
    *
    * @param retryTemplate retryTemplate
-   * @return retry advice
+   * @return retry advice for the listener.
    */
   @Bean
   public StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice(
@@ -67,6 +84,15 @@ public class InboundEventIntegrationConfig {
     return advice;
   }
 
+  /**
+   * Configure a listener container for the Case events.
+   * This listens for Case events on the rabbit case queue.
+   *
+   * @param connectionFactory connection factory
+   * @param eventRetryAdvice retry advice
+   * @param rabbitDownBackOff backoff for when rabbit problems occur
+   * @return listener container for the Case events.
+   */
   @Bean
   public SimpleMessageListenerContainer caseEventListenerContainer(
       ConnectionFactory connectionFactory,
@@ -79,6 +105,15 @@ public class InboundEventIntegrationConfig {
         appConfig.getQueueConfig().getCaseQueue());
   }
 
+  /**
+   * Configure a listener container for the UAC events.
+   * This listens for UAC events on the rabbit UAC queue.
+   *
+   * @param connectionFactory connection factory
+   * @param eventRetryAdvice retry advice
+   * @param rabbitDownBackOff backoff for when rabbit problems occur
+   * @return listener container for the UAC events.
+   */
   @Bean
   public SimpleMessageListenerContainer uacEventListenerContainer(
       ConnectionFactory connectionFactory,
@@ -130,12 +165,26 @@ public class InboundEventIntegrationConfig {
     return adapter;
   }
 
+  /**
+   * Create a message converter specifically for CASE JSON events to be converted
+   * to CaseEvent java objects.
+   *
+   * @param customObjectMapper object mapper
+   * @return JSON converted
+   */
   @Bean
   public Jackson2JsonMessageConverter caseJsonMessageConverter(
       CustomObjectMapper customObjectMapper) {
     return jsonMessageConverter(customObjectMapper, CaseEvent.class);
   }
 
+  /**
+   * Create a message converter specifically for UAC JSON events to be converted
+   * to UACEvent java objects.
+   *
+   * @param customObjectMapper object mapper
+   * @return JSON converted
+   */
   @Bean
   public Jackson2JsonMessageConverter uacJsonMessageConverter(
       CustomObjectMapper customObjectMapper) {
@@ -162,6 +211,9 @@ public class InboundEventIntegrationConfig {
     return new DirectChannel();
   }
 
+  /**
+   * @return channel for accepting case events
+   */
   @Bean
   public MessageChannel acceptCaseEvent() {
     DirectChannel channel = new DirectChannel();
@@ -169,6 +221,9 @@ public class InboundEventIntegrationConfig {
     return channel;
   }
 
+  /**
+   * @return channel for accepting UAC events
+   */
   @Bean
   public MessageChannel acceptUACEvent() {
     DirectChannel channel = new DirectChannel();
