@@ -32,7 +32,7 @@ import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 @SpringBootApplication
 @IntegrationComponentScan("uk.gov.ons.ctp.integration")
 @ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common"})
-@ImportResource("springintegration/main.xml")
+@ImportResource("springintegration/broker.xml")
 public class RHSvcApplication {
 
   @Value("${management.metrics.export.stackdriver.project-id}")

@@ -4,10 +4,14 @@ import org.springframework.amqp.rabbit.config.StatelessRetryOperationsIntercepto
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
-import org.springframework.amqp.support.converter.SimpleMessageConverter;
+import org.springframework.amqp.support.converter.DefaultClassMapper;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.amqp.inbound.AmqpInboundChannelAdapter;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.retry.RetryPolicy;
@@ -15,6 +19,9 @@ import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.backoff.BackOff;
 import org.springframework.util.backoff.ExponentialBackOff;
+import uk.gov.ons.ctp.common.event.model.CaseEvent;
+import uk.gov.ons.ctp.common.event.model.UACEvent;
+import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.retry.CTPRetryPolicy;
 
 /** Integration configuration for inbound events. */
@@ -102,8 +109,47 @@ public class InboundEventIntegrationConfig {
   }
 
   @Bean
-  public SimpleMessageConverter simpleMessageConverter() {
-    return new SimpleMessageConverter();
+  public AmqpInboundChannelAdapter caseEventInboundAmqp(
+      @Qualifier("caseEventListenerContainer") SimpleMessageListenerContainer listenerContainer,
+      @Qualifier("caseJsonMessageConverter") MessageConverter msgConverter,
+      @Qualifier("acceptCaseEvent") MessageChannel outputChannel) {
+    AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(listenerContainer);
+    adapter.setMessageConverter(msgConverter);
+    adapter.setOutputChannel(outputChannel);
+    return adapter;
+  }
+
+  @Bean
+  public AmqpInboundChannelAdapter uacEventInboundAmqp(
+      @Qualifier("uacEventListenerContainer") SimpleMessageListenerContainer listenerContainer,
+      @Qualifier("uacJsonMessageConverter") MessageConverter msgConverter,
+      @Qualifier("acceptUACEvent") MessageChannel outputChannel) {
+    AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(listenerContainer);
+    adapter.setMessageConverter(msgConverter);
+    adapter.setOutputChannel(outputChannel);
+    return adapter;
+  }
+
+  @Bean
+  public Jackson2JsonMessageConverter caseJsonMessageConverter(
+      CustomObjectMapper customObjectMapper) {
+    return jsonMessageConverter(customObjectMapper, CaseEvent.class);
+  }
+
+  @Bean
+  public Jackson2JsonMessageConverter uacJsonMessageConverter(
+      CustomObjectMapper customObjectMapper) {
+    return jsonMessageConverter(customObjectMapper, UACEvent.class);
+  }
+
+  private Jackson2JsonMessageConverter jsonMessageConverter(
+      CustomObjectMapper customObjectMapper, Class<?> defaultType) {
+    Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(customObjectMapper);
+    DefaultClassMapper mapper = new DefaultClassMapper();
+    mapper.setDefaultType(defaultType);
+    mapper.setTrustedPackages("*");
+    converter.setClassMapper(mapper);
+    return converter;
   }
 
   @Bean
@@ -117,12 +163,16 @@ public class InboundEventIntegrationConfig {
   }
 
   @Bean
-  public MessageChannel jsonCaseEventMessage() {
-    return new DirectChannel();
+  public MessageChannel acceptCaseEvent() {
+    DirectChannel channel = new DirectChannel();
+    channel.setDatatypes(CaseEvent.class);
+    return channel;
   }
 
   @Bean
-  public MessageChannel jsonUacEventMessage() {
-    return new DirectChannel();
+  public MessageChannel acceptUACEvent() {
+    DirectChannel channel = new DirectChannel();
+    channel.setDatatypes(UACEvent.class);
+    return channel;
   }
 }
