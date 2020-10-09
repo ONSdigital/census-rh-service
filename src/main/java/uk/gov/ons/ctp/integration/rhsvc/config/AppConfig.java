@@ -15,4 +15,5 @@ public class AppConfig {
   private SwaggerSettings swaggerSettings;
   private Logging logging;
   private QueueConfig queueConfig;
+  private MessagingConfig messaging;
 }

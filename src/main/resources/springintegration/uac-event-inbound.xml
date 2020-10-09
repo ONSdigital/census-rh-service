@@ -9,60 +9,17 @@
   http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
   http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
   http://www.springframework.org/schema/integration/xml http://www.springframework.org/schema/integration/xml/spring-integration-xml.xsd">
-    
-    <bean id="uacEventListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
-        <property name="connectionFactory" ref="connectionFactory" />
-        <property name="mismatchedQueuesFatal" value="${messaging.mismatchedQueuesFatal}" />
-        <property name="queueNames" value="${queueconfig.uac-queue}" />
-        <property name="adviceChain" ref="uacEventRetryAdvice" />
-        <property name="concurrentConsumers" value="${messaging.consumingThreads}" />
-        <property name="prefetchCount" value="${messaging.prefetchCount}" />
-    </bean>
 
-    <int:channel id="jsonUacEventMessage" />
-    <bean id="simpleUacMessageConverter" class="org.springframework.amqp.support.converter.SimpleMessageConverter" />
+
+    <int:channel id="acceptUACEvent" datatype="uk.gov.ons.ctp.common.event.model.UACEvent" />
     <int-amqp:inbound-channel-adapter id="uacEventInboundAmqp"
                                       listener-container="uacEventListenerContainer"
-                                      message-converter="simpleUacMessageConverter"
+                                      message-converter="simpleMessageConverter"
                                       channel="jsonUacEventMessage" />
 
     <int:json-to-object-transformer id="uacEventObject"
                                     input-channel="jsonUacEventMessage"
                                     output-channel="acceptUACEvent"
                                     type="uk.gov.ons.ctp.common.event.model.UACEvent" />
-
-    <int:channel id="acceptUACEvent" datatype="uk.gov.ons.ctp.common.event.model.UACEvent" />
-
-    <!-- Start of section to deal with retries and DLQ after max attempts -->
-    <int:channel id="uacEventDlqChannel" />
-
-    <!-- Not expected to store to a transactional resource such as a database, if need rollback on a transactional
-         datastore for instance look into using StatefulRetryOperationsInterceptorFactoryBean  -->
-    <bean id="uacEventRetryAdvice" class="org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptorFactoryBean" >
-        <property name="messageRecoverer" ref="rejectUacAndDontRequeueRecoverer" />
-        <property name="retryOperations" ref="uacRetryTemplate" />
-    </bean>
-    
-    <bean id="rejectUacAndDontRequeueRecoverer" class="org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer"/>
-
-    <!-- The following template needs to be kept with the same settings as the retry Template in the case-gateway-event-inbound xml -->
-    <bean id="uacRetryTemplate" class="org.springframework.retry.support.RetryTemplate">
-        <property name="backOffPolicy">
-            <bean class="org.springframework.retry.backoff.ExponentialBackOffPolicy">
-                <property name="initialInterval" value="${messaging.backoffInitial}" />
-                <property name="multiplier" value="${messaging.backoffMultiplier}" />
-                <property name="maxInterval" value="${messaging.backoffMax}" />
-            </bean>
-        </property>
-        <property name="retryPolicy">
-            <bean class="uk.gov.ons.ctp.common.retry.CTPRetryPolicy">
-                <constructor-arg type="int">
-                    <value>${messaging.conMaxAttempts}</value>
-                </constructor-arg>
-            </bean>
-        </property>
-    </bean>
-
-    <!-- End of section to deal with retries and DLQ after max attempts -->
 
 </beans>
