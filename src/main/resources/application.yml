@@ -99,6 +99,10 @@ messaging:
     initial: 2000
     multiplier: 3
     max: 30000 
+  circuit-breaker:
+    timeout: 4
+    min-number-of-calls: 100
+    sliding-window-size: 100
     
 
 swagger-settings:

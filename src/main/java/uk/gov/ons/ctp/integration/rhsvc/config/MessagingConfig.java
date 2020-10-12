@@ -10,4 +10,5 @@ public class MessagingConfig {
   private int consumingThreads;
   private int conMaxAttempts;
   private int prefetchCount;
+  private RhsCircuitBreakerConfig circuitBreaker;
 }
