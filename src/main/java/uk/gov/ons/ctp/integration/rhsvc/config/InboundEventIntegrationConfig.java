@@ -37,7 +37,13 @@ public class InboundEventIntegrationConfig {
    */
   @Bean
   public BackOff rabbitDownBackOff() {
-    return new ExponentialBackOff();
+    MessagingConfig messaging = appConfig.getMessaging();
+    BackoffConfig recoveryBackoff = messaging.getRecoveryBackoff();
+    ExponentialBackOff backoff = new ExponentialBackOff();
+    backoff.setMaxInterval(recoveryBackoff.getMax());
+    backoff.setMultiplier(recoveryBackoff.getMultiplier());
+    backoff.setInitialInterval(recoveryBackoff.getInitial());
+    return backoff;
   }
 
   /**
@@ -55,10 +61,11 @@ public class InboundEventIntegrationConfig {
   @Bean
   public RetryTemplate retryTemplate() {
     MessagingConfig messaging = appConfig.getMessaging();
+    BackoffConfig processingBackoff = messaging.getProcessingBackoff();
     ExponentialBackOffPolicy backoffPolicy = new ExponentialBackOffPolicy();
-    backoffPolicy.setMaxInterval(messaging.getBackoffMax());
-    backoffPolicy.setMultiplier(messaging.getBackoffMultiplier());
-    backoffPolicy.setInitialInterval(messaging.getBackoffInitial());
+    backoffPolicy.setMaxInterval(processingBackoff.getMax());
+    backoffPolicy.setMultiplier(processingBackoff.getMultiplier());
+    backoffPolicy.setInitialInterval(processingBackoff.getInitial());
     RetryTemplate template = new RetryTemplate();
     template.setBackOffPolicy(backoffPolicy);
     RetryPolicy retryPolicy = new CTPRetryPolicy(messaging.getConMaxAttempts());

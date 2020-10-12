@@ -88,15 +88,22 @@ public class RHSvcApplication {
   }
 
   @Bean
-  public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
+  public Customizer<Resilience4JCircuitBreakerFactory> defaultCircuitBreakerCustomiser() {
     TimeLimiterConfig timeLimiterConfig =
         TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(4)).build();
+    // CircuitBreakerConfig config = CircuitBreakerConfig.ofDefaults();
+    CircuitBreakerConfig config =
+        CircuitBreakerConfig.custom()
+            .minimumNumberOfCalls(6) // FIXME
+            .slidingWindowSize(6)
+            .build();
+
     return factory ->
         factory.configureDefault(
             id ->
                 new Resilience4JConfigBuilder(id)
                     .timeLimiterConfig(timeLimiterConfig)
-                    .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+                    .circuitBreakerConfig(config)
                     .build());
   }
 

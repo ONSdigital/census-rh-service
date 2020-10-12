@@ -5,9 +5,8 @@ import lombok.Data;
 @Data
 public class MessagingConfig {
   private boolean mismatchedQueuesFatal;
-  private int backoffInitial;
-  private int backoffMultiplier;
-  private int backoffMax;
+  private BackoffConfig processingBackoff;
+  private BackoffConfig recoveryBackoff;
   private int consumingThreads;
   private int conMaxAttempts;
   private int prefetchCount;
