@@ -105,6 +105,17 @@ public class RHSvcApplication {
         CircuitBreakerConfig.custom()
             .minimumNumberOfCalls(config.getMinNumberOfCalls())
             .slidingWindowSize(config.getSlidingWindowSize())
+            .failureRateThreshold(config.getFailureRateThreshold())
+            .slowCallRateThreshold(config.getSlowCallRateThreshold())
+            .writableStackTraceEnabled(config.isWritableStackTraceEnabled())
+            .waitDurationInOpenState(Duration.ofSeconds(config.getWaitDurationSecondsInOpenState()))
+            .slowCallDurationThreshold(
+                Duration.ofSeconds(config.getSlowCallDurationSecondsThreshold()))
+            .permittedNumberOfCallsInHalfOpenState(
+                config.getPermittedNumberOfCallsInHalfOpenState())
+            .slidingWindowType(config.getSlidingWindowType())
+            .automaticTransitionFromOpenToHalfOpenEnabled(
+                config.isAutomaticTransitionFromOpenToHalfOpenEnabled())
             .build();
 
     return factory ->

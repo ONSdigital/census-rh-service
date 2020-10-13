@@ -103,7 +103,14 @@ messaging:
     timeout: 4
     min-number-of-calls: 100
     sliding-window-size: 100
-    
+    failure-rate-threshold: 50
+    slow-call-rate-threshold: 100
+    writable-stack-trace-enabled: true
+    wait-durations-seconds-in-open-state: 60
+    slow-call-duration-seconds-threshold: 60
+    permitted-number-of-calls-in-half-open-state: 10
+    sliding-window-type: COUNT_BASED
+    automatic-transition-from-open-to-half-open-enabled: false
 
 swagger-settings:
   swagger-ui-active: true
