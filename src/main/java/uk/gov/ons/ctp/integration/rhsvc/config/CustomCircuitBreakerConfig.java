@@ -5,7 +5,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowT
 import lombok.Data;
 
 @Data
-public class RhsCircuitBreakerConfig {
+public class CustomCircuitBreakerConfig {
   private int timeout = 4;
   private int minNumberOfCalls = CircuitBreakerConfig.DEFAULT_MINIMUM_NUMBER_OF_CALLS;
   private int slidingWindowSize = CircuitBreakerConfig.DEFAULT_SLIDING_WINDOW_SIZE;

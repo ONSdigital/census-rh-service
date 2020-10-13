@@ -37,7 +37,7 @@ import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
 import uk.gov.ons.ctp.common.event.persistence.FirestoreEventPersistence;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
-import uk.gov.ons.ctp.integration.rhsvc.config.RhsCircuitBreakerConfig;
+import uk.gov.ons.ctp.integration.rhsvc.config.CustomCircuitBreakerConfig;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
 @SpringBootApplication
@@ -97,7 +97,7 @@ public class RHSvcApplication {
 
   @Bean
   public Customizer<Resilience4JCircuitBreakerFactory> defaultCircuitBreakerCustomiser() {
-    RhsCircuitBreakerConfig config = appConfig.getMessaging().getCircuitBreaker();
+    CustomCircuitBreakerConfig config = appConfig.getMessaging().getCircuitBreaker();
     log.info("Circuit breaker configuration: {}", config);
     TimeLimiterConfig timeLimiterConfig =
         TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(config.getTimeout())).build();
