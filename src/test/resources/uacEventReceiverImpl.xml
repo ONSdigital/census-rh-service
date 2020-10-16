@@ -18,7 +18,4 @@
     <bean id="eventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.EventReceiverConfiguration" />
 
     <bean id="customObjectMapper" class="uk.gov.ons.ctp.common.jackson.CustomObjectMapper"/>
-
-    <context:property-placeholder location="classpath:uacEventReceiverImpl.properties" />
-
 </beans>
