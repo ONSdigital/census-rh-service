@@ -7,7 +7,7 @@
   <parent>
     <groupId>uk.gov.ons.ctp.integration</groupId>
     <artifactId>census-int-common-config</artifactId>
-    <version>0.0.16</version>
+    <version>0.0.17-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -71,7 +71,6 @@
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-      <version>1.0.4.RELEASE</version>
     </dependency>
 
     <dependency>
@@ -107,7 +106,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.66</version>
+      <version>0.0.67-SNAPSHOT</version>
     </dependency>
 
     <dependency>

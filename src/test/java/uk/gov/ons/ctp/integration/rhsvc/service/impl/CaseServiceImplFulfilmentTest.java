@@ -345,8 +345,7 @@ public class CaseServiceImplFulfilmentTest {
     // Setup case data with required case type
     String caseTypeToSearch = individual != null && individual ? "HI" : "HH";
     CollectionCase caseDetails =
-        collectionCase
-            .stream()
+        collectionCase.stream()
             .filter(c -> c.getCaseType().equals(caseTypeToSearch))
             .findFirst()
             .get();

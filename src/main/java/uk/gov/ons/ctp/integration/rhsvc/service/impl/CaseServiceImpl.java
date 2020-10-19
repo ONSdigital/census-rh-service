@@ -235,9 +235,7 @@ public class CaseServiceImpl implements CaseService {
     searchCriteria.setFulfilmentCode(fulfilmentCode);
 
     // Attempt to find matching product
-    return productReference
-        .searchProducts(searchCriteria)
-        .stream()
+    return productReference.searchProducts(searchCriteria).stream()
         .findFirst()
         .orElseThrow(
             () -> {

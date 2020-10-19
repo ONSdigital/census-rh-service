@@ -153,8 +153,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   private Optional<CollectionCase> filterLatestValidNonHiCollectionCaseSearchResults(
       final List<CollectionCase> searchResults) {
-    return searchResults
-        .stream()
+    return searchResults.stream()
         .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
         .filter(c -> !c.isAddressInvalid())
         .max(Comparator.comparing(CollectionCase::getCreatedDateTime));

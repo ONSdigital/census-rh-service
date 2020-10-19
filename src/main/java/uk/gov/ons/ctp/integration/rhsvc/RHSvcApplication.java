@@ -3,8 +3,6 @@ package uk.gov.ons.ctp.integration.rhsvc;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.godaddy.logging.LoggingConfigs;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.config.MeterFilterReply;
@@ -20,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
-import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
@@ -31,13 +28,13 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
 import uk.gov.ons.ctp.common.event.persistence.FirestoreEventPersistence;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
-import uk.gov.ons.ctp.integration.rhsvc.config.CustomCircuitBreakerConfig;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
 @SpringBootApplication
@@ -97,34 +94,9 @@ public class RHSvcApplication {
 
   @Bean
   public Customizer<Resilience4JCircuitBreakerFactory> defaultCircuitBreakerCustomiser() {
-    CustomCircuitBreakerConfig config = appConfig.getMessaging().getCircuitBreaker();
+    CustomCircuitBreakerConfig config = appConfig.getCircuitBreaker();
     log.info("Circuit breaker configuration: {}", config);
-    TimeLimiterConfig timeLimiterConfig =
-        TimeLimiterConfig.custom().timeoutDuration(Duration.ofSeconds(config.getTimeout())).build();
-    CircuitBreakerConfig cbConfig =
-        CircuitBreakerConfig.custom()
-            .minimumNumberOfCalls(config.getMinNumberOfCalls())
-            .slidingWindowSize(config.getSlidingWindowSize())
-            .failureRateThreshold(config.getFailureRateThreshold())
-            .slowCallRateThreshold(config.getSlowCallRateThreshold())
-            .writableStackTraceEnabled(config.isWritableStackTraceEnabled())
-            .waitDurationInOpenState(Duration.ofSeconds(config.getWaitDurationSecondsInOpenState()))
-            .slowCallDurationThreshold(
-                Duration.ofSeconds(config.getSlowCallDurationSecondsThreshold()))
-            .permittedNumberOfCallsInHalfOpenState(
-                config.getPermittedNumberOfCallsInHalfOpenState())
-            .slidingWindowType(config.getSlidingWindowType())
-            .automaticTransitionFromOpenToHalfOpenEnabled(
-                config.isAutomaticTransitionFromOpenToHalfOpenEnabled())
-            .build();
-
-    return factory ->
-        factory.configureDefault(
-            id ->
-                new Resilience4JConfigBuilder(id)
-                    .timeLimiterConfig(timeLimiterConfig)
-                    .circuitBreakerConfig(cbConfig)
-                    .build());
+    return config.defaultCircuitBreakerCustomiser();
   }
 
   /**
