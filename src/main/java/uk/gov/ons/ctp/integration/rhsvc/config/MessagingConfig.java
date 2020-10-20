@@ -8,7 +8,7 @@ public class MessagingConfig {
 
   /* processingBackoff - retrying when an event fails to be processed with rabbit working. */
   private BackoffConfig processingBackoff;
-  /* recoveryBackoff - retrying the listener when rabbit stops working. */
+  /* recoveryBackoff - frequency of attempted connection to rabbit after rabbit failure */
   private BackoffConfig recoveryBackoff;
 
   private int consumingThreads;
