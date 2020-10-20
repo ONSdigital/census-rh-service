@@ -17,7 +17,5 @@
 
     <bean id="eventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.EventReceiverConfiguration" />
 
-    <context:property-placeholder location="classpath:caseEventReceiverImpl.properties" />
-    <import resource="/springintegration/case-event-inbound.xml"/>
-
+    <bean id="customObjectMapper" class="uk.gov.ons.ctp.common.jackson.CustomObjectMapper"/>
 </beans>

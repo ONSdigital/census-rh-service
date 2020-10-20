@@ -87,13 +87,21 @@ queueconfig:
      - 14
 
 messaging:
-  mismatchedQueuesFatal: true
-  backoffInitial: 5000
-  backoffMultiplier: 3
-  backoffMax: 45000
-  consumingThreads: 1
-  conMaxAttempts: 3
-  prefetchCount: 1
+  mismatched-queues-fatal: true
+  processing-backoff:
+    initial: 5000
+    multiplier: 3
+    max: 45000
+  consuming-threads: 1
+  con-max-attempts: 3
+  prefetch-count: 1
+  recovery-backoff:
+    initial: 2000
+    multiplier: 3
+    max: 30000 
+    
+circuit-breaker:
+  timeout: 4
 
 swagger-settings:
   swagger-ui-active: true

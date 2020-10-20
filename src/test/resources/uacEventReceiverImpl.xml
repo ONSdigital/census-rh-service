@@ -17,7 +17,5 @@
 
     <bean id="eventReceiverImplTestConfiguration" class="uk.gov.ons.ctp.integration.rhsvc.message.impl.EventReceiverConfiguration" />
 
-    <context:property-placeholder location="classpath:uacEventReceiverImpl.properties" />
-    <import resource="/springintegration/uac-event-inbound.xml"/>
-
+    <bean id="customObjectMapper" class="uk.gov.ons.ctp.common.jackson.CustomObjectMapper"/>
 </beans>
