@@ -36,6 +36,7 @@ import uk.gov.ons.ctp.common.event.model.FulfilmentRequest;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
@@ -49,6 +50,8 @@ public class CaseServiceImplFulfilmentTest {
   @Mock private RespondentDataRepository dataRepo;
 
   @Mock private EventPublisher eventPublisher;
+
+  @Mock private RateLimiterClient rateLimiterClient;
 
   @Spy private MapperFacade mapperFacade = new RHSvcBeanMapper();
 

@@ -18,4 +18,5 @@ public class AppConfig {
   private QueueConfig queueConfig;
   private MessagingConfig messaging;
   private CustomCircuitBreakerConfig circuitBreaker;
+  private RateLimiterConfig rateLimiter;
 }

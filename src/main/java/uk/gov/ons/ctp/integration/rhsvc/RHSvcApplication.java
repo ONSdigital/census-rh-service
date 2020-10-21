@@ -34,6 +34,9 @@ import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
 import uk.gov.ons.ctp.common.event.persistence.FirestoreEventPersistence;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
+import uk.gov.ons.ctp.common.rest.RestClient;
+import uk.gov.ons.ctp.common.rest.RestClientConfig;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
@@ -97,6 +100,13 @@ public class RHSvcApplication {
     CustomCircuitBreakerConfig config = appConfig.getCircuitBreaker();
     log.info("Circuit breaker configuration: {}", config);
     return config.defaultCircuitBreakerCustomiser();
+  }
+
+  @Bean
+  public RateLimiterClient rateLimiterClient() {
+    RestClientConfig clientConfig = appConfig.getRateLimiter().getRestClientConfig();
+    RestClient restClient = new RestClient(clientConfig);
+    return new RateLimiterClient(restClient);
   }
 
   /**

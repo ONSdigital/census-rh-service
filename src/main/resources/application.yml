@@ -103,6 +103,14 @@ messaging:
 circuit-breaker:
   timeout: 4
 
+rate-limiter:
+  rest-client-config:
+    username: fred
+    password: temporary
+    scheme: http
+    host: localhost
+    port: 9991
+
 swagger-settings:
   swagger-ui-active: true
   group-name: respondenthome-api
