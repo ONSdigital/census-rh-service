@@ -3,6 +3,9 @@
   "title": "Mr",
   "forename": "Phil",
   "surname": "Whiles",
-  "fulfilmentCode": "ENH1",
+  "fulfilmentCodes": [
+  	"ENH1"
+  ],
+  "clientIP": "216.58.206.142",
   "dateTime": "2007-12-03T10:15:30.123Z"
 }

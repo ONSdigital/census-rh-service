@@ -1,6 +1,7 @@
 {
     "caseId": "bfb5cdca-3119-4d2c-a807-51ae55443b33",
     "telNo": "07714111222",
-    "fulfilmentCode": "F1",
+    "fulfilmentCodes": [ "F1" ],
+    "clientIP": "216.58.206.142",
     "dateTime": "2020-06-01T20:17:46.384Z"
 }

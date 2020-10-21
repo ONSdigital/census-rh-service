@@ -33,6 +33,7 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.AddressChangeDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.CaseRequestDTO;
+import uk.gov.ons.ctp.integration.rhsvc.representation.FulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.CaseService;
@@ -187,11 +188,8 @@ public class CaseServiceImpl implements CaseService {
   public void fulfilmentRequestBySMS(SMSFulfilmentRequestDTO requestBodyDTO) throws CTPException {
     Contact contact = new Contact();
     contact.setTelNo(requestBodyDTO.getTelNo());
-    createAndSendFulfilment(
-        DeliveryChannel.SMS,
-        contact,
-        requestBodyDTO.getCaseId(),
-        requestBodyDTO.getFulfilmentCode());
+    recordRateLimiting(DeliveryChannel.SMS, contact, requestBodyDTO);
+    createAndSendFulfilments(DeliveryChannel.SMS, contact, requestBodyDTO);
   }
 
   @Override
@@ -201,23 +199,30 @@ public class CaseServiceImpl implements CaseService {
     contact.setTitle(requestBodyDTO.getTitle());
     contact.setForename(requestBodyDTO.getForename());
     contact.setSurname(requestBodyDTO.getSurname());
-    createAndSendFulfilment(
-        DeliveryChannel.POST,
-        contact,
-        requestBodyDTO.getCaseId(),
-        requestBodyDTO.getFulfilmentCode());
+    recordRateLimiting(DeliveryChannel.POST, contact, requestBodyDTO);
+    createAndSendFulfilments(DeliveryChannel.POST, contact, requestBodyDTO);
   }
 
-  private void createAndSendFulfilment(
-      DeliveryChannel deliveryChannel, Contact contact, UUID caseId, String fulfilmentCode)
+  private void recordRateLimiting(
+      DeliveryChannel deliveryChannel, Contact contact, FulfilmentRequestDTO request) {
+    // WRITEME
+  }
+
+  private void createAndSendFulfilments(
+      DeliveryChannel deliveryChannel, Contact contact, FulfilmentRequestDTO request)
       throws CTPException {
-    log.with("fulfilmentCode", fulfilmentCode)
+    log.with("fulfilmentCodes", request.getFulfilmentCodes())
         .with("deliveryChannel", deliveryChannel)
         .debug("Entering createAndSendFulfilment");
-    FulfilmentRequest payload =
-        createFulfilmentRequestPayload(fulfilmentCode, deliveryChannel, caseId, contact);
-    eventPublisher.sendEvent(
-        EventType.FULFILMENT_REQUESTED, Source.RESPONDENT_HOME, Channel.RH, payload);
+
+    for (String fulfilmentCode : request.getFulfilmentCodes()) {
+      FulfilmentRequest payload =
+          createFulfilmentRequestPayload(
+              fulfilmentCode, deliveryChannel, request.getCaseId(), contact);
+
+      eventPublisher.sendEvent(
+          EventType.FULFILMENT_REQUESTED, Source.RESPONDENT_HOME, Channel.RH, payload);
+    }
   }
 
   private Product findProduct(String fulfilmentCode, DeliveryChannel deliveryChannel, Region region)
@@ -244,34 +249,52 @@ public class CaseServiceImpl implements CaseService {
             });
   }
 
-  private FulfilmentRequest createFulfilmentRequestPayload(
-      String fulfilmentCode, Product.DeliveryChannel deliveryChannel, UUID caseId, Contact contact)
+  // Read case from firestore
+  private CollectionCase findCaseDetails(UUID caseId) throws CTPException {
+    return dataRepo
+        .readCollectionCase(caseId.toString())
+        .orElseThrow(
+            () -> {
+              log.with("caseId", caseId).info("Case not found");
+              return new CTPException(Fault.RESOURCE_NOT_FOUND, "Case not found: " + caseId);
+            });
+  }
+
+  private String getIndividualCaseId(
+      CollectionCase caseDetails,
+      String fulfilmentCode,
+      Product.DeliveryChannel deliveryChannel,
+      UUID caseId,
+      Contact contact)
       throws CTPException {
-    // Read case from firestore
-    CollectionCase caseDetails =
-        dataRepo
-            .readCollectionCase(caseId.toString())
-            .orElseThrow(
-                () -> {
-                  log.with("caseId", caseId).info("Case not found");
-                  return new CTPException(Fault.RESOURCE_NOT_FOUND, "Case not found: " + caseId);
-                });
 
     // Attempt to find the requested product
     Region region = Region.valueOf(caseDetails.getAddress().getRegion());
     Product product = findProduct(fulfilmentCode, deliveryChannel, region);
     boolean individual = product.getIndividual() == null ? false : product.getIndividual();
 
-    FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
+    String individualCaseId = null;
     if (individual) {
       if (deliveryChannel == DeliveryChannel.POST) {
         validateContactName(contact);
       }
       if (CaseType.HH.name().equals(caseDetails.getCaseType())) {
-        fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
+        individualCaseId = UUID.randomUUID().toString();
       }
     }
+    return individualCaseId;
+  }
 
+  private FulfilmentRequest createFulfilmentRequestPayload(
+      String fulfilmentCode, Product.DeliveryChannel deliveryChannel, UUID caseId, Contact contact)
+      throws CTPException {
+
+    CollectionCase caseDetails = findCaseDetails(caseId);
+    String individualCaseId =
+        getIndividualCaseId(caseDetails, fulfilmentCode, deliveryChannel, caseId, contact);
+
+    FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
+    fulfilmentRequest.setIndividualCaseId(individualCaseId);
     fulfilmentRequest.setFulfilmentCode(fulfilmentCode);
     fulfilmentRequest.setCaseId(caseId.toString());
     fulfilmentRequest.setContact(contact);
