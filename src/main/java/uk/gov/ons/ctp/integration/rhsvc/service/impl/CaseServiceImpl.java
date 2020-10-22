@@ -138,7 +138,7 @@ public class CaseServiceImpl implements CaseService {
     if (!caseData.getAddress().getUprn().equals(addressChanges.getAddress().getUprn())) {
       log.with("caseId", caseId)
           .with("uprn", addressChanges.getAddress().getUprn().toString())
-          .error("The UPRN of the referenced Case and the provided Address UPRN must be matching");
+          .warn("The UPRN of the referenced Case and the provided Address UPRN must be matching");
       throw new CTPException(
           CTPException.Fault.BAD_REQUEST,
           "The UPRN of the referenced Case and the provided Address UPRN must be matching");
