@@ -372,6 +372,43 @@ public class CaseServiceImplFulfilmentTest {
     assertEquals(p3, productCaptor.getAllValues().get(2));
   }
 
+  // simulate RHUI continuation pages using same fulfilment code.
+  @Test
+  public void shouldFulfilRequestByPostForMultipleRepeatedFulfilmentCodes() throws Exception {
+    CollectionCase caseDetails = selectCollectionCaseForTest(Product.CaseType.HH, false);
+    UUID caseId = UUID.fromString(caseDetails.getId());
+    when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
+
+    postalRequest.setCaseId(caseId);
+    postalRequest.setTitle("Mrs");
+    postalRequest.setFulfilmentCodes(Arrays.asList("F1", "CLONE", "CLONE", "CLONE"));
+
+    Product p1 = mockProductSearch("F1", false, DeliveryChannel.POST, Product.CaseType.HH);
+    Product p2 = mockProductSearch("CLONE", false, DeliveryChannel.POST, Product.CaseType.HH);
+
+    caseSvc.fulfilmentRequestByPost(postalRequest);
+
+    Contact contact = new Contact();
+    contact.setTitle("Mrs");
+    contact.setForename("Ethel");
+    contact.setSurname("Brown");
+    getAndValidatePublishedEvent(caseDetails, contact, "F1", "CLONE", "CLONE", "CLONE");
+
+    verify(rateLimiterClient, times(4))
+        .checkRateLimit(
+            eq(Domain.RHSvc),
+            productCaptor.capture(),
+            eq(CaseType.HH),
+            eq(postalRequest.getClientIP()),
+            any(UniquePropertyReferenceNumber.class),
+            eq(Optional.empty()));
+
+    assertEquals(p1, productCaptor.getAllValues().get(0));
+    assertEquals(p2, productCaptor.getAllValues().get(1));
+    assertEquals(p2, productCaptor.getAllValues().get(2));
+    assertEquals(p2, productCaptor.getAllValues().get(3));
+  }
+
   @Test
   public void shouldRejectPostalFulfilmentWhenRateLimiterRejects() throws Exception {
     CollectionCase caseDetails = selectCollectionCaseForTest(Product.CaseType.HH, false);
