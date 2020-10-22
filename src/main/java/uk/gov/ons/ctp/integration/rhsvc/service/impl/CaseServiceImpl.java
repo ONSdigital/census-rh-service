@@ -228,11 +228,12 @@ public class CaseServiceImpl implements CaseService {
       DeliveryChannel deliveryChannel, Contact contact, FulfilmentRequestDTO request)
       throws CTPException {
     Map<String, FulfilmentInformation> map = new HashMap<>();
+    CollectionCase caseDetails = findCaseDetails(request.getCaseId());
+    Region region = Region.valueOf(caseDetails.getAddress().getRegion());
     for (String fulfilmentCode : request.getFulfilmentCodes()) {
       if (null == map.get(fulfilmentCode)) {
         FulfilmentInformation info = new FulfilmentInformation();
-        info.caseDetails = findCaseDetails(request.getCaseId());
-        Region region = Region.valueOf(info.caseDetails.getAddress().getRegion());
+        info.caseDetails = caseDetails;
         info.product = findProduct(fulfilmentCode, deliveryChannel, region);
         map.put(fulfilmentCode, info);
       }

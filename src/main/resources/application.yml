@@ -105,11 +105,9 @@ circuit-breaker:
 
 rate-limiter:
   rest-client-config:
-    username: fred
-    password: temporary
     scheme: http
     host: localhost
-    port: 9991
+    port: 8181
 
 swagger-settings:
   swagger-ui-active: true

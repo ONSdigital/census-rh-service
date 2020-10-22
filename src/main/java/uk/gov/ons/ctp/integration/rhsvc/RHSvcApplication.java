@@ -9,6 +9,9 @@ import io.micrometer.core.instrument.config.MeterFilterReply;
 import io.micrometer.stackdriver.StackdriverConfig;
 import io.micrometer.stackdriver.StackdriverMeterRegistry;
 import java.time.Duration;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -24,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -105,8 +109,18 @@ public class RHSvcApplication {
   @Bean
   public RateLimiterClient rateLimiterClient() {
     RestClientConfig clientConfig = appConfig.getRateLimiter().getRestClientConfig();
-    RestClient restClient = new RestClient(clientConfig);
+    var statusMapping = clientErrorMapping();
+    RestClient restClient =
+        new RestClient(clientConfig, statusMapping, HttpStatus.INTERNAL_SERVER_ERROR);
     return new RateLimiterClient(restClient);
+  }
+
+  private Map<HttpStatus, HttpStatus> clientErrorMapping() {
+    Map<HttpStatus, HttpStatus> mapping = new HashMap<>();
+    EnumSet.allOf(HttpStatus.class).stream()
+        .filter(s -> s.is4xxClientError())
+        .forEach(s -> mapping.put(s, s));
+    return mapping;
   }
 
   /**
