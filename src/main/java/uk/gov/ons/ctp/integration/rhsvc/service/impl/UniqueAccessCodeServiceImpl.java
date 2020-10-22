@@ -90,7 +90,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
           // Case NOT found
           log.with(uacHash)
               .with(caseId)
-              .error("Cannot find Case for UAC - telling UI unlinked - RM remediation required");
+              .info("Cannot find Case for UAC - telling UI unlinked - RM remediation required");
           data = createUniqueAccessCodeDTO(uacMatch.get(), Optional.empty(), CaseStatus.UNLINKED);
           data.setCaseId(null);
         }

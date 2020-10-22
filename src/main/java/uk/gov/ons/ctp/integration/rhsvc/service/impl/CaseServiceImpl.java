@@ -104,7 +104,7 @@ public class CaseServiceImpl implements CaseService {
     Optional<CollectionCase> caseMatch = dataRepo.readCollectionCase(caseId);
 
     if (caseMatch.isEmpty()) {
-      log.with("caseId", caseId).error("Failed to retrieve Case from storage");
+      log.with("caseId", caseId).warn("Failed to retrieve Case from storage");
       throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
 
