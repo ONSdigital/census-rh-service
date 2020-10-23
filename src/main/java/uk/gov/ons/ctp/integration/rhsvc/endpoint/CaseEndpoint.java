@@ -140,7 +140,6 @@ public class CaseEndpoint {
       throws CTPException {
     String methodName = "fulfilmentRequestByPost";
     log.with("pathParam.caseId", caseId)
-        .with("requestBody", requestBodyDTO)
         .info("Entering POST {}", methodName);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
