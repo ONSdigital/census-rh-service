@@ -194,9 +194,9 @@ public class CaseServiceImpl implements CaseService {
     Contact contact = new Contact();
     contact.setTelNo(requestBodyDTO.getTelNo());
     CollectionCase caseDetails = findCaseDetails(requestBodyDTO.getCaseId());
-    var map = createProductMap(DeliveryChannel.SMS, contact, requestBodyDTO, caseDetails);
-    recordRateLimiting(contact, requestBodyDTO, map, caseDetails);
-    createAndSendFulfilments(DeliveryChannel.SMS, contact, requestBodyDTO, map, caseDetails);
+    var productMap = createProductMap(DeliveryChannel.SMS, contact, requestBodyDTO, caseDetails);
+    recordRateLimiting(contact, requestBodyDTO, productMap, caseDetails);
+    createAndSendFulfilments(DeliveryChannel.SMS, contact, requestBodyDTO, productMap, caseDetails);
   }
 
   @Override
@@ -207,15 +207,17 @@ public class CaseServiceImpl implements CaseService {
     contact.setForename(requestBodyDTO.getForename());
     contact.setSurname(requestBodyDTO.getSurname());
     CollectionCase caseDetails = findCaseDetails(requestBodyDTO.getCaseId());
-    var map = createProductMap(DeliveryChannel.POST, contact, requestBodyDTO, caseDetails);
-    recordRateLimiting(contact, requestBodyDTO, map, caseDetails);
-    createAndSendFulfilments(DeliveryChannel.POST, contact, requestBodyDTO, map, caseDetails);
+    var productMap = createProductMap(DeliveryChannel.POST, contact, requestBodyDTO, caseDetails);
+    preValidatePostalContactDetails(productMap, contact);
+    recordRateLimiting(contact, requestBodyDTO, productMap, caseDetails);
+    createAndSendFulfilments(
+        DeliveryChannel.POST, contact, requestBodyDTO, productMap, caseDetails);
   }
 
   /*
    * create a cached map of case details and product information to use for both
    * rate-limiting and event generation.
-   * this prevents multiple calls to repeat getting case details and products.
+   * this prevents multiple calls to repeat getting products details.
    */
   private Map<String, Product> createProductMap(
       DeliveryChannel deliveryChannel,
@@ -231,6 +233,15 @@ public class CaseServiceImpl implements CaseService {
       }
     }
     return map;
+  }
+
+  private void preValidatePostalContactDetails(Map<String, Product> productMap, Contact contact)
+      throws CTPException {
+    for (Product product : productMap.values()) {
+      if (isIndividual(product)) {
+        validateContactName(contact);
+      }
+    }
   }
 
   private void recordRateLimiting(
@@ -274,24 +285,8 @@ public class CaseServiceImpl implements CaseService {
     }
   }
 
-  private String getIndividualCaseId(
-      Product.DeliveryChannel deliveryChannel,
-      Contact contact,
-      Product product,
-      CollectionCase caseDetails)
-      throws CTPException {
-
-    String individualCaseId = null;
-    boolean isIndividual = product.getIndividual() == null ? false : product.getIndividual();
-    if (isIndividual) {
-      if (deliveryChannel == DeliveryChannel.POST) {
-        validateContactName(contact);
-      }
-      if (CaseType.HH.name().equals(caseDetails.getCaseType())) {
-        individualCaseId = UUID.randomUUID().toString();
-      }
-    }
-    return individualCaseId;
+  private boolean isIndividual(Product product) {
+    return product.getIndividual() == null ? false : product.getIndividual();
   }
 
   private FulfilmentRequest createFulfilmentRequestPayload(
@@ -302,7 +297,11 @@ public class CaseServiceImpl implements CaseService {
       Product product,
       CollectionCase caseDetails)
       throws CTPException {
-    String individualCaseId = getIndividualCaseId(deliveryChannel, contact, product, caseDetails);
+
+    String individualCaseId = null;
+    if (isIndividual(product) && CaseType.HH.name().equals(caseDetails.getCaseType())) {
+      individualCaseId = UUID.randomUUID().toString();
+    }
 
     FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
     fulfilmentRequest.setIndividualCaseId(individualCaseId);

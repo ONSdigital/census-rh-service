@@ -155,8 +155,11 @@ public class CaseServiceImplFulfilmentTest {
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
     mockProductSearch("F1", individual, DeliveryChannel.SMS, caseTypes);
     caseSvc.fulfilmentRequestBySMS(smsRequest);
+
+    String phoneNo = "07714111222";
+    verifyRateLimiterCall(1, phoneNo, smsRequest.getClientIP(), caseDetails);
     Contact contact = new Contact();
-    contact.setTelNo("07714111222");
+    contact.setTelNo(phoneNo);
     FulfilmentRequest eventPayload =
         getAndValidatePublishedEvent(caseDetails, contact, "F1").get(0);
     return eventPayload;
@@ -168,6 +171,7 @@ public class CaseServiceImplFulfilmentTest {
     CTPException e =
         assertThrows(CTPException.class, () -> caseSvc.fulfilmentRequestBySMS(smsRequest));
     assertTrue(e.toString(), e.getMessage().contains("Case not found"));
+    verifyRateLimiterNotCalled();
   }
 
   @Test
@@ -177,6 +181,7 @@ public class CaseServiceImplFulfilmentTest {
     CTPException e =
         assertThrows(CTPException.class, () -> caseSvc.fulfilmentRequestBySMS(smsRequest));
     assertTrue(e.toString(), e.getMessage().contains("Compatible product cannot be found"));
+    verifyRateLimiterNotCalled();
   }
 
   // --- fulfilment by post
@@ -269,6 +274,7 @@ public class CaseServiceImplFulfilmentTest {
     mockProductSearch("F1", individual, DeliveryChannel.POST, caseTypes);
     caseSvc.fulfilmentRequestByPost(postalRequest);
 
+    verifyRateLimiterCall(1, null, postalRequest.getClientIP(), caseDetails);
     Contact contact = new Contact();
     contact.setTitle(requestorsTitle);
     contact.setForename("Ethel");
@@ -291,6 +297,7 @@ public class CaseServiceImplFulfilmentTest {
         e.getMessage()
             .contains(
                 "The fulfilment is for an individual so none of the following fields can be empty"));
+    verifyRateLimiterNotCalled();
   }
 
   @Test
@@ -323,6 +330,7 @@ public class CaseServiceImplFulfilmentTest {
     CTPException e =
         assertThrows(CTPException.class, () -> caseSvc.fulfilmentRequestByPost(postalRequest));
     assertTrue(e.toString(), e.getMessage().contains("Case not found"));
+    verifyRateLimiterNotCalled();
   }
 
   @Test
@@ -332,6 +340,7 @@ public class CaseServiceImplFulfilmentTest {
     CTPException e =
         assertThrows(CTPException.class, () -> caseSvc.fulfilmentRequestByPost(postalRequest));
     assertTrue(e.toString(), e.getMessage().contains("Compatible product cannot be found"));
+    verifyRateLimiterNotCalled();
   }
 
   // --- multi postal fulfilment tests
@@ -358,14 +367,7 @@ public class CaseServiceImplFulfilmentTest {
     contact.setSurname("Brown");
     getAndValidatePublishedEvent(caseDetails, contact, "F1", "F2", "F3");
 
-    verify(rateLimiterClient, times(3))
-        .checkRateLimit(
-            eq(Domain.RHSvc),
-            productCaptor.capture(),
-            eq(CaseType.HH),
-            eq(postalRequest.getClientIP()),
-            any(UniquePropertyReferenceNumber.class),
-            eq(Optional.empty()));
+    verifyRateLimiterCall(3, null, postalRequest.getClientIP(), caseDetails);
 
     assertEquals(p1, productCaptor.getAllValues().get(0));
     assertEquals(p2, productCaptor.getAllValues().get(1));
@@ -394,14 +396,7 @@ public class CaseServiceImplFulfilmentTest {
     contact.setSurname("Brown");
     getAndValidatePublishedEvent(caseDetails, contact, "F1", "CLONE", "CLONE", "CLONE");
 
-    verify(rateLimiterClient, times(4))
-        .checkRateLimit(
-            eq(Domain.RHSvc),
-            productCaptor.capture(),
-            eq(CaseType.HH),
-            eq(postalRequest.getClientIP()),
-            any(UniquePropertyReferenceNumber.class),
-            eq(Optional.empty()));
+    verifyRateLimiterCall(4, null, postalRequest.getClientIP(), caseDetails);
 
     assertEquals(p1, productCaptor.getAllValues().get(0));
     assertEquals(p2, productCaptor.getAllValues().get(1));
@@ -427,6 +422,7 @@ public class CaseServiceImplFulfilmentTest {
 
     assertEquals(HttpStatus.TOO_MANY_REQUESTS, ex.getStatus());
     verify(eventPublisher, never()).sendEvent(any(), any(), any(), any());
+    verifyRateLimiterCall(1, null, postalRequest.getClientIP(), caseDetails);
   }
 
   // multi sms fulfilment tests
@@ -453,14 +449,7 @@ public class CaseServiceImplFulfilmentTest {
     contact.setTelNo(phoneNo);
     getAndValidatePublishedEvent(caseDetails, contact, "F1", "F2", "F3");
 
-    verify(rateLimiterClient, times(3))
-        .checkRateLimit(
-            eq(Domain.RHSvc),
-            productCaptor.capture(),
-            eq(CaseType.HH),
-            eq(postalRequest.getClientIP()),
-            any(UniquePropertyReferenceNumber.class),
-            eq(Optional.of(phoneNo)));
+    verifyRateLimiterCall(3, phoneNo, smsRequest.getClientIP(), caseDetails);
 
     assertEquals(p1, productCaptor.getAllValues().get(0));
     assertEquals(p2, productCaptor.getAllValues().get(1));
@@ -476,8 +465,9 @@ public class CaseServiceImplFulfilmentTest {
     when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS));
 
+    String phoneNo = "07714111222";
     smsRequest.setCaseId(caseId);
-    smsRequest.setTelNo("07714111222");
+    smsRequest.setTelNo(phoneNo);
     mockProductSearch("F1", false, DeliveryChannel.SMS, Product.CaseType.HH);
 
     ResponseStatusException ex =
@@ -486,9 +476,28 @@ public class CaseServiceImplFulfilmentTest {
 
     assertEquals(HttpStatus.TOO_MANY_REQUESTS, ex.getStatus());
     verify(eventPublisher, never()).sendEvent(any(), any(), any(), any());
+    verifyRateLimiterCall(1, phoneNo, smsRequest.getClientIP(), caseDetails);
   }
 
   // --- helpers
+
+  private void verifyRateLimiterCall(
+      int numTimes, String phoneNo, String clientIp, CollectionCase caseDetails) {
+    UniquePropertyReferenceNumber uprn =
+        UniquePropertyReferenceNumber.create(caseDetails.getAddress().getUprn());
+    verify(rateLimiterClient, times(numTimes))
+        .checkRateLimit(
+            eq(Domain.RHSvc),
+            productCaptor.capture(),
+            eq(CaseType.valueOf(caseDetails.getCaseType())),
+            eq(clientIp),
+            eq(uprn),
+            eq(Optional.ofNullable(phoneNo)));
+  }
+
+  private void verifyRateLimiterNotCalled() {
+    verify(rateLimiterClient, never()).checkRateLimit(any(), any(), any(), any(), any(), any());
+  }
 
   private Product createProductForSearch(String fulfilmentCode, DeliveryChannel channel) {
     Product product = new Product();
