@@ -248,7 +248,8 @@ public class CaseServiceImpl implements CaseService {
       Contact contact,
       FulfilmentRequestDTO request,
       Map<String, Product> productMap,
-      CollectionCase caseDetails) {
+      CollectionCase caseDetails)
+      throws CTPException {
 
     for (String fulfilmentCode : request.getFulfilmentCodes()) {
       log.with(fulfilmentCode).debug("Recording rate-limiting");
@@ -257,9 +258,9 @@ public class CaseServiceImpl implements CaseService {
       String ipAddress = request.getClientIP();
       UniquePropertyReferenceNumber uprn =
           UniquePropertyReferenceNumber.create(caseDetails.getAddress().getUprn());
-      Optional<String> telNo = Optional.ofNullable(contact.getTelNo());
 
-      rateLimiterClient.checkRateLimit(Domain.RHSvc, product, caseType, ipAddress, uprn, telNo);
+      rateLimiterClient.checkRateLimit(
+          Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
     }
   }
 

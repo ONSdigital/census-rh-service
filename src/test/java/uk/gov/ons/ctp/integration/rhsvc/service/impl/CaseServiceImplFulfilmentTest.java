@@ -482,20 +482,20 @@ public class CaseServiceImplFulfilmentTest {
   // --- helpers
 
   private void verifyRateLimiterCall(
-      int numTimes, String phoneNo, String clientIp, CollectionCase caseDetails) {
+      int numTimes, String phoneNo, String clientIp, CollectionCase caseDetails) throws Exception {
     UniquePropertyReferenceNumber uprn =
         UniquePropertyReferenceNumber.create(caseDetails.getAddress().getUprn());
     verify(rateLimiterClient, times(numTimes))
         .checkRateLimit(
-            eq(Domain.RHSvc),
+            eq(Domain.RH),
             productCaptor.capture(),
             eq(CaseType.valueOf(caseDetails.getCaseType())),
             eq(clientIp),
             eq(uprn),
-            eq(Optional.ofNullable(phoneNo)));
+            eq(phoneNo));
   }
 
-  private void verifyRateLimiterNotCalled() {
+  private void verifyRateLimiterNotCalled() throws Exception {
     verify(rateLimiterClient, never()).checkRateLimit(any(), any(), any(), any(), any(), any());
   }
 
