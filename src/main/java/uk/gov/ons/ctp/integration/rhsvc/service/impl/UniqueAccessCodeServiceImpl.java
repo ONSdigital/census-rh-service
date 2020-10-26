@@ -101,7 +101,7 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       }
       sendRespondentAuthenticatedEvent(data);
     } else {
-      log.info("Unknown UAC");
+      log.with("uacHash", uacHash).warn("Unknown UAC");
       throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve UAC");
     }
 
@@ -306,7 +306,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     if (linkCombo.isEmpty()) {
       String failureDetails = uacFormType + ", " + caseCaseType;
-      log.warn("Failed to link UAC to case. Incompatible combination: " + failureDetails);
+      log.with("uacFormType", uacFormType).with("caseCaseType", caseCaseType)
+              .warn("Failed to link UAC to case. Incompatible combination: " + failureDetails);
       throw new CTPException(
           CTPException.Fault.BAD_REQUEST, "Case and UAC incompatible: " + failureDetails);
     }

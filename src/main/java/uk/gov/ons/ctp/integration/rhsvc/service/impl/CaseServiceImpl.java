@@ -61,7 +61,8 @@ public class CaseServiceImpl implements CaseService {
           .debug("non HI latest valid case retrieved for UPRN");
       return mapperFacade.map(caseFound.get(), CaseDTO.class);
     } else {
-      log.debug("No cases returned for uprn: " + uprn);
+      log.with("uprn", uprn)
+      .warn("No cases returned for uprn");
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
   }
@@ -265,7 +266,7 @@ public class CaseServiceImpl implements CaseService {
     FulfilmentRequest fulfilmentRequest = new FulfilmentRequest();
     if (individual) {
       if (deliveryChannel == DeliveryChannel.POST) {
-        validateContactName(contact);
+        validateContactName(contact, caseId);
       }
       if (CaseType.HH.name().equals(caseDetails.getCaseType())) {
         fulfilmentRequest.setIndividualCaseId(UUID.randomUUID().toString());
@@ -278,10 +279,10 @@ public class CaseServiceImpl implements CaseService {
     return fulfilmentRequest;
   }
 
-  private void validateContactName(Contact contact) throws CTPException {
+  private void validateContactName(Contact contact, UUID caseId) throws CTPException {
     if (StringUtils.isBlank(contact.getForename()) || StringUtils.isBlank(contact.getSurname())) {
 
-      log.warn("Individual fields are required for the requested fulfilment");
+      log.with("caseId", caseId).warn("Individual fields are required for the requested fulfilment");
       throw new CTPException(
           Fault.BAD_REQUEST,
           "The fulfilment is for an individual so none of the following fields can be empty: "
