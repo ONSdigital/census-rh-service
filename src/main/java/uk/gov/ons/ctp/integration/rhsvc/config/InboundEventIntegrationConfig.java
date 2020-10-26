@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.config;
 
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptorFactoryBean;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
@@ -199,9 +200,13 @@ public class InboundEventIntegrationConfig {
   private Jackson2JsonMessageConverter jsonMessageConverter(
       CustomObjectMapper customObjectMapper, Class<?> defaultType) {
     Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(customObjectMapper);
-    DefaultClassMapper mapper = new DefaultClassMapper();
-    mapper.setDefaultType(defaultType);
-    mapper.setTrustedPackages("*");
+    DefaultClassMapper mapper =
+        new DefaultClassMapper() {
+          @Override
+          public Class<?> toClass(MessageProperties properties) {
+            return defaultType;
+          }
+        };
     converter.setClassMapper(mapper);
     return converter;
   }
