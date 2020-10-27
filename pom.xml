@@ -106,7 +106,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.67</version>
+      <version>0.0.68</version>
     </dependency>
 
     <dependency>
