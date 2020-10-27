@@ -59,7 +59,9 @@ public class UACEventReceiverImpl {
     try {
       respondentDataRepo.writeUAC(uac);
     } catch (CTPException ctpEx) {
-      log.with("uacTransactionId", uacTransactionId).with(ctpEx.getMessage()).error("UAC Event processing failed");
+      log.with("uacTransactionId", uacTransactionId)
+          .with(ctpEx.getMessage())
+          .error("UAC Event processing failed");
       throw new CTPException(ctpEx.getFault());
     }
   }
