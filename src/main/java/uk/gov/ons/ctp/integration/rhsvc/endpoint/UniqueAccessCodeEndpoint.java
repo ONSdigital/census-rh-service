@@ -37,7 +37,7 @@ public class UniqueAccessCodeEndpoint {
   public ResponseEntity<UniqueAccessCodeDTO> getUACClaimContext(
       @PathVariable("uacHash") final String uacHash) throws CTPException {
 
-    log.info("Entering GET getUACClaimContext");
+    log.with("uacHash", uacHash).info("Entering GET getUACClaimContext");
     UniqueAccessCodeDTO uacDTO = uacService.getAndAuthenticateUAC(uacHash);
 
     log.debug("Exit GET getUACClaimContext");

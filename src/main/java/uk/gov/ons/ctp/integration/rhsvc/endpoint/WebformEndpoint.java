@@ -27,7 +27,10 @@ public final class WebformEndpoint {
   @RequestMapping(value = "/webform", method = RequestMethod.POST)
   public void webformCapture(@Valid @RequestBody WebformDTO webformDTO) throws CTPException {
 
-    log.info("Entering POST webformCapture");
+    log.with("webformDTO.category", webformDTO.getCategory())
+        .with("webformDTO.region", webformDTO.getRegion())
+        .with("webformDTO.language", webformDTO.getLanguage())
+        .info("Entering POST webformCapture");
 
     UUID id = webformService.webformCapture(webformDTO);
 
