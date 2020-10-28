@@ -105,7 +105,8 @@ public class CaseServiceImpl implements CaseService {
 
     if (caseMatch.isEmpty()) {
       log.with("caseId", caseId).warn("Failed to retrieve Case from storage");
-      throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case for caseId: {}", caseId);
+      throw new CTPException(
+          CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case for caseId: {}", caseId);
     }
 
     CollectionCase rmCase = caseMatch.get();
