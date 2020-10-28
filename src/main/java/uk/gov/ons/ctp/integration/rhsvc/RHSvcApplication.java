@@ -109,6 +109,7 @@ public class RHSvcApplication {
   @Bean
   public RateLimiterClient rateLimiterClient() {
     RestClientConfig clientConfig = appConfig.getRateLimiter().getRestClientConfig();
+    log.info("Rate Limiter configuration: {}", appConfig.getRateLimiter());
     var statusMapping = clientErrorMapping();
     RestClient restClient =
         new RestClient(clientConfig, statusMapping, HttpStatus.INTERNAL_SERVER_ERROR);

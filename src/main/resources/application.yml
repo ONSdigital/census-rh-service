@@ -104,6 +104,7 @@ circuit-breaker:
   timeout: 4
 
 rate-limiter:
+  enabled: true
   rest-client-config:
     scheme: http
     host: localhost

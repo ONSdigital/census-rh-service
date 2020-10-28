@@ -47,6 +47,8 @@ import uk.gov.ons.ctp.integration.common.product.model.Product.DeliveryChannel;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient.Domain;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcBeanMapper;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
+import uk.gov.ons.ctp.integration.rhsvc.config.RateLimiterConfig;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDTO;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
@@ -55,6 +57,8 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 public class CaseServiceImplFulfilmentTest {
 
   @InjectMocks private CaseServiceImpl caseSvc;
+
+  @Mock private AppConfig appConfig;
 
   @Mock private RespondentDataRepository dataRepo;
 
@@ -77,6 +81,13 @@ public class CaseServiceImplFulfilmentTest {
     this.collectionCase = FixtureHelper.loadClassFixtures(CollectionCase[].class);
     this.smsRequest = FixtureHelper.loadClassFixtures(SMSFulfilmentRequestDTO[].class).get(0);
     this.postalRequest = FixtureHelper.loadClassFixtures(PostalFulfilmentRequestDTO[].class).get(0);
+    when(appConfig.getRateLimiter()).thenReturn(rateLimiterConfig(true));
+  }
+
+  private RateLimiterConfig rateLimiterConfig(boolean enabled) {
+    RateLimiterConfig rateLimiterConfig = new RateLimiterConfig();
+    rateLimiterConfig.setEnabled(enabled);
+    return rateLimiterConfig;
   }
 
   // --- fulfilment by SMS
@@ -477,6 +488,44 @@ public class CaseServiceImplFulfilmentTest {
     assertEquals(HttpStatus.TOO_MANY_REQUESTS, ex.getStatus());
     verify(eventPublisher, never()).sendEvent(any(), any(), any(), any());
     verifyRateLimiterCall(1, phoneNo, smsRequest.getClientIP(), caseDetails);
+  }
+
+  // --- check when rate limiter turned off
+
+  @Test
+  public void shouldFulfilRequestByPostWhenRateLimiterNotEnabled() throws Exception {
+    CollectionCase caseDetails = selectCollectionCaseForTest(Product.CaseType.HH, false);
+    UUID caseId = UUID.fromString(caseDetails.getId());
+    when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
+
+    postalRequest.setCaseId(caseId);
+    postalRequest.setTitle("Mrs");
+    postalRequest.setFulfilmentCodes(Arrays.asList("F1"));
+
+    mockProductSearch("F1", false, DeliveryChannel.POST, Product.CaseType.HH);
+    when(appConfig.getRateLimiter()).thenReturn(rateLimiterConfig(false));
+
+    caseSvc.fulfilmentRequestByPost(postalRequest);
+    verifyRateLimiterNotCalled();
+  }
+
+  @Test
+  public void shouldFulfilRequestBySmsWhenRateLimiterNotEnabled() throws Exception {
+    CollectionCase caseDetails = selectCollectionCaseForTest(Product.CaseType.HH, false);
+    UUID caseId = UUID.fromString(caseDetails.getId());
+    when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
+
+    String phoneNo = "07714111222";
+
+    smsRequest.setTelNo(phoneNo);
+    smsRequest.setCaseId(caseId);
+    smsRequest.setFulfilmentCodes(Arrays.asList("F1"));
+
+    mockProductSearch("F1", false, DeliveryChannel.SMS, Product.CaseType.HH);
+    when(appConfig.getRateLimiter()).thenReturn(rateLimiterConfig(false));
+
+    caseSvc.fulfilmentRequestBySMS(smsRequest);
+    verifyRateLimiterNotCalled();
   }
 
   // --- helpers

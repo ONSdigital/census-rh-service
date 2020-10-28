@@ -251,16 +251,20 @@ public class CaseServiceImpl implements CaseService {
       CollectionCase caseDetails)
       throws CTPException {
 
-    for (String fulfilmentCode : request.getFulfilmentCodes()) {
-      log.with(fulfilmentCode).debug("Recording rate-limiting");
-      Product product = productMap.get(fulfilmentCode);
-      CaseType caseType = CaseType.valueOf(caseDetails.getCaseType());
-      String ipAddress = request.getClientIP();
-      UniquePropertyReferenceNumber uprn =
-          UniquePropertyReferenceNumber.create(caseDetails.getAddress().getUprn());
+    if (appConfig.getRateLimiter().isEnabled()) {
+      for (String fulfilmentCode : request.getFulfilmentCodes()) {
+        log.with(fulfilmentCode).debug("Recording rate-limiting");
+        Product product = productMap.get(fulfilmentCode);
+        CaseType caseType = CaseType.valueOf(caseDetails.getCaseType());
+        String ipAddress = request.getClientIP();
+        UniquePropertyReferenceNumber uprn =
+            UniquePropertyReferenceNumber.create(caseDetails.getAddress().getUprn());
 
-      rateLimiterClient.checkRateLimit(
-          Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
+        rateLimiterClient.checkRateLimit(
+            Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
+      }
+    } else {
+      log.info("Rate limiter client is disabled");
     }
   }
 

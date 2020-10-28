@@ -5,5 +5,6 @@ import uk.gov.ons.ctp.common.rest.RestClientConfig;
 
 @Data
 public class RateLimiterConfig {
+  private boolean enabled;
   private RestClientConfig restClientConfig;
 }
