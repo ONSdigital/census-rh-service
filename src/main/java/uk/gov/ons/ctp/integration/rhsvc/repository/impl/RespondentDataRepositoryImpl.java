@@ -28,12 +28,8 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   @Value("${cloud-storage.uac-schema-name}")
   private String uacSchemaName;
 
-  @Value("${cloud-storage.webform-schema-name}")
-  private String webformSchemaName;
-
   String caseSchema;
   private String uacSchema;
-  private String webformSchema;
 
   private static final String[] SEARCH_BY_UPRN_PATH = new String[] {"address", "uprn"};
 
@@ -41,7 +37,6 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   public void init() {
     caseSchema = gcpProject + "-" + caseSchemaName.toLowerCase();
     uacSchema = gcpProject + "-" + uacSchemaName.toLowerCase();
-    webformSchema = gcpProject + "-" + webformSchemaName.toLowerCase();
   }
 
   @Autowired

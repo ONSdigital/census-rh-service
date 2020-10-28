@@ -113,7 +113,6 @@ swagger-settings:
 cloud-storage:
   case-schema-name: case
   uac-schema-name: uac
-  webform-schema-name: webform
   event-backup-schema-name: event-backup
   backoff:
     initial: 100
