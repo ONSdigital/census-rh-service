@@ -139,9 +139,7 @@ public class CaseEndpoint {
       @Valid @RequestBody PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
     String methodName = "fulfilmentRequestByPost";
-    log.with("pathParam.caseId", caseId)
-        .with("requestBody", requestBodyDTO)
-        .info("Entering POST {}", methodName);
+    log.with("pathParam.caseId", caseId).info("Entering POST {}", methodName);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
     caseService.fulfilmentRequestByPost(requestBodyDTO);

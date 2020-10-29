@@ -67,7 +67,7 @@ public class CaseServiceImpl implements CaseService {
           .debug("non HI latest valid case retrieved for UPRN");
       return mapperFacade.map(caseFound.get(), CaseDTO.class);
     } else {
-      log.debug("No cases returned for uprn: " + uprn);
+      log.with("uprn", uprn).warn("No cases returned for uprn");
       throw new CTPException(Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
     }
   }
@@ -110,8 +110,9 @@ public class CaseServiceImpl implements CaseService {
     Optional<CollectionCase> caseMatch = dataRepo.readCollectionCase(caseId);
 
     if (caseMatch.isEmpty()) {
-      log.with("caseId", caseId).error("Failed to retrieve Case from storage");
-      throw new CTPException(CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case");
+      log.with("caseId", caseId).warn("Failed to retrieve Case from storage");
+      throw new CTPException(
+          CTPException.Fault.RESOURCE_NOT_FOUND, "Failed to retrieve Case for caseId: {}", caseId);
     }
 
     CollectionCase rmCase = caseMatch.get();
@@ -144,7 +145,7 @@ public class CaseServiceImpl implements CaseService {
     if (!caseData.getAddress().getUprn().equals(addressChanges.getAddress().getUprn())) {
       log.with("caseId", caseId)
           .with("uprn", addressChanges.getAddress().getUprn().toString())
-          .error("The UPRN of the referenced Case and the provided Address UPRN must be matching");
+          .warn("The UPRN of the referenced Case and the provided Address UPRN must be matching");
       throw new CTPException(
           CTPException.Fault.BAD_REQUEST,
           "The UPRN of the referenced Case and the provided Address UPRN must be matching");
