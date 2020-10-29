@@ -1,10 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 
-import java.util.UUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -14,42 +12,47 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
-import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
-import uk.gov.ons.ctp.integration.rhsvc.representation.WebformPersistedDTO;
+import uk.gov.ons.ctp.common.event.EventPublisher;
+import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
+import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
+import uk.gov.ons.ctp.common.event.EventPublisher.Source;
+import uk.gov.ons.ctp.common.event.model.Webform;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WebformServiceImplTest {
 
-  @Mock private RespondentDataRepository dataRepo;
+  private static final String TRANSACTIONID = "fdc64299-1a08-49b1-af33-63b322a04e34";
+
+  @Mock private EventPublisher eventPublisher;
 
   @InjectMocks WebformServiceImpl webformService;
 
-  @Captor ArgumentCaptor<WebformPersistedDTO> webformPersistedCaptor;
+  @Captor ArgumentCaptor<Webform> webformEventCaptor;
 
   @Test
   public void webformCapture() throws Exception {
-    WebformDTO webformDTO = FixtureHelper.loadClassFixtures(WebformDTO[].class).get(0);
+    Webform webform = FixtureHelper.loadClassFixtures(Webform[].class).get(0);
 
-    // Send in the webform
-    long timestampBefore = System.currentTimeMillis();
-    webformService.webformCapture(webformDTO);
-    long timestampAfter = System.currentTimeMillis();
+    Mockito.when(
+            eventPublisher.sendEvent(
+                eq(EventType.WEB_FORM_REQUEST),
+                eq(Source.RESPONDENT_HOME),
+                eq(Channel.RH),
+                webformEventCaptor.capture()))
+        .thenReturn(TRANSACTIONID);
 
-    // Get hold of the webform data written to the repo
-    Mockito.verify(dataRepo).writeWebform(webformPersistedCaptor.capture());
-    WebformPersistedDTO webformPersisted = webformPersistedCaptor.getValue();
+    String transactionId = webformService.sendWebformEvent(webform);
 
-    // Verify that id really is a uuid
-    assertNotNull(webformPersisted.getId(), UUID.fromString(webformPersisted.getId()));
+    Mockito.verify(eventPublisher)
+        .sendEvent(
+            eq(EventType.WEB_FORM_REQUEST),
+            eq(Source.RESPONDENT_HOME),
+            eq(Channel.RH),
+            webformEventCaptor.capture());
 
-    // Check created timestamp looks correct
-    long createdTimestamp = webformPersisted.getCreatedDateTime().getTime();
-    String timestampDetails =
-        "Before: " + createdTimestamp + " After: " + timestampAfter + " DTO: " + createdTimestamp;
-    assertTrue(timestampDetails, createdTimestamp >= timestampBefore);
-    assertTrue(timestampDetails, createdTimestamp <= timestampAfter);
+    Webform event = webformEventCaptor.getValue();
 
-    assertEquals(webformDTO, webformPersisted.getWebformData());
+    assertEquals(TRANSACTIONID, transactionId);
+    assertEquals(webform, event);
   }
 }

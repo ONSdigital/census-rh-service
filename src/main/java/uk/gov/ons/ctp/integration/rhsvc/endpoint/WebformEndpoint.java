@@ -3,15 +3,13 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import io.micrometer.core.annotation.Timed;
-import java.util.UUID;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
+import uk.gov.ons.ctp.common.event.model.Webform;
 import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 
 /** The REST endpoint controller for the webform endpoint. */
@@ -25,15 +23,12 @@ public final class WebformEndpoint {
   @Autowired private WebformService webformService;
 
   @RequestMapping(value = "/webform", method = RequestMethod.POST)
-  public void webformCapture(@Valid @RequestBody WebformDTO webformDTO) throws CTPException {
+  public void webformCapture(@Valid @RequestBody Webform webform) {
 
-    log.with("webformDTO.category", webformDTO.getCategory())
-        .with("webformDTO.region", webformDTO.getRegion())
-        .with("webformDTO.language", webformDTO.getLanguage())
-        .info("Entering POST webformCapture");
+    log.with("requestBody", webform).info("Entering POST webformCapture");
 
-    UUID id = webformService.webformCapture(webformDTO);
+    String transactionId = webformService.sendWebformEvent(webform);
 
-    log.with("caseId", id).debug("Exit POST webformCapture");
+    log.with("transactionId", transactionId).info("Exit POST webformCapture");
   }
 }
