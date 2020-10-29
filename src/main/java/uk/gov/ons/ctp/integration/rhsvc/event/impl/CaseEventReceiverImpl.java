@@ -47,8 +47,7 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
     try {
       respondentDataRepo.writeCollectionCase(collectionCase);
     } catch (CTPException ctpEx) {
-      log.with("caseTransactionId", caseTransactionId)
-          .error(ctpEx, "Case Event processing failed");
+      log.with("caseTransactionId", caseTransactionId).error(ctpEx, "Case Event processing failed");
       throw new CTPException(ctpEx.getFault());
     }
   }
