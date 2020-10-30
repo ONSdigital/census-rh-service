@@ -1,11 +1,14 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
-import java.util.UUID;
-import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
+import uk.gov.ons.ctp.common.event.model.Webform;
 
 /** Service responsible for Webform requests */
 public interface WebformService {
 
-  public UUID webformCapture(WebformDTO webformDTO) throws CTPException;
+  /**
+   * Send a Webform event
+   *
+   * @param webform request information
+   */
+  String sendWebformEvent(Webform webform);
 }
