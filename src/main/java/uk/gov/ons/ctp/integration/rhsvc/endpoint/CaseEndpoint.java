@@ -48,7 +48,7 @@ public class CaseEndpoint {
     String methodName = "createNewCase";
     log.with("UPRN", requestBodyDTO.getUprn())
         .with("requestBody", requestBodyDTO)
-        .info("Entering POST {}", methodName);
+        .info("Entering POST for createNewCase");
 
     CaseDTO caseToReturn = caseService.createNewCase(requestBodyDTO);
 
@@ -99,7 +99,7 @@ public class CaseEndpoint {
     String methodName = "modifyAddress";
     log.with("pathParam.caseId", caseId)
         .with("requestBody", addressChange)
-        .info("Entering PUT {}", methodName);
+        .info("Entering PUT for modifyAddress");
 
     validateMatchingCaseId(caseId, addressChange.getCaseId(), methodName);
     CaseDTO result = caseService.modifyAddress(addressChange);
@@ -125,7 +125,7 @@ public class CaseEndpoint {
     String methodName = "fulfilmentRequestBySMS";
     log.with("pathParam.caseId", caseId)
         .with("requestBody", requestBodyDTO)
-        .info("Entering POST {}", methodName);
+        .info("Entering POST for fulfilmentRequestBySMS");
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
     caseService.fulfilmentRequestBySMS(requestBodyDTO);
@@ -139,7 +139,7 @@ public class CaseEndpoint {
       @Valid @RequestBody PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
     String methodName = "fulfilmentRequestByPost";
-    log.with("pathParam.caseId", caseId).info("Entering POST {}", methodName);
+    log.with("pathParam.caseId", caseId).info("Entering POST for fulfilmentRequestByPost");
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
     caseService.fulfilmentRequestByPost(requestBodyDTO);
