@@ -77,8 +77,8 @@ public class CaseEndpoint {
       throws CTPException {
     if (!caseId.equals(dtoCaseId)) {
       String message =
-          "The caseid in the " + dtoName + " URL does not match the caseid in the request body";
-      log.with(caseId).warn(message);
+          "The caseid in the given dto URL does not match the caseid in the request body";
+      log.with("caseId", caseId).with("dtoName", dtoName).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
   }
