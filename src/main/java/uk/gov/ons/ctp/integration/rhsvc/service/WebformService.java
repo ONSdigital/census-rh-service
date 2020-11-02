@@ -9,6 +9,7 @@ public interface WebformService {
    * Send a Webform event
    *
    * @param webform request information
+   * @return the transaction ID of the sent event.
    */
   String sendWebformEvent(Webform webform);
 }

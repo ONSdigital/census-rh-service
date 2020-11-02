@@ -103,6 +103,13 @@ messaging:
 circuit-breaker:
   timeout: 4
 
+rate-limiter:
+  enabled: true
+  rest-client-config:
+    scheme: http
+    host: localhost
+    port: 8181
+
 swagger-settings:
   swagger-ui-active: true
   group-name: respondenthome-api

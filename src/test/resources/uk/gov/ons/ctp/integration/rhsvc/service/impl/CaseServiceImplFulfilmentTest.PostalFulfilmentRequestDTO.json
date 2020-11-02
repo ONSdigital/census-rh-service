@@ -3,6 +3,7 @@
     "title": "Mrs",
     "forename": "Ethel",
     "surname": "Brown",
-    "fulfilmentCode": "F1",
+    "fulfilmentCodes": [ "F1" ],
+    "clientIP": "216.58.206.142",
     "dateTime": "2020-06-01T20:17:46.384Z"
 }
