@@ -48,7 +48,7 @@ public class CaseEndpoint {
     String methodName = "createNewCase";
     log.with("UPRN", requestBodyDTO.getUprn())
         .with("requestBody", requestBodyDTO)
-        .info("Entering POST for createNewCase");
+        .info("Entering POST {}", methodName);
 
     CaseDTO caseToReturn = caseService.createNewCase(requestBodyDTO);
 
@@ -76,8 +76,7 @@ public class CaseEndpoint {
   private void validateMatchingCaseId(UUID caseId, UUID dtoCaseId, String dtoName)
       throws CTPException {
     if (!caseId.equals(dtoCaseId)) {
-      String message =
-          "The caseid in the given dto URL does not match the caseid in the request body";
+      String message = "The path parameter caseId does not match the caseId in the request body";
       log.with("caseId", caseId).with("dtoName", dtoName).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
@@ -99,7 +98,7 @@ public class CaseEndpoint {
     String methodName = "modifyAddress";
     log.with("pathParam.caseId", caseId)
         .with("requestBody", addressChange)
-        .info("Entering PUT for modifyAddress");
+        .info("Entering PUT {}", methodName);
 
     validateMatchingCaseId(caseId, addressChange.getCaseId(), methodName);
     CaseDTO result = caseService.modifyAddress(addressChange);
@@ -125,7 +124,7 @@ public class CaseEndpoint {
     String methodName = "fulfilmentRequestBySMS";
     log.with("pathParam.caseId", caseId)
         .with("requestBody", requestBodyDTO)
-        .info("Entering POST for fulfilmentRequestBySMS");
+        .info("Entering POST {}", methodName);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
     caseService.fulfilmentRequestBySMS(requestBodyDTO);
@@ -139,7 +138,7 @@ public class CaseEndpoint {
       @Valid @RequestBody PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
     String methodName = "fulfilmentRequestByPost";
-    log.with("pathParam.caseId", caseId).info("Entering POST for fulfilmentRequestByPost");
+    log.with("pathParam.caseId", caseId).info("Entering POST {}", methodName);
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
     caseService.fulfilmentRequestByPost(requestBodyDTO);
