@@ -385,14 +385,6 @@ public class CaseEndpointUnitTest {
   }
 
   @Test
-  public void shouldRejectFulfilByPostWithFulfilmentCodeTooLong() throws Exception {
-    ObjectNode json = getPostFulfilmentFixture();
-    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/post";
-    json.putArray("fulfilmentCodes").add("A").add("B").add(StringUtils.repeat("C", 13));
-    verifyRejectedPostFulfilmentRequest(json, url);
-  }
-
-  @Test
   public void shouldAcceptFulfilByPostWithMultipleValidFulfilmentCode() throws Exception {
     ObjectNode json = getPostFulfilmentFixture();
     String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/post";
@@ -485,14 +477,6 @@ public class CaseEndpointUnitTest {
     ObjectNode json = getSmsFulfilmentFixture();
     String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/sms";
     json.putArray("fulfilmentCodes").addNull();
-    verifyRejectedSmsFulfilmentRequest(json, url);
-  }
-
-  @Test
-  public void shouldRejectFulfilBySmsWithFulfilmentCodeTooLong() throws Exception {
-    ObjectNode json = getSmsFulfilmentFixture();
-    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/sms";
-    json.putArray("fulfilmentCodes").add("A").add("B").add(StringUtils.repeat("C", 13));
     verifyRejectedSmsFulfilmentRequest(json, url);
   }
 
