@@ -6,6 +6,7 @@ import io.micrometer.core.annotation.Timed;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,7 +72,11 @@ public final class FulfilmentsEndpoint implements CTPEndpoint {
         fulfilmentsService.getFulfilments(
             caseTypes, region, deliveryChannel, productGroup, individual);
 
-    log.with("size", fulfilments.size()).info("Found fulfilment(s)");
+    List<String> fulfilmentCodes =
+        fulfilments.stream().map(ProductDTO::getFulfilmentCode).collect(Collectors.toList());
+    log.with("size", fulfilments.size())
+        .with("fulfilments", fulfilmentCodes)
+        .info("Found fulfilment(s)");
 
     log.with("requestParam.caseType", caseType)
         .with("requestParam.productGroup", productGroup)
