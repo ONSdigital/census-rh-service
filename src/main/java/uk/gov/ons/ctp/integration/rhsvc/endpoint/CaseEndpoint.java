@@ -76,9 +76,8 @@ public class CaseEndpoint {
   private void validateMatchingCaseId(UUID caseId, UUID dtoCaseId, String dtoName)
       throws CTPException {
     if (!caseId.equals(dtoCaseId)) {
-      String message =
-          "The caseid in the " + dtoName + " URL does not match the caseid in the request body";
-      log.with(caseId).warn(message);
+      String message = "The path parameter caseId does not match the caseId in the request body";
+      log.with("caseId", caseId).with("dtoName", dtoName).warn(message);
       throw new CTPException(Fault.BAD_REQUEST, message);
     }
   }

@@ -308,7 +308,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
       String failureDetails = uacFormType + ", " + caseCaseType;
       log.with("uacFormType", uacFormType)
           .with("caseCaseType", caseCaseType)
-          .warn("Failed to link UAC to case. Incompatible combination: " + failureDetails);
+          .with("failureDetails", failureDetails)
+          .warn("Failed to link UAC to case. Incompatible combination");
       throw new CTPException(
           CTPException.Fault.BAD_REQUEST, "Case and UAC incompatible: " + failureDetails);
     }
