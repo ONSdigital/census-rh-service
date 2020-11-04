@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.rabbitmq.client.Channel;
-import org.mockito.Mockito;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -14,13 +13,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
-import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
-import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
+import org.springframework.integration.config.EnableIntegration;
+import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 
 @Profile("mocked-connection-factory")
 @Configuration
+@EnableIntegration
 public class EventReceiverConfiguration {
 
   /** Setup mock ConnectionFactory for SimpleMessageContainerListener */
@@ -35,22 +33,13 @@ public class EventReceiverConfiguration {
     return connectionFactory;
   }
 
-  /** Spy on Service Activator Message End point */
-  @Bean
-  public CaseEventReceiverImpl caseEventReceiver() {
-    return Mockito.spy(new CaseEventReceiverImpl());
-  }
-
-  /** Spy on Service Activator Message End point */
-  @Bean
-  public UACEventReceiverImpl uacEventReceiver(AppConfig appConfig) {
-    UACEventReceiverImpl receiver = new UACEventReceiverImpl();
-    ReflectionTestUtils.setField(receiver, "appConfig", appConfig);
-    return Mockito.spy(receiver);
-  }
-
   @Bean
   public AmqpAdmin amqpAdmin() {
     return mock(AmqpAdmin.class);
+  }
+
+  @Bean
+  public CustomObjectMapper mapper() {
+    return new CustomObjectMapper();
   }
 }

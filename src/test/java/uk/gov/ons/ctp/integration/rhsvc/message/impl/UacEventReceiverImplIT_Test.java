@@ -34,16 +34,13 @@ import uk.gov.ons.ctp.common.event.model.UACEvent;
 import uk.gov.ons.ctp.common.event.model.UACPayload;
 import uk.gov.ons.ctp.integration.rhsvc.RespondentHomeFixture;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
-import uk.gov.ons.ctp.integration.rhsvc.config.InboundEventIntegrationConfig;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.UACEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
 
 /** Spring Integration test of flow received from Response Management */
 @SpringBootTest
 @EnableConfigurationProperties
-@ContextConfiguration(
-    value = "/uacEventReceiverImpl.xml",
-    classes = {AppConfig.class, InboundEventIntegrationConfig.class})
+@ContextConfiguration(classes = {AppConfig.class, UacEventReceiverImplIT_Config.class})
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("mocked-connection-factory")
 public class UacEventReceiverImplIT_Test {

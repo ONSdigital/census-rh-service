@@ -22,6 +22,7 @@ import org.springframework.util.backoff.BackOff;
 import org.springframework.util.backoff.ExponentialBackOff;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
+import uk.gov.ons.ctp.common.event.model.WebformEvent;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.retry.CTPRetryPolicy;
 
@@ -132,6 +133,26 @@ public class InboundEventIntegrationConfig {
         appConfig.getQueueConfig().getUacQueue());
   }
 
+  /**
+   * Configure a listener container for Webform events. This listens on the rabbit Webform queue.
+   *
+   * @param connectionFactory connection factory
+   * @param eventRetryAdvice retry advice
+   * @param rabbitDownBackOff backoff for when rabbit problems occur
+   * @return listener container for Webform events.
+   */
+  @Bean
+  public SimpleMessageListenerContainer webformEventListenerContainer(
+      ConnectionFactory connectionFactory,
+      StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
+      BackOff rabbitDownBackOff) {
+    return makeListenerContainer(
+        connectionFactory,
+        eventRetryAdvice,
+        rabbitDownBackOff,
+        appConfig.getQueueConfig().getWebformQueue());
+  }
+
   private SimpleMessageListenerContainer makeListenerContainer(
       ConnectionFactory connectionFactory,
       StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
@@ -171,6 +192,17 @@ public class InboundEventIntegrationConfig {
     return adapter;
   }
 
+  @Bean
+  public AmqpInboundChannelAdapter webformEventInboundAmqp(
+      @Qualifier("webformEventListenerContainer") SimpleMessageListenerContainer listenerContainer,
+      @Qualifier("webformJsonMessageConverter") MessageConverter msgConverter,
+      @Qualifier("acceptWebformEvent") MessageChannel outputChannel) {
+    AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(listenerContainer);
+    adapter.setMessageConverter(msgConverter);
+    adapter.setOutputChannel(outputChannel);
+    return adapter;
+  }
+
   /**
    * Create a message converter specifically for CASE JSON events to be converted to CaseEvent java
    * objects.
@@ -197,6 +229,19 @@ public class InboundEventIntegrationConfig {
     return jsonMessageConverter(customObjectMapper, UACEvent.class);
   }
 
+  /**
+   * Create a message converter specifically for Webform JSON events to be converted to WebformEvent
+   * java objects.
+   *
+   * @param customObjectMapper object mapper
+   * @return JSON converted
+   */
+  @Bean
+  public Jackson2JsonMessageConverter webformJsonMessageConverter(
+      CustomObjectMapper customObjectMapper) {
+    return jsonMessageConverter(customObjectMapper, WebformEvent.class);
+  }
+
   private Jackson2JsonMessageConverter jsonMessageConverter(
       CustomObjectMapper customObjectMapper, Class<?> defaultType) {
     Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(customObjectMapper);
@@ -209,16 +254,6 @@ public class InboundEventIntegrationConfig {
         };
     converter.setClassMapper(mapper);
     return converter;
-  }
-
-  @Bean
-  public MessageChannel caseEventDlqChannel() {
-    return new DirectChannel();
-  }
-
-  @Bean
-  public MessageChannel uacEventDlqChannel() {
-    return new DirectChannel();
   }
 
   /** @return channel for accepting case events */
@@ -234,6 +269,14 @@ public class InboundEventIntegrationConfig {
   public MessageChannel acceptUACEvent() {
     DirectChannel channel = new DirectChannel();
     channel.setDatatypes(UACEvent.class);
+    return channel;
+  }
+
+  /** @return channel for accepting webform events */
+  @Bean
+  public MessageChannel acceptWebformEvent() {
+    DirectChannel channel = new DirectChannel();
+    channel.setDatatypes(WebformEvent.class);
     return channel;
   }
 }

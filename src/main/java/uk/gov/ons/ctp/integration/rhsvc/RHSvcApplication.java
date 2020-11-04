@@ -42,6 +42,8 @@ import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.rest.RestClientConfig;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
+import uk.gov.service.notify.NotificationClient;
+import uk.gov.service.notify.NotificationClientApi;
 
 /** The 'main' entry point for the RHSvc SpringBoot Application. */
 @SpringBootApplication
@@ -193,5 +195,12 @@ public class RHSvcApplication {
 
     StackdriverMeterRegistry.builder(stackdriverConfig).build();
     return StackdriverMeterRegistry.builder(stackdriverConfig).build();
+  }
+
+  @Bean
+  public NotificationClientApi notificationClient() {
+
+    return new NotificationClient(
+        appConfig.getNotify().getApiKey(), appConfig.getNotify().getBaseUrl());
   }
 }
