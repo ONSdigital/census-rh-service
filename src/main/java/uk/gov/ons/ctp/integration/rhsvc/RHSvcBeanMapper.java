@@ -41,6 +41,7 @@ public class RHSvcBeanMapper extends ConfigurableMapper {
         .classMap(CollectionCase.class, UniqueAccessCodeDTO.class)
         .field("id", "caseId")
         .field("address.region", "region")
+        .field("address.estabType", "estabType")
         .byDefault()
         .register();
 
