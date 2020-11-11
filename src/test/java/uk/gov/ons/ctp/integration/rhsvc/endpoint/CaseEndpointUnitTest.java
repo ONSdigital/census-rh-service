@@ -323,8 +323,44 @@ public class CaseEndpointUnitTest {
   }
 
   @Test
+  public void shouldFulfilByPostWithNullClientIP() throws Exception {
+    ObjectNode json = getPostFulfilmentFixture();
+    json.putNull("clientIP");
+    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/post";
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
+    verify(caseService).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldFulfilByPostWithEmptyClientIP() throws Exception {
+    ObjectNode json = getPostFulfilmentFixture();
+    json.put("clientIP", "");
+    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/post";
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
+    verify(caseService).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
+  }
+
+  @Test
   public void shouldFulfilBySms() throws Exception {
     ObjectNode json = getSmsFulfilmentFixture();
+    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/sms";
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
+    verify(caseService).fulfilmentRequestBySMS(any(SMSFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldFulfilBySmsWithNullClientIP() throws Exception {
+    ObjectNode json = getSmsFulfilmentFixture();
+    json.putNull("clientIP");
+    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/sms";
+    mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
+    verify(caseService).fulfilmentRequestBySMS(any(SMSFulfilmentRequestDTO.class));
+  }
+
+  @Test
+  public void shouldFulfilBySmsWithEmptyClientIP() throws Exception {
+    ObjectNode json = getSmsFulfilmentFixture();
+    json.put("clientIP", "");
     String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/sms";
     mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
     verify(caseService).fulfilmentRequestBySMS(any(SMSFulfilmentRequestDTO.class));
@@ -391,22 +427,6 @@ public class CaseEndpointUnitTest {
     json.putArray("fulfilmentCodes").add("A").add("B").add(StringUtils.repeat("C", 12));
     mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
     verify(caseService).fulfilmentRequestByPost(any(PostalFulfilmentRequestDTO.class));
-  }
-
-  @Test
-  public void shouldRejectFulfilByPostWithMissingClientIp() throws Exception {
-    ObjectNode json = getPostFulfilmentFixture();
-    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/post";
-    json.remove("clientIP");
-    verifyRejectedPostFulfilmentRequest(json, url);
-  }
-
-  @Test
-  public void shouldRejectFulfilByPostWithEmptyClientIp() throws Exception {
-    ObjectNode json = getPostFulfilmentFixture();
-    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/post";
-    json.put("clientIP", "");
-    verifyRejectedPostFulfilmentRequest(json, url);
   }
 
   @Test
@@ -487,22 +507,6 @@ public class CaseEndpointUnitTest {
     json.putArray("fulfilmentCodes").add("A").add("B").add(StringUtils.repeat("C", 12));
     mockMvc.perform(postJson(url, json.toString())).andExpect(status().isOk());
     verify(caseService).fulfilmentRequestBySMS(any(SMSFulfilmentRequestDTO.class));
-  }
-
-  @Test
-  public void shouldRejectFulfilBySmsWithMissingClientIp() throws Exception {
-    ObjectNode json = getSmsFulfilmentFixture();
-    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/sms";
-    json.remove("clientIP");
-    verifyRejectedSmsFulfilmentRequest(json, url);
-  }
-
-  @Test
-  public void shouldRejectFulfilBySmsWithEmptyClientIp() throws Exception {
-    ObjectNode json = getSmsFulfilmentFixture();
-    String url = "/cases/" + json.get("caseId").asText() + "/fulfilments/sms";
-    json.put("clientIP", "");
-    verifyRejectedSmsFulfilmentRequest(json, url);
   }
 
   @Test

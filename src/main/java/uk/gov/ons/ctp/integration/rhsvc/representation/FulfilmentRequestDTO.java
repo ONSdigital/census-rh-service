@@ -18,9 +18,9 @@ public abstract class FulfilmentRequestDTO {
 
   @NotNull private UUID caseId;
 
-  @NotNull @NotEmpty private List<@NotNull @NotEmpty String> fulfilmentCodes;
+  @NotEmpty private List<@NotEmpty String> fulfilmentCodes;
 
   @NotNull private Date dateTime;
 
-  @NotNull @NotEmpty private String clientIP;
+  private String clientIP;
 }
