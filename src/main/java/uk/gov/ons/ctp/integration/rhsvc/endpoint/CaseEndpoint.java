@@ -126,6 +126,12 @@ public class CaseEndpoint {
         .with("requestBody", requestBodyDTO)
         .info("Entering POST {}", methodName);
 
+    // Treat an empty clientIP as if it's a null value
+    String clientIP = requestBodyDTO.getClientIP();
+    if (clientIP != null && clientIP.isBlank()) {
+      requestBodyDTO.setClientIP(null);
+    }
+
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
     caseService.fulfilmentRequestBySMS(requestBodyDTO);
     log.with("pathParam.caseId", caseId).debug("Exit POST {}", methodName);
@@ -139,6 +145,12 @@ public class CaseEndpoint {
       throws CTPException {
     String methodName = "fulfilmentRequestByPost";
     log.with("pathParam.caseId", caseId).info("Entering POST {}", methodName);
+
+    // Treat an empty clientIP as if it's a null value
+    String clientIP = requestBodyDTO.getClientIP();
+    if (clientIP != null && clientIP.isBlank()) {
+      requestBodyDTO.setClientIP(null);
+    }
 
     validateMatchingCaseId(caseId, requestBodyDTO.getCaseId(), methodName);
     caseService.fulfilmentRequestByPost(requestBodyDTO);
