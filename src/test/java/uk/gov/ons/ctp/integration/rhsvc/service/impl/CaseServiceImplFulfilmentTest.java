@@ -558,6 +558,16 @@ public class CaseServiceImplFulfilmentTest {
     assertNull(eventPayload.getIndividualCaseId());
   }
 
+  @Test
+  public void shouldFulfilRequestBySmsForHousehold_withUnexpectedFailingRateLimiter()
+      throws Exception {
+    mockCircuitBreakerFail();
+    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+        .thenThrow(new RuntimeException("Unexpected"));
+    FulfilmentRequest eventPayload = doFulfilmentRequestBySMS(Product.CaseType.HH, false);
+    assertNull(eventPayload.getIndividualCaseId());
+  }
+
   // --- helpers
 
   private void verifyRateLimiterCall(

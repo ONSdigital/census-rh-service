@@ -15,7 +15,6 @@ import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.domain.CaseType;
@@ -275,26 +274,37 @@ public class CaseServiceImpl implements CaseService {
       CaseType caseType,
       String ipAddress,
       UniquePropertyReferenceNumber uprn) {
-    circuitBreaker.run(
-        () -> {
-          try {
-            rateLimiterClient.checkRateLimit(
-                Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
-          } catch (CTPException e) {
-            log.with("error", e.getMessage()).error(e, "Rate limiter failure");
-            // OK to carry on, since it is better to tolerate limiter error than fail operation.
-          }
-          return null;
-        },
-        throwable -> {
-          if (throwable instanceof ResponseStatusException) {
-            ResponseStatusException e = (ResponseStatusException) throwable;
-            if (HttpStatus.TOO_MANY_REQUESTS == e.getStatus()) {
-              throw e;
-            }
-          }
-          return null;
-        });
+    ResponseStatusException limitException =
+        circuitBreaker.run(
+            () -> {
+              try {
+                rateLimiterClient.checkRateLimit(
+                    Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
+                return null;
+              } catch (CTPException e) {
+                log.with("error", e.getMessage()).error(e, "Rate limiter failure");
+                throw new RuntimeException(e);
+              } catch (ResponseStatusException e) {
+                // we have got a 429 but don't rethrow it otherwise this will count against
+                // the circuit-breaker accounting, so instead we return it to later throw
+                // outside the circuit-breaker mechanism.
+                return e;
+              }
+            },
+            throwable -> {
+              if (throwable.getCause() instanceof CTPException) {
+                // OK to carry on, since it is better to tolerate limiter error than fail operation,
+                // however by getting here, the circuit-breaker has counted the failure.
+              } else {
+                // we should never get here
+                log.with("error", throwable.getMessage())
+                    .error(throwable, "Unexpected failure calling rate limiter");
+              }
+              return null;
+            });
+    if (limitException != null) {
+      throw limitException;
+    }
   }
 
   private void createAndSendFulfilments(
