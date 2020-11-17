@@ -281,7 +281,7 @@ public class CaseServiceImpl implements CaseService {
             rateLimiterClient.checkRateLimit(
                 Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
           } catch (CTPException e) {
-            log.error(e, "Rate limiter failure: {}", e.getMessage());
+            log.with("error", e.getMessage()).error(e, "Rate limiter failure");
             // OK to carry on, since it is better to tolerate limiter error than fail operation.
           }
           return null;
