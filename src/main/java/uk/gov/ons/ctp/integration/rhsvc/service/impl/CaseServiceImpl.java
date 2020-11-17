@@ -14,7 +14,10 @@ import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -58,6 +61,7 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private EventPublisher eventPublisher;
   @Autowired private ProductReference productReference;
   @Autowired private RateLimiterClient rateLimiterClient;
+  @Autowired private CircuitBreaker circuitBreaker;
 
   @Override
   public CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
@@ -245,24 +249,52 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private void recordRateLimiting(
-      Contact contact, String ipAddress, List<Product> products, CollectionCase caseDetails)
-      throws CTPException {
-
+      Contact contact, String ipAddress, List<Product> products, CollectionCase caseDetails) {
     if (appConfig.getRateLimiter().isEnabled()) {
       for (Product product : products) {
         log.with("fulfilmentCode", product.getFulfilmentCode()).debug("Recording rate-limiting");
         CaseType caseType = CaseType.valueOf(caseDetails.getCaseType());
         UniquePropertyReferenceNumber uprn =
             UniquePropertyReferenceNumber.create(caseDetails.getAddress().getUprn());
-
-        // if the limit is breached, a ResponseStatusException, typically with 429 HTTP code
-        // will be thrown.
-        rateLimiterClient.checkRateLimit(
-            Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
+        recordRateLimiting(contact, product, caseType, ipAddress, uprn);
       }
     } else {
       log.info("Rate limiter client is disabled");
     }
+  }
+
+  /*
+   * Call the rate limiter within a circuit-breaker, thus protecting the RHSvc
+   * functionality from the unlikely event that that the rate limiter service is failing.
+   *
+   * If the limit is breached, a ResponseStatusException with HTTP 429 will be thrown.
+   */
+  private void recordRateLimiting(
+      Contact contact,
+      Product product,
+      CaseType caseType,
+      String ipAddress,
+      UniquePropertyReferenceNumber uprn) {
+    circuitBreaker.run(
+        () -> {
+          try {
+            rateLimiterClient.checkRateLimit(
+                Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
+          } catch (CTPException e) {
+            log.error(e, "Rate limiter failure: {}", e.getMessage());
+            // OK to carry on, since it is better to tolerate limiter error than fail operation.
+          }
+          return null;
+        },
+        throwable -> {
+          if (throwable instanceof ResponseStatusException) {
+            ResponseStatusException e = (ResponseStatusException) throwable;
+            if (HttpStatus.TOO_MANY_REQUESTS == e.getStatus()) {
+              throw e;
+            }
+          }
+          return null;
+        });
   }
 
   private void createAndSendFulfilments(
