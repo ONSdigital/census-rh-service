@@ -282,7 +282,8 @@ public class CaseServiceImpl implements CaseService {
                     Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
                 return null;
               } catch (CTPException e) {
-                log.with("error", e.getMessage()).error(e, "Rate limiter failure");
+                // we should get here if the rate-limiter is failing or not communicating
+                // ... wrap and rethrow to be handled by the circuit-breaker
                 throw new RuntimeException(e);
               } catch (ResponseStatusException e) {
                 // we have got a 429 but don't rethrow it otherwise this will count against
@@ -292,14 +293,9 @@ public class CaseServiceImpl implements CaseService {
               }
             },
             throwable -> {
-              if (throwable.getCause() instanceof CTPException) {
-                // OK to carry on, since it is better to tolerate limiter error than fail operation,
-                // however by getting here, the circuit-breaker has counted the failure.
-              } else {
-                // we should never get here
-                log.with("error", throwable.getMessage())
-                    .error(throwable, "Unexpected failure calling rate limiter");
-              }
+              // OK to carry on, since it is better to tolerate limiter error than fail operation,
+              // however by getting here, the circuit-breaker has counted the failure.
+              log.with("error", throwable.getMessage()).error(throwable, "Rate limiter failure");
               return null;
             });
     if (limitException != null) {
