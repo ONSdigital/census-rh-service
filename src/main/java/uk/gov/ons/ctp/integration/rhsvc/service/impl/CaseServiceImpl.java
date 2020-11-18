@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -294,8 +295,13 @@ public class CaseServiceImpl implements CaseService {
             },
             throwable -> {
               // OK to carry on, since it is better to tolerate limiter error than fail operation,
-              // however by getting here, the circuit-breaker has counted the failure.
-              log.with("error", throwable.getMessage()).error(throwable, "Rate limiter failure");
+              // however by getting here, the circuit-breaker has counted the failure, or we are
+              // in circuit-breaker OPEN state.
+              if (throwable instanceof CallNotPermittedException) {
+                log.info("Circuit breaker is OPEN calling rate limiter");
+              } else {
+                log.with("error", throwable.getMessage()).error(throwable, "Rate limiter failure");
+              }
               return null;
             });
     if (limitException != null) {

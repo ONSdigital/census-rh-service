@@ -13,6 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,6 +79,8 @@ public class CaseServiceImplFulfilmentTest {
   @Spy private MapperFacade mapperFacade = new RHSvcBeanMapper();
 
   @Mock private ProductReference productReference;
+
+  @Mock private CallNotPermittedException circuitBreakerOpenException;
 
   @Captor private ArgumentCaptor<Product> productCaptor;
 
@@ -545,8 +548,7 @@ public class CaseServiceImplFulfilmentTest {
     mockCircuitBreakerFail();
     when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new CTPException(Fault.SYSTEM_ERROR));
-    FulfilmentRequest eventPayload = doFulfilmentRequestByPost(Product.CaseType.HH, false, "Mrs");
-    assertNull(eventPayload.getIndividualCaseId());
+    doFulfilmentRequestByPost(Product.CaseType.HH, false, "Mrs");
   }
 
   @Test
@@ -554,8 +556,7 @@ public class CaseServiceImplFulfilmentTest {
     mockCircuitBreakerFail();
     when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new CTPException(Fault.SYSTEM_ERROR));
-    FulfilmentRequest eventPayload = doFulfilmentRequestBySMS(Product.CaseType.HH, false);
-    assertNull(eventPayload.getIndividualCaseId());
+    doFulfilmentRequestBySMS(Product.CaseType.HH, false);
   }
 
   @Test
@@ -564,8 +565,16 @@ public class CaseServiceImplFulfilmentTest {
     mockCircuitBreakerFail();
     when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new RuntimeException("Unexpected"));
-    FulfilmentRequest eventPayload = doFulfilmentRequestBySMS(Product.CaseType.HH, false);
-    assertNull(eventPayload.getIndividualCaseId());
+    doFulfilmentRequestBySMS(Product.CaseType.HH, false);
+  }
+
+  @Test
+  public void shouldFulfilRequestBySmsForHousehold_withCircuitBreakerOpenOnRateLimiter()
+      throws Exception {
+    mockCircuitBreakerFail();
+    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+        .thenThrow(circuitBreakerOpenException);
+    doFulfilmentRequestBySMS(Product.CaseType.HH, false);
   }
 
   // --- helpers
