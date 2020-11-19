@@ -94,7 +94,7 @@ public class CaseServiceImplFulfilmentTest {
     this.smsRequest = FixtureHelper.loadClassFixtures(SMSFulfilmentRequestDTO[].class).get(0);
     this.postalRequest = FixtureHelper.loadClassFixtures(PostalFulfilmentRequestDTO[].class).get(0);
     when(appConfig.getRateLimiter()).thenReturn(rateLimiterConfig(true));
-    mockCircuitBreakerRun();
+    simulateCircuitBreaker();
   }
 
   private RateLimiterConfig rateLimiterConfig(boolean enabled) {
@@ -545,7 +545,6 @@ public class CaseServiceImplFulfilmentTest {
 
   @Test
   public void shouldFulfilRequestByPostForHousehold_withFailingRateLimiter() throws Exception {
-    mockCircuitBreakerFail();
     when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new CTPException(Fault.SYSTEM_ERROR));
     doFulfilmentRequestByPost(Product.CaseType.HH, false, "Mrs");
@@ -553,7 +552,6 @@ public class CaseServiceImplFulfilmentTest {
 
   @Test
   public void shouldFulfilRequestBySmsForHousehold_withFailingRateLimiter() throws Exception {
-    mockCircuitBreakerFail();
     when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new CTPException(Fault.SYSTEM_ERROR));
     doFulfilmentRequestBySMS(Product.CaseType.HH, false);
@@ -562,7 +560,6 @@ public class CaseServiceImplFulfilmentTest {
   @Test
   public void shouldFulfilRequestBySmsForHousehold_withUnexpectedFailingRateLimiter()
       throws Exception {
-    mockCircuitBreakerFail();
     when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new RuntimeException("Unexpected"));
     doFulfilmentRequestBySMS(Product.CaseType.HH, false);
@@ -571,7 +568,6 @@ public class CaseServiceImplFulfilmentTest {
   @Test
   public void shouldFulfilRequestBySmsForHousehold_withCircuitBreakerOpenOnRateLimiter()
       throws Exception {
-    mockCircuitBreakerFail();
     when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(circuitBreakerOpenException);
     doFulfilmentRequestBySMS(Product.CaseType.HH, false);
@@ -671,22 +667,7 @@ public class CaseServiceImplFulfilmentTest {
     return events;
   }
 
-  private void mockCircuitBreakerRun() {
-    doAnswer(
-            new Answer<Object>() {
-              @SuppressWarnings("unchecked")
-              @Override
-              public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                Supplier<Object> runner = (Supplier<Object>) args[0];
-                return runner.get();
-              }
-            })
-        .when(circuitBreaker)
-        .run(any(), any());
-  }
-
-  private void mockCircuitBreakerFail() {
+  private void simulateCircuitBreaker() {
     doAnswer(
             new Answer<Object>() {
               @SuppressWarnings("unchecked")
@@ -697,9 +678,12 @@ public class CaseServiceImplFulfilmentTest {
                 Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
 
                 try {
-                  runner.get();
-                } catch (Exception e) {
-                  fallback.apply(e);
+                  // execute the circuitBreaker.run first argument (the Supplier for the code you
+                  // want to run)
+                  return runner.get();
+                } catch (Throwable t) {
+                  // execute the circuitBreaker.run second argument (the fallback Function)
+                  fallback.apply(t);
                 }
                 return null;
               }

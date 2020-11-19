@@ -294,9 +294,13 @@ public class CaseServiceImpl implements CaseService {
               }
             },
             throwable -> {
-              // OK to carry on, since it is better to tolerate limiter error than fail operation,
-              // however by getting here, the circuit-breaker has counted the failure, or we are
-              // in circuit-breaker OPEN state.
+              // This is the Function for the circuitBreaker.run second parameter, which is called
+              // when an exception is thrown from the first Supplier parameter (above), including
+              // as part of the processing of being in the circuit-breaker OPEN state.
+              //
+              // It is OK to carry on, since it is better to tolerate limiter error than fail
+              // operation, however by getting here, the circuit-breaker has counted the failure,
+              // or we are in circuit-breaker OPEN state.
               if (throwable instanceof CallNotPermittedException) {
                 log.info("Circuit breaker is OPEN calling rate limiter");
               } else {
