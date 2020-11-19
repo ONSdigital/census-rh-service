@@ -100,6 +100,12 @@ public class RHSvcApplication {
   }
 
   @Bean
+  public CircuitBreaker rateLimiterCircuitBreaker(
+      Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
+    return circuitBreakerFactory.create("rateLimiterCircuitBreaker");
+  }
+
+  @Bean
   public Customizer<Resilience4JCircuitBreakerFactory> defaultCircuitBreakerCustomiser() {
     CustomCircuitBreakerConfig config = appConfig.getCircuitBreaker();
     log.info("Circuit breaker configuration: {}", config);

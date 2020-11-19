@@ -7,16 +7,20 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import ma.glasnost.orika.MapperFacade;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,13 +31,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
@@ -66,9 +74,13 @@ public class CaseServiceImplFulfilmentTest {
 
   @Mock private RateLimiterClient rateLimiterClient;
 
+  @Mock private CircuitBreaker circuitBreaker;
+
   @Spy private MapperFacade mapperFacade = new RHSvcBeanMapper();
 
   @Mock private ProductReference productReference;
+
+  @Mock private CallNotPermittedException circuitBreakerOpenException;
 
   @Captor private ArgumentCaptor<Product> productCaptor;
 
@@ -82,6 +94,7 @@ public class CaseServiceImplFulfilmentTest {
     this.smsRequest = FixtureHelper.loadClassFixtures(SMSFulfilmentRequestDTO[].class).get(0);
     this.postalRequest = FixtureHelper.loadClassFixtures(PostalFulfilmentRequestDTO[].class).get(0);
     when(appConfig.getRateLimiter()).thenReturn(rateLimiterConfig(true));
+    simulateCircuitBreaker();
   }
 
   private RateLimiterConfig rateLimiterConfig(boolean enabled) {
@@ -528,6 +541,38 @@ public class CaseServiceImplFulfilmentTest {
     verifyRateLimiterNotCalled();
   }
 
+  // -- check that operation works as normal when the rate limiter service is failing
+
+  @Test
+  public void shouldFulfilRequestByPostForHousehold_withFailingRateLimiter() throws Exception {
+    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+        .thenThrow(new CTPException(Fault.SYSTEM_ERROR));
+    doFulfilmentRequestByPost(Product.CaseType.HH, false, "Mrs");
+  }
+
+  @Test
+  public void shouldFulfilRequestBySmsForHousehold_withFailingRateLimiter() throws Exception {
+    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+        .thenThrow(new CTPException(Fault.SYSTEM_ERROR));
+    doFulfilmentRequestBySMS(Product.CaseType.HH, false);
+  }
+
+  @Test
+  public void shouldFulfilRequestBySmsForHousehold_withUnexpectedFailingRateLimiter()
+      throws Exception {
+    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+        .thenThrow(new RuntimeException("Unexpected"));
+    doFulfilmentRequestBySMS(Product.CaseType.HH, false);
+  }
+
+  @Test
+  public void shouldFulfilRequestBySmsForHousehold_withCircuitBreakerOpenOnRateLimiter()
+      throws Exception {
+    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+        .thenThrow(circuitBreakerOpenException);
+    doFulfilmentRequestBySMS(Product.CaseType.HH, false);
+  }
+
   // --- helpers
 
   private void verifyRateLimiterCall(
@@ -542,10 +587,12 @@ public class CaseServiceImplFulfilmentTest {
             eq(clientIp),
             eq(uprn),
             eq(phoneNo));
+    verify(circuitBreaker, times(numTimes)).run(any(), any());
   }
 
   private void verifyRateLimiterNotCalled() throws Exception {
     verify(rateLimiterClient, never()).checkRateLimit(any(), any(), any(), any(), any(), any());
+    verify(circuitBreaker, never()).run(any(), any());
   }
 
   private Product createProductForSearch(String fulfilmentCode, DeliveryChannel channel) {
@@ -618,5 +665,30 @@ public class CaseServiceImplFulfilmentTest {
       events.add(eventPayload);
     }
     return events;
+  }
+
+  private void simulateCircuitBreaker() {
+    doAnswer(
+            new Answer<Object>() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                Supplier<Object> runner = (Supplier<Object>) args[0];
+                Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
+
+                try {
+                  // execute the circuitBreaker.run first argument (the Supplier for the code you
+                  // want to run)
+                  return runner.get();
+                } catch (Throwable t) {
+                  // execute the circuitBreaker.run second argument (the fallback Function)
+                  fallback.apply(t);
+                }
+                return null;
+              }
+            })
+        .when(circuitBreaker)
+        .run(any(), any());
   }
 }
