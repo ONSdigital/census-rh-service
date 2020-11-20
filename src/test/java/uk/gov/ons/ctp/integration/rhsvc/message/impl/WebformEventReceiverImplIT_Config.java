@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import uk.gov.ons.ctp.integration.rhsvc.config.InboundEventIntegrationConfig;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.WebformEventReceiverImpl;
+import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 
 @Profile("mocked-connection-factory")
 @Configuration
@@ -15,7 +16,7 @@ public class WebformEventReceiverImplIT_Config {
 
   /** Spy on Service Activator Message End point */
   @Bean
-  public WebformEventReceiverImpl webformEventReceiver() {
-    return Mockito.spy(new WebformEventReceiverImpl());
+  public WebformEventReceiverImpl webformEventReceiver(WebformService webformService) {
+    return Mockito.spy(new WebformEventReceiverImpl(webformService));
   }
 }

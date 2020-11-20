@@ -30,11 +30,28 @@ public class WebformServiceImpl implements WebformService {
   private static final String TEMPLATE_CATEGORY = "respondent_category";
   private static final String TEMPLATE_DESCRIPTION = "respondent_description";
 
-  @Autowired private EventPublisher eventPublisher;
+  private EventPublisher eventPublisher;
 
-  @Autowired private NotificationClientApi notificationClient;
+  private NotificationClientApi notificationClient;
 
-  @Autowired private AppConfig appConfig;
+  private AppConfig appConfig;
+
+  /**
+   * Constructor for WebformServiceImpl
+   *
+   * @param eventPublisher service for publication of events to RabbitMQ
+   * @param notificationClient Gov.uk Notify service client
+   * @param appConfig centralised configuration properties
+   */
+  @Autowired
+  public WebformServiceImpl(
+      final EventPublisher eventPublisher,
+      final NotificationClientApi notificationClient,
+      final AppConfig appConfig) {
+    this.eventPublisher = eventPublisher;
+    this.notificationClient = notificationClient;
+    this.appConfig = appConfig;
+  }
 
   @Override
   public String sendWebformEvent(Webform webform) {
@@ -72,8 +89,8 @@ public class WebformServiceImpl implements WebformService {
           .with("emailToAddress", emailToAddress)
           .with("status", ex.getHttpResult())
           .with("message", ex.getMessage())
-          .error("Gov Notify sendEmail NotificationClientException error");
-      throw new RuntimeException("Gov Notify sendEmail NotificationClientException error", ex);
+          .error(ex, "Gov Notify sendEmail error");
+      throw new RuntimeException("Gov Notify sendEmail error", ex);
     }
   }
 
