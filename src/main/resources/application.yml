@@ -91,17 +91,26 @@ queueconfig:
 
 messaging:
   mismatched-queues-fatal: true
-  processing-backoff:
-    initial: 5000
-    multiplier: 3
-    max: 45000
-  consuming-threads: 1
-  con-max-attempts: 3
-  prefetch-count: 1
   recovery-backoff:
     initial: 2000
     multiplier: 3
-    max: 30000 
+    max: 30000
+  uac-case-listener:
+    processing-backoff:
+      initial: 5000
+      multiplier: 3
+      max: 45000
+    consuming-threads: 1
+    con-max-attempts: 3
+    prefetch-count: 1
+  webform-listener:
+    processing-backoff:
+      initial: 5000
+      multiplier: 3
+      max: 120000
+    consuming-threads: 1
+    con-max-attempts: 15
+    prefetch-count: 1
     
 circuit-breaker:
   timeout: 4
