@@ -13,6 +13,9 @@ public class QueueConfig {
   private String uacQueue;
   private String uacQueueDLQ;
   private String uacRoutingKey;
+  private String webformQueue;
+  private String webformQueueDLQ;
+  private String webformRoutingKey;
   private String responseAuthenticationRoutingKey;
   private Set<String> qidFilterPrefixes;
 }

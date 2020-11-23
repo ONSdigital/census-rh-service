@@ -29,6 +29,21 @@
     <tag>rhsvc-0.1.2</tag>
   </scm>
 
+  <profiles>
+    <profile>
+      <id>bintray</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>notify-repo</id>
+          <url>https://dl.bintray.com/gov-uk-notify/maven</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
   <dependencies>
     <!-- Spring dependencies -->
 
@@ -177,6 +192,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>uk.gov.service.notify</groupId>
+      <artifactId>notifications-java-client</artifactId>
+      <version>3.9.2-RELEASE</version>
     </dependency>
 
     <!-- Testing -->

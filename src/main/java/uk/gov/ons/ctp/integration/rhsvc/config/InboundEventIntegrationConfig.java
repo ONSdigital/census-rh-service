@@ -8,7 +8,6 @@ import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,13 +21,25 @@ import org.springframework.util.backoff.BackOff;
 import org.springframework.util.backoff.ExponentialBackOff;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
+import uk.gov.ons.ctp.common.event.model.WebformEvent;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.retry.CTPRetryPolicy;
+import uk.gov.ons.ctp.integration.rhsvc.config.MessagingConfig.ContainerConfig;
 
 /** Integration configuration for inbound events. */
 @Configuration
 public class InboundEventIntegrationConfig {
-  @Autowired private AppConfig appConfig;
+
+  private AppConfig appConfig;
+
+  /**
+   * Constructor for InboundEventIntegrationConfig
+   *
+   * @param appConfig centralised configuration
+   */
+  public InboundEventIntegrationConfig(final AppConfig appConfig) {
+    this.appConfig = appConfig;
+  }
 
   /**
    * Configure a backoff for what happens when rabbitMQ goes down. This allows us to do less
@@ -48,8 +59,8 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Configure the retry behaviour for when a message throws a RuntimeException while it is being
-   * processed in our event processing code.
+   * Configure the retry behaviour for when a UAC, Case message throws a RuntimeException while it
+   * is being processed in our event processing code.
    *
    * <p>Note that this does not apply to when Rabbit goes down, just problems with the subsequent
    * processing throwing an unchecked exception (of the type that Spring might emit).
@@ -60,8 +71,8 @@ public class InboundEventIntegrationConfig {
    * @return retry template
    */
   @Bean
-  public RetryTemplate retryTemplate() {
-    MessagingConfig messaging = appConfig.getMessaging();
+  public RetryTemplate uacCaseRetryTemplate() {
+    ContainerConfig messaging = appConfig.getMessaging().getUacCaseListener();
     BackoffConfig processingBackoff = messaging.getProcessingBackoff();
     ExponentialBackOffPolicy backoffPolicy = new ExponentialBackOffPolicy();
     backoffPolicy.setMaxInterval(processingBackoff.getMax());
@@ -75,18 +86,61 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Create advice bean for the listener, containing the retry configuration, and specify that if
-   * the retry fails, to place the message in the DLQ.
+   * Configure the retry behaviour for when a Webform message throws a RuntimeException while it is
+   * being processed in our event processing code.
    *
-   * @param retryTemplate retryTemplate
+   * <p>Note that this does not apply to when Rabbit goes down, just problems with the subsequent
+   * processing throwing an unchecked exception (of the type that Spring might emit).
+   *
+   * <p>Note also that the retry policy is configured with "maximum attempts" so for instance if
+   * "conMaxAttempts" is 3 , then there will be at most 2 retries after the initial attempt.
+   *
+   * @return retry template
+   */
+  @Bean
+  public RetryTemplate webformRetryTemplate() {
+    ContainerConfig messaging = appConfig.getMessaging().getWebformListener();
+    BackoffConfig processingBackoff = messaging.getProcessingBackoff();
+    ExponentialBackOffPolicy backoffPolicy = new ExponentialBackOffPolicy();
+    backoffPolicy.setMaxInterval(processingBackoff.getMax());
+    backoffPolicy.setMultiplier(processingBackoff.getMultiplier());
+    backoffPolicy.setInitialInterval(processingBackoff.getInitial());
+    RetryTemplate template = new RetryTemplate();
+    template.setBackOffPolicy(backoffPolicy);
+    RetryPolicy retryPolicy = new CTPRetryPolicy(messaging.getConMaxAttempts());
+    template.setRetryPolicy(retryPolicy);
+    return template;
+  }
+
+  /**
+   * Create advice bean for the UAC, Case listener, containing the retry configuration, and specify
+   * that if the retry fails, to place the message in the DLQ.
+   *
+   * @param retryTemplate uacCaseRetryTemplate
    * @return retry advice for the listener.
    */
   @Bean
-  public StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice(
-      RetryTemplate retryTemplate) {
+  public StatelessRetryOperationsInterceptorFactoryBean uacCaseRetryAdvice(
+      RetryTemplate uacCaseRetryTemplate) {
     var advice = new StatelessRetryOperationsInterceptorFactoryBean();
     advice.setMessageRecoverer(new RejectAndDontRequeueRecoverer());
-    advice.setRetryOperations(retryTemplate);
+    advice.setRetryOperations(uacCaseRetryTemplate);
+    return advice;
+  }
+
+  /**
+   * Create advice bean for the Webform listener, containing the retry configuration, and specify
+   * that if the retry fails, to place the message in the DLQ.
+   *
+   * @param retryTemplate webformRetryTemplate
+   * @return retry advice for the listener.
+   */
+  @Bean
+  public StatelessRetryOperationsInterceptorFactoryBean webformRetryAdvice(
+      RetryTemplate webformRetryTemplate) {
+    var advice = new StatelessRetryOperationsInterceptorFactoryBean();
+    advice.setMessageRecoverer(new RejectAndDontRequeueRecoverer());
+    advice.setRetryOperations(webformRetryTemplate);
     return advice;
   }
 
@@ -102,12 +156,14 @@ public class InboundEventIntegrationConfig {
   @Bean
   public SimpleMessageListenerContainer caseEventListenerContainer(
       ConnectionFactory connectionFactory,
-      StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
+      @Qualifier("uacCaseRetryAdvice")
+          StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
       BackOff rabbitDownBackOff) {
     return makeListenerContainer(
         connectionFactory,
         eventRetryAdvice,
         rabbitDownBackOff,
+        appConfig.getMessaging().getUacCaseListener(),
         appConfig.getQueueConfig().getCaseQueue());
   }
 
@@ -123,19 +179,44 @@ public class InboundEventIntegrationConfig {
   @Bean
   public SimpleMessageListenerContainer uacEventListenerContainer(
       ConnectionFactory connectionFactory,
-      StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
+      @Qualifier("uacCaseRetryAdvice")
+          StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
       BackOff rabbitDownBackOff) {
     return makeListenerContainer(
         connectionFactory,
         eventRetryAdvice,
         rabbitDownBackOff,
+        appConfig.getMessaging().getUacCaseListener(),
         appConfig.getQueueConfig().getUacQueue());
+  }
+
+  /**
+   * Configure a listener container for Webform events. This listens on the rabbit Webform queue.
+   *
+   * @param connectionFactory connection factory
+   * @param eventRetryAdvice retry advice
+   * @param rabbitDownBackOff backoff for when rabbit problems occur
+   * @return listener container for Webform events.
+   */
+  @Bean
+  public SimpleMessageListenerContainer webformEventListenerContainer(
+      ConnectionFactory connectionFactory,
+      @Qualifier("webformRetryAdvice")
+          StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
+      BackOff rabbitDownBackOff) {
+    return makeListenerContainer(
+        connectionFactory,
+        eventRetryAdvice,
+        rabbitDownBackOff,
+        appConfig.getMessaging().getWebformListener(),
+        appConfig.getQueueConfig().getWebformQueue());
   }
 
   private SimpleMessageListenerContainer makeListenerContainer(
       ConnectionFactory connectionFactory,
       StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
       BackOff rabbitDownBackOff,
+      ContainerConfig containerConfig,
       String queueName) {
     MessagingConfig messaging = appConfig.getMessaging();
     SimpleMessageListenerContainer listener = new SimpleMessageListenerContainer();
@@ -143,8 +224,8 @@ public class InboundEventIntegrationConfig {
     listener.setMismatchedQueuesFatal(messaging.isMismatchedQueuesFatal());
     listener.setQueueNames(queueName);
     listener.setAdviceChain(eventRetryAdvice.getObject());
-    listener.setConcurrentConsumers(messaging.getConsumingThreads());
-    listener.setPrefetchCount(messaging.getPrefetchCount());
+    listener.setConcurrentConsumers(containerConfig.getConsumingThreads());
+    listener.setPrefetchCount(containerConfig.getPrefetchCount());
     listener.setRecoveryBackOff(rabbitDownBackOff);
     return listener;
   }
@@ -165,6 +246,17 @@ public class InboundEventIntegrationConfig {
       @Qualifier("uacEventListenerContainer") SimpleMessageListenerContainer listenerContainer,
       @Qualifier("uacJsonMessageConverter") MessageConverter msgConverter,
       @Qualifier("acceptUACEvent") MessageChannel outputChannel) {
+    AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(listenerContainer);
+    adapter.setMessageConverter(msgConverter);
+    adapter.setOutputChannel(outputChannel);
+    return adapter;
+  }
+
+  @Bean
+  public AmqpInboundChannelAdapter webformEventInboundAmqp(
+      @Qualifier("webformEventListenerContainer") SimpleMessageListenerContainer listenerContainer,
+      @Qualifier("webformJsonMessageConverter") MessageConverter msgConverter,
+      @Qualifier("acceptWebformEvent") MessageChannel outputChannel) {
     AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(listenerContainer);
     adapter.setMessageConverter(msgConverter);
     adapter.setOutputChannel(outputChannel);
@@ -197,6 +289,19 @@ public class InboundEventIntegrationConfig {
     return jsonMessageConverter(customObjectMapper, UACEvent.class);
   }
 
+  /**
+   * Create a message converter specifically for Webform JSON events to be converted to WebformEvent
+   * java objects.
+   *
+   * @param customObjectMapper object mapper
+   * @return JSON converted
+   */
+  @Bean
+  public Jackson2JsonMessageConverter webformJsonMessageConverter(
+      CustomObjectMapper customObjectMapper) {
+    return jsonMessageConverter(customObjectMapper, WebformEvent.class);
+  }
+
   private Jackson2JsonMessageConverter jsonMessageConverter(
       CustomObjectMapper customObjectMapper, Class<?> defaultType) {
     Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(customObjectMapper);
@@ -209,16 +314,6 @@ public class InboundEventIntegrationConfig {
         };
     converter.setClassMapper(mapper);
     return converter;
-  }
-
-  @Bean
-  public MessageChannel caseEventDlqChannel() {
-    return new DirectChannel();
-  }
-
-  @Bean
-  public MessageChannel uacEventDlqChannel() {
-    return new DirectChannel();
   }
 
   /** @return channel for accepting case events */
@@ -234,6 +329,14 @@ public class InboundEventIntegrationConfig {
   public MessageChannel acceptUACEvent() {
     DirectChannel channel = new DirectChannel();
     channel.setDatatypes(UACEvent.class);
+    return channel;
+  }
+
+  /** @return channel for accepting webform events */
+  @Bean
+  public MessageChannel acceptWebformEvent() {
+    DirectChannel channel = new DirectChannel();
+    channel.setDatatypes(WebformEvent.class);
     return channel;
   }
 }

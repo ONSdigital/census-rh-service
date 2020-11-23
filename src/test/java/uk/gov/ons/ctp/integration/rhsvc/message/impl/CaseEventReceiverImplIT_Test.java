@@ -26,16 +26,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
-import uk.gov.ons.ctp.integration.rhsvc.config.InboundEventIntegrationConfig;
 import uk.gov.ons.ctp.integration.rhsvc.event.impl.CaseEventReceiverImpl;
 import uk.gov.ons.ctp.integration.rhsvc.repository.impl.RespondentDataRepositoryImpl;
 
 /** Spring Integration test of flow received from Response Management */
 @SpringBootTest
 @EnableConfigurationProperties
-@ContextConfiguration(
-    value = "/caseEventReceiverImpl.xml",
-    classes = {AppConfig.class, InboundEventIntegrationConfig.class})
+@ContextConfiguration(classes = {AppConfig.class, CaseEventReceiverImplIT_Config.class})
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("mocked-connection-factory")
 public class CaseEventReceiverImplIT_Test {
@@ -52,7 +49,7 @@ public class CaseEventReceiverImplIT_Test {
   /** Test the receiver flow */
   @Test
   public void caseEventFlowTest() throws Exception {
-    CaseEvent caseEvent = FixtureHelper.loadClassFixtures(CaseEvent[].class).get(0);
+    CaseEvent caseEvent = FixtureHelper.loadPackageFixtures(CaseEvent[].class).get(0);
 
     // Construct message
     MessageProperties amqpMessageProperties = new MessageProperties();
@@ -75,7 +72,7 @@ public class CaseEventReceiverImplIT_Test {
   public void caseCaseReceivedWithoutMillisTest() throws Exception {
 
     // Create a case with a timestamp. Note that that the milliseconds are not specified
-    CaseEvent caseEvent = FixtureHelper.loadClassFixtures(CaseEvent[].class).get(0);
+    CaseEvent caseEvent = FixtureHelper.loadPackageFixtures(CaseEvent[].class).get(0);
 
     String caseAsJson = new ObjectMapper().writeValueAsString(caseEvent);
     String caseWithoutMillis =

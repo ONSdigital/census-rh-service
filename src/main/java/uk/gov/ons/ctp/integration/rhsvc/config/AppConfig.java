@@ -19,4 +19,6 @@ public class AppConfig {
   private MessagingConfig messaging;
   private CustomCircuitBreakerConfig circuitBreaker;
   private RateLimiterConfig rateLimiter;
+  private NotifyConfig notify;
+  private WebformConfig webform;
 }

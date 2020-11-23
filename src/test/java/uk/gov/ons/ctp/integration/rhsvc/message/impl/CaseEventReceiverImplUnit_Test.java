@@ -21,7 +21,7 @@ public class CaseEventReceiverImplUnit_Test {
 
   @Test
   public void test_acceptCaseEvent_success() throws Exception {
-    CaseEvent caseEvent = FixtureHelper.loadClassFixtures(CaseEvent[].class).get(0);
+    CaseEvent caseEvent = FixtureHelper.loadPackageFixtures(CaseEvent[].class).get(0);
     target.acceptCaseEvent(caseEvent);
     verify(mockRespondentDataRepo).writeCollectionCase(caseEvent.getPayload().getCollectionCase());
   }
