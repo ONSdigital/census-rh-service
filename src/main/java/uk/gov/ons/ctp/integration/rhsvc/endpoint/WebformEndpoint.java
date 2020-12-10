@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.rhsvc.endpoint;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import io.micrometer.core.annotation.Timed;
+import java.util.UUID;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +26,7 @@ public final class WebformEndpoint {
   @RequestMapping(value = "/webform", method = RequestMethod.POST)
   public void webformCapture(@Valid @RequestBody WebformDTO webform) {
     log.with("requestBody", webform).info("Entering POST webformCapture");
-    webformService.sendWebformEmail(webform);
-    log.info("Exit POST webformCapture");
+    UUID notificationId = webformService.sendWebformEmail(webform);
+    log.with("notificationId", notificationId).info("Exit POST webformCapture");
   }
 }

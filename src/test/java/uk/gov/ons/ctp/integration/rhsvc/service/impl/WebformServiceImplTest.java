@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -53,6 +54,10 @@ public class WebformServiceImplTest {
   private static final String TEMPLATE_CATEGORY = "respondent_category";
   private static final String TEMPLATE_DESCRIPTION = "respondent_description";
 
+  private static final UUID NOTIFICATION_ID =
+      UUID.fromString("8db6313a-d4e3-47a1-8d0e-ddd30c86e878");
+
+  private UUID notificationId;
   private WebformDTO webform;
   @Autowired AppConfig appConfig;
 
@@ -86,7 +91,7 @@ public class WebformServiceImplTest {
     Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
         .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
 
-    webformService.sendWebformEmail(webform);
+    notificationId = webformService.sendWebformEmail(webform);
 
     Mockito.verify(notificationClient)
         .sendEmail(
@@ -96,6 +101,7 @@ public class WebformServiceImplTest {
             any());
 
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
+    assertEquals(NOTIFICATION_ID, notificationId);
   }
 
   @Test
@@ -106,7 +112,7 @@ public class WebformServiceImplTest {
     Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
         .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
 
-    webformService.sendWebformEmail(webform);
+    notificationId = webformService.sendWebformEmail(webform);
 
     Mockito.verify(notificationClient)
         .sendEmail(
@@ -116,6 +122,7 @@ public class WebformServiceImplTest {
             any());
 
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
+    assertEquals(NOTIFICATION_ID, notificationId);
   }
 
   @Test(expected = RuntimeException.class)

@@ -88,7 +88,7 @@ public class InboundEventIntegrationConfig {
    * Create advice bean for the UAC, Case listener, containing the retry configuration, and specify
    * that if the retry fails, to place the message in the DLQ.
    *
-   * @param retryTemplate uacCaseRetryTemplate
+   * @param uacCaseRetryTemplate uacCaseRetryTemplate
    * @return retry advice for the listener.
    */
   @Bean

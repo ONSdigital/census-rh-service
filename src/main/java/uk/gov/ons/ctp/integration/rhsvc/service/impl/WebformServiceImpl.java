@@ -33,7 +33,6 @@ public class WebformServiceImpl implements WebformService {
   /**
    * Constructor for WebformServiceImpl
    *
-   * @param eventPublisher service for publication of events to RabbitMQ
    * @param notificationClient Gov.uk Notify service client
    * @param appConfig centralised configuration properties
    */
@@ -47,7 +46,7 @@ public class WebformServiceImpl implements WebformService {
   // FIXME add circuit breaker
 
   @Override
-  public void sendWebformEmail(WebformDTO webform) {
+  public UUID sendWebformEmail(WebformDTO webform) {
 
     String emailToAddress =
         WebformDTO.WebformLanguage.CY.equals(webform.getLanguage())
@@ -63,10 +62,11 @@ public class WebformServiceImpl implements WebformService {
               templateValues(webform),
               reference);
       log.with("reference", reference)
-          .with("notificationId", response.getNotificationId().toString())
-          .with("templateId", response.getTemplateId().toString())
+          .with("notificationId", response.getNotificationId())
+          .with("templateId", response.getTemplateId())
           .with("templateVersion", response.getTemplateVersion())
           .debug("Gov Notify sendEmail response recieved");
+      return response.getNotificationId();
     } catch (NotificationClientException ex) {
       log.with("reference", reference)
           .with("webform", webform)
