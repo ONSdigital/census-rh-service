@@ -7,12 +7,8 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Webform;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
+import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -30,8 +26,6 @@ public class WebformServiceImpl implements WebformService {
   private static final String TEMPLATE_CATEGORY = "respondent_category";
   private static final String TEMPLATE_DESCRIPTION = "respondent_description";
 
-  private EventPublisher eventPublisher;
-
   private NotificationClientApi notificationClient;
 
   private AppConfig appConfig;
@@ -45,28 +39,18 @@ public class WebformServiceImpl implements WebformService {
    */
   @Autowired
   public WebformServiceImpl(
-      final EventPublisher eventPublisher,
-      final NotificationClientApi notificationClient,
-      final AppConfig appConfig) {
-    this.eventPublisher = eventPublisher;
+      final NotificationClientApi notificationClient, final AppConfig appConfig) {
     this.notificationClient = notificationClient;
     this.appConfig = appConfig;
   }
 
-  @Override
-  public String sendWebformEvent(Webform webform) {
-
-    String transactionId =
-        eventPublisher.sendEvent(
-            EventType.WEB_FORM_REQUEST, Source.RESPONDENT_HOME, Channel.RH, webform);
-    return transactionId;
-  }
+  // FIXME add circuit breaker
 
   @Override
-  public void sendWebformEmail(Webform webform) {
+  public void sendWebformEmail(WebformDTO webform) {
 
     String emailToAddress =
-        Webform.WebformLanguage.CY.equals(webform.getLanguage())
+        WebformDTO.WebformLanguage.CY.equals(webform.getLanguage())
             ? appConfig.getWebform().getEmailCy()
             : appConfig.getWebform().getEmailEn();
     String reference = UUID.randomUUID().toString();
@@ -94,7 +78,7 @@ public class WebformServiceImpl implements WebformService {
     }
   }
 
-  private Map<String, String> templateValues(Webform webform) {
+  private Map<String, String> templateValues(WebformDTO webform) {
     Map<String, String> personalisation = new HashMap<>();
     personalisation.put(TEMPLATE_FULL_NAME, webform.getName());
     personalisation.put(TEMPLATE_EMAIL, webform.getEmail());

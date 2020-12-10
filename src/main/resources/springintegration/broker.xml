@@ -39,15 +39,6 @@
 
 	<rabbit:queue name="${queueconfig.uac-queue-DLQ}" durable="true" />
 
- 	<rabbit:queue name="${queueconfig.webform-queue}" durable="true">
-		<rabbit:queue-arguments value-type="java.lang.String">
-			<entry key="x-dead-letter-exchange" value="${queueconfig.dead-letter-exchange}" />
-			<entry key="x-dead-letter-routing-key" value="${queueconfig.webform-routing-key}" />
-		</rabbit:queue-arguments>
-	</rabbit:queue>
-
-	<rabbit:queue name="${queueconfig.webform-queue-DLQ}" durable="true" />   
-
 	<!-- End of Queues -->
 
 	<!-- Start of Exchanges -->
@@ -56,7 +47,6 @@
 		<rabbit:bindings>
 			<rabbit:binding queue="${queueconfig.case-queue}" pattern="${queueconfig.case-routing-key}" />
 		    <rabbit:binding queue="${queueconfig.uac-queue}" pattern="${queueconfig.uac-routing-key}" />
-            <rabbit:binding queue="${queueconfig.webform-queue}" pattern="${queueconfig.webform-routing-key}" />
 		</rabbit:bindings>
 	</rabbit:topic-exchange>
 
@@ -65,7 +55,6 @@
 		<rabbit:bindings>
 			<rabbit:binding queue="${queueconfig.case-queue-DLQ}" key="${queueconfig.case-routing-key}" />
 			<rabbit:binding queue="${queueconfig.uac-queue-DLQ}" key="${queueconfig.uac-routing-key}" />
-			<rabbit:binding queue="${queueconfig.webform-queue-DLQ}" key="${queueconfig.webform-routing-key}" />
 		</rabbit:bindings>
 	</rabbit:direct-exchange>
 

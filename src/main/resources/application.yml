@@ -79,9 +79,6 @@ queueconfig:
   uac-queue: case.rh.uac
   uac-queue-DLQ: case.rh.uac.dlq
   uac-routing-key: event.uac.update
-  webform-queue: notify.rh.webform
-  webform-queue-DLQ: notify.rh.webform.dlq
-  webform-routing-key: event.rh.webform
   response-authentication-routing-key: event.response.authentication
   qid-filter-prefixes:
      - 11
@@ -102,14 +99,6 @@ messaging:
       max: 45000
     consuming-threads: 1
     con-max-attempts: 3
-    prefetch-count: 1
-  webform-listener:
-    processing-backoff:
-      initial: 5000
-      multiplier: 3
-      max: 120000
-    consuming-threads: 1
-    con-max-attempts: 15
     prefetch-count: 1
     
 circuit-breaker:

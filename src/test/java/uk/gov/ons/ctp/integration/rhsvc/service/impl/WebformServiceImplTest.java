@@ -1,6 +1,5 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,14 +19,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
-import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Webform;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.NotifyConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.WebformConfig;
+import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -38,7 +33,6 @@ import uk.gov.service.notify.SendEmailResponse;
     classes = {WebformServiceImpl.class, AppConfig.class, ValidationAutoConfiguration.class})
 public class WebformServiceImplTest {
 
-  private static final String TRANSACTIONID = "fdc64299-1a08-49b1-af33-63b322a04e34";
   private static final String SEND_EMAIL_RESPONSE_JSON =
       "{\"content\" : {"
           + "\"body\" : null,"
@@ -59,22 +53,20 @@ public class WebformServiceImplTest {
   private static final String TEMPLATE_CATEGORY = "respondent_category";
   private static final String TEMPLATE_DESCRIPTION = "respondent_description";
 
-  private Webform webform;
+  private WebformDTO webform;
   @Autowired AppConfig appConfig;
-
-  @MockBean private EventPublisher eventPublisher;
 
   @MockBean private NotificationClientApi notificationClient;
 
   @Autowired WebformService webformService;
 
-  @Captor ArgumentCaptor<Webform> webformEventCaptor;
+  @Captor ArgumentCaptor<WebformDTO> webformEventCaptor;
   @Captor ArgumentCaptor<Map<String, String>> templateValueCaptor;
 
   @Before
   public void setUp() {
 
-    webform = FixtureHelper.loadClassFixtures(Webform[].class).get(0);
+    webform = FixtureHelper.loadClassFixtures(WebformDTO[].class).get(0);
 
     NotifyConfig notifyConfig = new NotifyConfig();
     notifyConfig.setApiKey(UUID.randomUUID().toString());
@@ -86,32 +78,6 @@ public class WebformServiceImplTest {
     webformConfig.setEmailEn("english-delivered@notifications.service.gov.uk");
     webformConfig.setEmailCy("welsh-delivered@notifications.service.gov.uk");
     appConfig.setWebform(webformConfig);
-  }
-
-  @Test
-  public void sendWebformEvent() throws Exception {
-
-    Mockito.when(
-            eventPublisher.sendEvent(
-                eq(EventType.WEB_FORM_REQUEST),
-                eq(Source.RESPONDENT_HOME),
-                eq(Channel.RH),
-                webformEventCaptor.capture()))
-        .thenReturn(TRANSACTIONID);
-
-    String transactionId = webformService.sendWebformEvent(webform);
-
-    Mockito.verify(eventPublisher)
-        .sendEvent(
-            eq(EventType.WEB_FORM_REQUEST),
-            eq(Source.RESPONDENT_HOME),
-            eq(Channel.RH),
-            webformEventCaptor.capture());
-
-    Webform event = webformEventCaptor.getValue();
-
-    assertEquals(TRANSACTIONID, transactionId);
-    assertEquals(webform, event);
   }
 
   @Test
@@ -135,7 +101,7 @@ public class WebformServiceImplTest {
   @Test
   public void sendWebformEmail_CY() throws Exception {
 
-    webform.setLanguage(Webform.WebformLanguage.CY);
+    webform.setLanguage(WebformDTO.WebformLanguage.CY);
 
     Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
         .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
@@ -203,7 +169,7 @@ public class WebformServiceImplTest {
     webformService.sendWebformEmail(webform);
   }
 
-  private boolean validateTemplateValues(Webform webform, Map<String, String> personalisation) {
+  private boolean validateTemplateValues(WebformDTO webform, Map<String, String> personalisation) {
     Map<String, Object> result =
         Map.of(
             TEMPLATE_FULL_NAME, webform.getName(),
