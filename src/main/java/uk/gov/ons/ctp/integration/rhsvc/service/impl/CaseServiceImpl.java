@@ -15,6 +15,7 @@ import java.util.UUID;
 import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -61,7 +62,10 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private EventPublisher eventPublisher;
   @Autowired private ProductReference productReference;
   @Autowired private RateLimiterClient rateLimiterClient;
-  @Autowired private CircuitBreaker circuitBreaker;
+
+  @Autowired
+  @Qualifier("envoyLimiterCb")
+  private CircuitBreaker circuitBreaker;
 
   @Override
   public CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)

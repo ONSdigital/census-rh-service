@@ -17,6 +17,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -86,7 +87,8 @@ public class RHSvcApplication {
   public EventPublisher eventPublisher(
       final RabbitTemplate rabbitTemplate,
       final FirestoreEventPersistence eventPersistence,
-      final Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
+      @Qualifier("eventPublisherCbFactory")
+          Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
     EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
     CircuitBreaker circuitBreaker = circuitBreakerFactory.create("eventSendCircuitBreaker");
     return EventPublisher.createWithEventPersistence(sender, eventPersistence, circuitBreaker);
@@ -101,17 +103,45 @@ public class RHSvcApplication {
     return template;
   }
 
-  @Bean
-  public CircuitBreaker rateLimiterCircuitBreaker(
-      Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
+  @Bean("webformCb")
+  public CircuitBreaker webformCircuitBreaker(
+      @Qualifier("webformCbFactory") Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
+    return circuitBreakerFactory.create("webformCircuitBreaker");
+  }
+
+  @Bean("envoyLimiterCb")
+  public CircuitBreaker envoyLimiterCircuitBreaker(
+      @Qualifier("envoyLimiterCbFactory") Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
     return circuitBreakerFactory.create("rateLimiterCircuitBreaker");
   }
 
-  @Bean
-  public Customizer<Resilience4JCircuitBreakerFactory> defaultCircuitBreakerCustomiser() {
-    CustomCircuitBreakerConfig config = appConfig.getCircuitBreaker();
-    log.info("Circuit breaker configuration: {}", config);
-    return config.defaultCircuitBreakerCustomiser();
+  private Resilience4JCircuitBreakerFactory createCbFactory(CustomCircuitBreakerConfig config) {
+    Customizer<Resilience4JCircuitBreakerFactory> customiser =
+        config.defaultCircuitBreakerCustomiser();
+    Resilience4JCircuitBreakerFactory factory = new Resilience4JCircuitBreakerFactory();
+    customiser.customize(factory);
+    return factory;
+  }
+
+  @Bean("eventPublisherCbFactory")
+  public Resilience4JCircuitBreakerFactory eventPublisherCircuitBreakerFactory() {
+    CustomCircuitBreakerConfig config = appConfig.getEventPublisherCircuitBreaker();
+    log.info("Event Publisher Circuit breaker configuration: {}", config);
+    return createCbFactory(config);
+  }
+
+  @Bean("envoyLimiterCbFactory")
+  public Resilience4JCircuitBreakerFactory envoyLimiterCircuitBreakerFactory() {
+    CustomCircuitBreakerConfig config = appConfig.getEnvoyLimiterCircuitBreaker();
+    log.info("Envoy Limiter Circuit breaker configuration: {}", config);
+    return createCbFactory(config);
+  }
+
+  @Bean("webformCbFactory")
+  public Resilience4JCircuitBreakerFactory webformCrcuitBreakerFactory() {
+    CustomCircuitBreakerConfig config = appConfig.getWebformCircuitBreaker();
+    log.info("Webform Circuit breaker configuration: {}", config);
+    return createCbFactory(config);
   }
 
   @Bean

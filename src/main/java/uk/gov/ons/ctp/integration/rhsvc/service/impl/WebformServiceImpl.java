@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
@@ -27,6 +29,7 @@ public class WebformServiceImpl implements WebformService {
   private static final String TEMPLATE_DESCRIPTION = "respondent_description";
 
   private NotificationClientApi notificationClient;
+  private CircuitBreaker circuitBreaker;
 
   private AppConfig appConfig;
 
@@ -34,20 +37,32 @@ public class WebformServiceImpl implements WebformService {
    * Constructor for WebformServiceImpl
    *
    * @param notificationClient Gov.uk Notify service client
+   * @param circuitBreaker circuit breaker
    * @param appConfig centralised configuration properties
    */
   @Autowired
   public WebformServiceImpl(
-      final NotificationClientApi notificationClient, final AppConfig appConfig) {
+      final NotificationClientApi notificationClient,
+      final @Qualifier("webformCb") CircuitBreaker circuitBreaker,
+      final AppConfig appConfig) {
     this.notificationClient = notificationClient;
+    this.circuitBreaker = circuitBreaker;
     this.appConfig = appConfig;
   }
 
-  // FIXME add circuit breaker
-
   @Override
   public UUID sendWebformEmail(WebformDTO webform) {
+    return this.circuitBreaker.run(
+        () -> {
+          return send(webform);
+        },
+        throwable -> {
+          log.debug("{}", throwable.getMessage());
+          throw new RuntimeException(throwable);
+        });
+  }
 
+  private UUID send(WebformDTO webform) {
     String emailToAddress =
         WebformDTO.WebformLanguage.CY.equals(webform.getLanguage())
             ? appConfig.getWebform().getEmailCy()

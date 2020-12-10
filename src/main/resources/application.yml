@@ -101,7 +101,13 @@ messaging:
     con-max-attempts: 3
     prefetch-count: 1
     
-circuit-breaker:
+event-publisher-circuit-breaker:
+  timeout: 4
+
+envoy-limiter-circuit-breaker:
+  timeout: 4
+  
+webform-circuit-breaker:
   timeout: 4
 
 rate-limiter:
