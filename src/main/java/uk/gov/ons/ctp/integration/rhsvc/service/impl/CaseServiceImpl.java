@@ -279,7 +279,7 @@ public class CaseServiceImpl implements CaseService {
         circuitBreaker.run(
             () -> {
               try {
-                rateLimiterClient.checkRateLimit(
+                rateLimiterClient.checkFulfilmentRateLimit(
                     Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
                 return null;
               } catch (CTPException e) {
@@ -302,9 +302,10 @@ public class CaseServiceImpl implements CaseService {
               // operation, however by getting here, the circuit-breaker has counted the failure,
               // or we are in circuit-breaker OPEN state.
               if (throwable instanceof CallNotPermittedException) {
-                log.info("Circuit breaker is OPEN calling rate limiter");
+                log.info("Circuit breaker is OPEN calling rate limiter for fulfilments");
               } else {
-                log.with("error", throwable.getMessage()).error(throwable, "Rate limiter failure");
+                log.with("error", throwable.getMessage())
+                    .error(throwable, "Rate limiter failure for fulfilments");
               }
               return null;
             });
