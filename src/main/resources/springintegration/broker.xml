@@ -16,8 +16,8 @@
 	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" />
 
 	<!-- Request that queues, exchanges and bindings be automatically declared
-		on the broker -->
 	<rabbit:admin id="amqpAdmin" connection-factory="connectionFactory"/>
+		on the broker -->
 
 	<!-- Start of Queues -->
 
