@@ -127,7 +127,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>event-publisher</artifactId>
-      <version>0.0.48</version>
+      <version>0.0.49-SNAPSHOT-CR1434</version>
     </dependency>
 
     <dependency>
@@ -146,7 +146,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>census-int-rate-limiter-client</artifactId>
-      <version>0.0.6</version>
+      <version>0.0.7-SNAPSHOT-CR1434</version>
     </dependency>
 
     <!-- ONS END -->

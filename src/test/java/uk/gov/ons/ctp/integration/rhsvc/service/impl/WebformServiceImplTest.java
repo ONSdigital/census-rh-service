@@ -4,9 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-
+import static org.mockito.Mockito.doAnswer;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.validation.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,9 +16,12 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -25,8 +30,10 @@ import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.Webform;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.NotifyConfig;
+import uk.gov.ons.ctp.integration.rhsvc.config.RateLimiterConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.WebformConfig;
 import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 import uk.gov.service.notify.NotificationClientApi;
@@ -65,9 +72,13 @@ public class WebformServiceImplTest {
   @MockBean private EventPublisher eventPublisher;
 
   @MockBean private NotificationClientApi notificationClient;
+  
+  @MockBean private RateLimiterClient rateLimiterClient;
+
+  @MockBean private CircuitBreaker circuitBreaker;
 
   @Autowired WebformService webformService;
-
+  
   @Captor ArgumentCaptor<Webform> webformEventCaptor;
   @Captor ArgumentCaptor<Map<String, String>> templateValueCaptor;
 
@@ -86,6 +97,15 @@ public class WebformServiceImplTest {
     webformConfig.setEmailEn("english-delivered@notifications.service.gov.uk");
     webformConfig.setEmailCy("welsh-delivered@notifications.service.gov.uk");
     appConfig.setWebform(webformConfig);
+
+    appConfig.setRateLimiter(rateLimiterConfig(true));
+    simulateCircuitBreaker();
+  }
+
+  private RateLimiterConfig rateLimiterConfig(boolean enabled) {
+    RateLimiterConfig rateLimiterConfig = new RateLimiterConfig();
+    rateLimiterConfig.setEnabled(enabled);
+    return rateLimiterConfig;
   }
 
   @Test
@@ -212,5 +232,30 @@ public class WebformServiceImplTest {
             TEMPLATE_CATEGORY, webform.getCategory().name(),
             TEMPLATE_DESCRIPTION, webform.getDescription());
     return result.equals(personalisation);
+  }
+  
+  private void simulateCircuitBreaker() {
+    doAnswer(
+            new Answer<Object>() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                Supplier<Object> runner = (Supplier<Object>) args[0];
+                Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
+
+                try {
+                  // execute the circuitBreaker.run first argument (the Supplier for the code you
+                  // want to run)
+                  return runner.get();
+                } catch (Throwable t) {
+                  // execute the circuitBreaker.run second argument (the fallback Function)
+                  fallback.apply(t);
+                }
+                return null;
+              }
+            })
+        .when(circuitBreaker)
+        .run(any(), any());
   }
 }
