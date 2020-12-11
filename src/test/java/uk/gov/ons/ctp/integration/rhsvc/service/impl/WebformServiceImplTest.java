@@ -2,12 +2,15 @@ package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.validation.ConstraintViolationException;
@@ -16,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -26,6 +30,7 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.NotifyConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.WebformConfig;
@@ -69,6 +74,8 @@ public class WebformServiceImplTest {
 
   @MockBean private NotificationClientApi notificationClient;
 
+  @Mock private CustomCircuitBreakerConfig cbConfig;
+
   @MockBean(name = "webformCb")
   private CircuitBreaker circuitBreaker;
 
@@ -92,13 +99,16 @@ public class WebformServiceImplTest {
     webformConfig.setEmailEn("english-delivered@notifications.service.gov.uk");
     webformConfig.setEmailCy("welsh-delivered@notifications.service.gov.uk");
     appConfig.setWebform(webformConfig);
+
+    when(cbConfig.getTimeout()).thenReturn(4);
+    appConfig.setWebformCircuitBreaker(cbConfig);
     simulateCircuitBreaker();
   }
 
   @Test
   public void sendWebformEmail_EN() throws Exception {
 
-    Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
+    when(notificationClient.sendEmail(any(), any(), any(), any()))
         .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
 
     notificationId = webformService.sendWebformEmail(webform);
@@ -119,7 +129,7 @@ public class WebformServiceImplTest {
 
     webform.setLanguage(WebformDTO.WebformLanguage.CY);
 
-    Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
+    when(notificationClient.sendEmail(any(), any(), any(), any()))
         .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
 
     notificationId = webformService.sendWebformEmail(webform);
@@ -135,13 +145,22 @@ public class WebformServiceImplTest {
     assertEquals(NOTIFICATION_ID, notificationId);
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void sendWebformEmail_Error() throws Exception {
-
-    Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
+    when(notificationClient.sendEmail(any(), any(), any(), any()))
         .thenThrow(new NotificationClientException("GOV.UK Notify service failure"));
 
-    webformService.sendWebformEmail(webform);
+    RuntimeException e =
+        assertThrows(RuntimeException.class, () -> webformService.sendWebformEmail(webform));
+    assertTrue(e.getCause().getCause() instanceof NotificationClientException);
+  }
+
+  @Test
+  public void shouldHandleTimeoutException() throws Exception {
+    simulateCircuitBreakerTimeout();
+    RuntimeException e =
+        assertThrows(RuntimeException.class, () -> webformService.sendWebformEmail(webform));
+    assertTrue(e.getCause() instanceof TimeoutException);
   }
 
   @Test(expected = ConstraintViolationException.class)
@@ -186,8 +205,6 @@ public class WebformServiceImplTest {
     webformService.sendWebformEmail(webform);
   }
 
-  // WRITEME circuit breaker stuff.
-
   private boolean validateTemplateValues(WebformDTO webform, Map<String, String> personalisation) {
     Map<String, Object> result =
         Map.of(
@@ -217,6 +234,22 @@ public class WebformServiceImplTest {
                   // execute the circuitBreaker.run second argument (the fallback Function)
                   fallback.apply(t);
                 }
+                return null;
+              }
+            })
+        .when(circuitBreaker)
+        .run(any(), any());
+  }
+
+  private void simulateCircuitBreakerTimeout() {
+    doAnswer(
+            new Answer<Object>() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
+                fallback.apply(new TimeoutException());
                 return null;
               }
             })
