@@ -186,6 +186,8 @@ public class WebformServiceImplTest {
     webformService.sendWebformEmail(webform);
   }
 
+  // WRITEME circuit breaker stuff.
+
   private boolean validateTemplateValues(WebformDTO webform, Map<String, String> personalisation) {
     Map<String, Object> result =
         Map.of(

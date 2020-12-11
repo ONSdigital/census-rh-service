@@ -5,6 +5,7 @@ import com.godaddy.logging.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -54,15 +55,21 @@ public class WebformServiceImpl implements WebformService {
   public UUID sendWebformEmail(WebformDTO webform) {
     return this.circuitBreaker.run(
         () -> {
-          return send(webform);
+          SendEmailResponse response = send(webform);
+          return response.getNotificationId();
         },
         throwable -> {
-          log.debug("{}", throwable.getMessage());
+          String msg = throwable.getMessage();
+          if (throwable instanceof TimeoutException) {
+            int timeout = appConfig.getWebformCircuitBreaker().getTimeout();
+            msg = "call timed out, took longer than " + timeout + " seconds to complete";
+          }
+          log.info("Send within circuit breaker failed: {}", msg);
           throw new RuntimeException(throwable);
         });
   }
 
-  private UUID send(WebformDTO webform) {
+  private SendEmailResponse send(WebformDTO webform) {
     String emailToAddress =
         WebformDTO.WebformLanguage.CY.equals(webform.getLanguage())
             ? appConfig.getWebform().getEmailCy()
@@ -81,7 +88,7 @@ public class WebformServiceImpl implements WebformService {
           .with("templateId", response.getTemplateId())
           .with("templateVersion", response.getTemplateVersion())
           .debug("Gov Notify sendEmail response received");
-      return response.getNotificationId();
+      return response;
     } catch (NotificationClientException ex) {
       log.with("reference", reference)
           .with("webform", webform)

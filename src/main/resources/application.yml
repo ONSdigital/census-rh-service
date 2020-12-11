@@ -111,7 +111,7 @@ envoy-limiter-circuit-breaker:
   timeout: 4
   
 webform-circuit-breaker:
-  timeout: 4
+  timeout: 3
 
 rate-limiter:
   enabled: true
