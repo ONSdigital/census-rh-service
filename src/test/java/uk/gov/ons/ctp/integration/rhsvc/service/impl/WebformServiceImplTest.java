@@ -29,36 +29,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.NotifyConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.WebformConfig;
 import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
-import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
-import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
-import uk.gov.service.notify.SendEmailResponse;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(
     classes = {WebformServiceImpl.class, AppConfig.class, ValidationAutoConfiguration.class})
-public class WebformServiceImplTest {
-
-  private static final String SEND_EMAIL_RESPONSE_JSON =
-      "{\"content\" : {"
-          + "\"body\" : null,"
-          + "\"from_email\" : \"census.2021@test.gov.uk\","
-          + "\"subject\" : \"COMPLAINT\"},"
-          + "\"id\" : \"8db6313a-d4e3-47a1-8d0e-ddd30c86e878\","
-          + "\"reference\" : \"88e4a66a-1a8d-4b8e-802d-b8a9dd10528d\","
-          + "\"scheduled_for\" :null,"
-          + "\"template\" : {"
-          + "\"id\" : \"457d8d8c-bdcb-4875-8f2f-88030643ad13\","
-          + "\"uri\" : null,"
-          + "\"version\" : \"1\" },"
-          + "\"uri\" : null }";
-
+public class WebformServiceImplTest extends WebformServiceImplTestBase {
   private static final String TEMPLATE_FULL_NAME = "respondent_full_name";
   private static final String TEMPLATE_EMAIL = "respondent_email";
   private static final String TEMPLATE_REGION = "respondent_region";
@@ -69,26 +50,18 @@ public class WebformServiceImplTest {
       UUID.fromString("8db6313a-d4e3-47a1-8d0e-ddd30c86e878");
 
   private UUID notificationId;
-  private WebformDTO webform;
   @Autowired AppConfig appConfig;
-
-  @MockBean private NotificationClientApi notificationClient;
 
   @Mock private CustomCircuitBreakerConfig cbConfig;
 
   @MockBean(name = "webformCb")
   private CircuitBreaker circuitBreaker;
 
-  @Autowired WebformService webformService;
-
   @Captor ArgumentCaptor<WebformDTO> webformEventCaptor;
   @Captor ArgumentCaptor<Map<String, String>> templateValueCaptor;
 
   @Before
   public void setUp() {
-
-    webform = FixtureHelper.loadClassFixtures(WebformDTO[].class).get(0);
-
     NotifyConfig notifyConfig = new NotifyConfig();
     notifyConfig.setApiKey(UUID.randomUUID().toString());
     notifyConfig.setBaseUrl("https://api.notifications.service.gov.uk");
@@ -107,9 +80,7 @@ public class WebformServiceImplTest {
 
   @Test
   public void sendWebformEmail_EN() throws Exception {
-
-    when(notificationClient.sendEmail(any(), any(), any(), any()))
-        .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
+    mockSuccessfulSend();
 
     notificationId = webformService.sendWebformEmail(webform);
 
@@ -126,11 +97,9 @@ public class WebformServiceImplTest {
 
   @Test
   public void sendWebformEmail_CY() throws Exception {
-
     webform.setLanguage(WebformDTO.WebformLanguage.CY);
 
-    when(notificationClient.sendEmail(any(), any(), any(), any()))
-        .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
+    mockSuccessfulSend();
 
     notificationId = webformService.sendWebformEmail(webform);
 
@@ -147,9 +116,7 @@ public class WebformServiceImplTest {
 
   @Test
   public void sendWebformEmail_Error() throws Exception {
-    when(notificationClient.sendEmail(any(), any(), any(), any()))
-        .thenThrow(new NotificationClientException("GOV.UK Notify service failure"));
-
+    mockFailedSend();
     RuntimeException e =
         assertThrows(RuntimeException.class, () -> webformService.sendWebformEmail(webform));
     assertTrue(e.getCause().getCause() instanceof NotificationClientException);
