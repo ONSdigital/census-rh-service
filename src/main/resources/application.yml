@@ -101,6 +101,9 @@ messaging:
     con-max-attempts: 3
     prefetch-count: 1
     
+# circuit breaker configuration can be tuned by setting many other variables:
+# see CustomCircuitBreakerConfig.java . 
+    
 event-publisher-circuit-breaker:
   timeout: 4
 

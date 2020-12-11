@@ -80,7 +80,7 @@ public class WebformServiceImpl implements WebformService {
           .with("notificationId", response.getNotificationId())
           .with("templateId", response.getTemplateId())
           .with("templateVersion", response.getTemplateVersion())
-          .debug("Gov Notify sendEmail response recieved");
+          .debug("Gov Notify sendEmail response received");
       return response.getNotificationId();
     } catch (NotificationClientException ex) {
       log.with("reference", reference)
