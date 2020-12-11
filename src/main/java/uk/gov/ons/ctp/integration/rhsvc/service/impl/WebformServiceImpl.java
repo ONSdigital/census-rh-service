@@ -1,5 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -7,9 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
@@ -113,7 +113,7 @@ public class WebformServiceImpl implements WebformService {
     personalisation.put(TEMPLATE_DESCRIPTION, webform.getDescription());
     return personalisation;
   }
-  
+
   private void checkWebformRateLimit(String ipAddress) {
     if (appConfig.getRateLimiter().isEnabled()) {
       log.with("ipAddress", ipAddress).debug("Recording rate-limiting");
@@ -158,7 +158,8 @@ public class WebformServiceImpl implements WebformService {
               if (throwable instanceof CallNotPermittedException) {
                 log.info("Circuit breaker is OPEN calling rate limiter for webform");
               } else {
-                log.with("error", throwable.getMessage()).error(throwable, "Rate limiter failure for webform");
+                log.with("error", throwable.getMessage())
+                    .error(throwable, "Rate limiter failure for webform");
               }
               return null;
             });

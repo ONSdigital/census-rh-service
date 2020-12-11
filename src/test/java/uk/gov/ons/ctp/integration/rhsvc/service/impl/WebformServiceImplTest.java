@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -72,13 +73,13 @@ public class WebformServiceImplTest {
   @MockBean private EventPublisher eventPublisher;
 
   @MockBean private NotificationClientApi notificationClient;
-  
+
   @MockBean private RateLimiterClient rateLimiterClient;
 
   @MockBean private CircuitBreaker circuitBreaker;
 
   @Autowired WebformService webformService;
-  
+
   @Captor ArgumentCaptor<Webform> webformEventCaptor;
   @Captor ArgumentCaptor<Map<String, String>> templateValueCaptor;
 
@@ -233,7 +234,7 @@ public class WebformServiceImplTest {
             TEMPLATE_DESCRIPTION, webform.getDescription());
     return result.equals(personalisation);
   }
-  
+
   private void simulateCircuitBreaker() {
     doAnswer(
             new Answer<Object>() {

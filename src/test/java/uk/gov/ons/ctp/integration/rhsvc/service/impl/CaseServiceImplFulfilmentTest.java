@@ -12,6 +12,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import ma.glasnost.orika.MapperFacade;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,8 +39,6 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.server.ResponseStatusException;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
@@ -594,7 +595,8 @@ public class CaseServiceImplFulfilmentTest {
   }
 
   private void verifyRateLimiterNotCalled() throws Exception {
-    verify(rateLimiterClient, never()).checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
+    verify(rateLimiterClient, never())
+        .checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
     verify(circuitBreaker, never()).run(any(), any());
   }
 

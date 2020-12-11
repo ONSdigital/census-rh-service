@@ -304,7 +304,8 @@ public class CaseServiceImpl implements CaseService {
               if (throwable instanceof CallNotPermittedException) {
                 log.info("Circuit breaker is OPEN calling rate limiter for fulfilments");
               } else {
-                log.with("error", throwable.getMessage()).error(throwable, "Rate limiter failure for fulfilments");
+                log.with("error", throwable.getMessage())
+                    .error(throwable, "Rate limiter failure for fulfilments");
               }
               return null;
             });
