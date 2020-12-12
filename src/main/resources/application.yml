@@ -62,13 +62,12 @@ spring:
     name: ONS RespondentHomeService
   lifecycle:
     timeout-per-shutdown-phase: 30s
-
-rabbitmq:
-  username: guest
-  password: guest
-  host: localhost
-  port: 35672
-  virtualhost: /
+  rabbitmq:
+    username: guest
+    password: guest
+    host: localhost
+    port: 35672
+    virtualhost: /
 
 queueconfig:
   event-exchange: events
