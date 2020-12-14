@@ -4,12 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import javax.validation.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,12 +16,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.common.FixtureHelper;
@@ -32,6 +28,7 @@ import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.Webform;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient.Domain;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.NotifyConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.RateLimiterConfig;
@@ -76,8 +73,6 @@ public class WebformServiceImplTest {
 
   @MockBean private RateLimiterClient rateLimiterClient;
 
-  @MockBean private CircuitBreaker circuitBreaker;
-
   @Autowired WebformService webformService;
 
   @Captor ArgumentCaptor<Webform> webformEventCaptor;
@@ -100,7 +95,6 @@ public class WebformServiceImplTest {
     appConfig.setWebform(webformConfig);
 
     appConfig.setRateLimiter(rateLimiterConfig(true));
-    simulateCircuitBreaker();
   }
 
   private RateLimiterConfig rateLimiterConfig(boolean enabled) {
@@ -121,6 +115,8 @@ public class WebformServiceImplTest {
         .thenReturn(TRANSACTIONID);
 
     String transactionId = webformService.sendWebformEvent(webform);
+
+    verifyRateLimiterCall(1, webform.getClientIP());
 
     Mockito.verify(eventPublisher)
         .sendEvent(
@@ -171,6 +167,36 @@ public class WebformServiceImplTest {
             any());
 
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
+  }
+  
+  @Test
+  public void sendWebformWhenRateLimiterNotEnabled() throws Exception {
+    Mockito.when(
+        eventPublisher.sendEvent(
+            eq(EventType.WEB_FORM_REQUEST),
+            eq(Source.RESPONDENT_HOME),
+            eq(Channel.RH),
+            webformEventCaptor.capture()))
+    .thenReturn(TRANSACTIONID);
+
+    // Disable rate limiter
+    appConfig.setRateLimiter(rateLimiterConfig(false));
+    
+    String transactionId = webformService.sendWebformEvent(webform);
+
+    Mockito.verify(eventPublisher)
+      .sendEvent(
+        eq(EventType.WEB_FORM_REQUEST),
+        eq(Source.RESPONDENT_HOME),
+        eq(Channel.RH),
+        webformEventCaptor.capture());
+
+    Webform event = webformEventCaptor.getValue();
+
+    assertEquals(TRANSACTIONID, transactionId);
+    assertEquals(webform, event);
+
+    verifyRateLimiterNotCalled();
   }
 
   @Test(expected = RuntimeException.class)
@@ -234,29 +260,18 @@ public class WebformServiceImplTest {
             TEMPLATE_DESCRIPTION, webform.getDescription());
     return result.equals(personalisation);
   }
+  
+  // --- helpers
 
-  private void simulateCircuitBreaker() {
-    doAnswer(
-            new Answer<Object>() {
-              @SuppressWarnings("unchecked")
-              @Override
-              public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                Supplier<Object> runner = (Supplier<Object>) args[0];
-                Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
+  private void verifyRateLimiterCall(int numTimes, String clientIp) throws Exception {
+    verify(rateLimiterClient, times(numTimes))
+        .checkWebformRateLimit(
+            eq(Domain.RH),
+            eq(clientIp));
+  }
 
-                try {
-                  // execute the circuitBreaker.run first argument (the Supplier for the code you
-                  // want to run)
-                  return runner.get();
-                } catch (Throwable t) {
-                  // execute the circuitBreaker.run second argument (the fallback Function)
-                  fallback.apply(t);
-                }
-                return null;
-              }
-            })
-        .when(circuitBreaker)
-        .run(any(), any());
+  private void verifyRateLimiterNotCalled() throws Exception {
+    verify(rateLimiterClient, never())
+        .checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
   }
 }

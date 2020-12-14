@@ -1,10 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
 import static java.util.stream.Collectors.toList;
-
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import ma.glasnost.orika.MapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
+import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -61,7 +57,6 @@ public class CaseServiceImpl implements CaseService {
   @Autowired private EventPublisher eventPublisher;
   @Autowired private ProductReference productReference;
   @Autowired private RateLimiterClient rateLimiterClient;
-  @Autowired private CircuitBreaker circuitBreaker;
 
   @Override
   public CaseDTO getLatestValidNonHICaseByUPRN(final UniquePropertyReferenceNumber uprn)
@@ -249,7 +244,7 @@ public class CaseServiceImpl implements CaseService {
   }
 
   private void recordRateLimiting(
-      Contact contact, String ipAddress, List<Product> products, CollectionCase caseDetails) {
+      Contact contact, String ipAddress, List<Product> products, CollectionCase caseDetails) throws CTPException {
     if (appConfig.getRateLimiter().isEnabled()) {
       for (Product product : products) {
         log.with("fulfilmentCode", product.getFulfilmentCode()).debug("Recording rate-limiting");
@@ -264,54 +259,21 @@ public class CaseServiceImpl implements CaseService {
   }
 
   /*
-   * Call the rate limiter within a circuit-breaker, thus protecting the RHSvc
-   * functionality from the unlikely event that that the rate limiter service is failing.
+   * Call the rate limiter. The RateLimiterClient invokes the EnvoyLimiter within a circuit-breaker,
+   * thus protecting the RHSvc from the unlikely event that that the rate limiter service is failing.
    *
-   * If the limit is breached, a ResponseStatusException with HTTP 429 will be thrown.
+   * If the limit is breached a ResponseStatusException with HTTP 429 will be thrown.
+   * If Rate limiter validation fails then a CTPException is thrown.
    */
   private void recordRateLimiting(
       Contact contact,
       Product product,
       CaseType caseType,
       String ipAddress,
-      UniquePropertyReferenceNumber uprn) {
-    ResponseStatusException limitException =
-        circuitBreaker.run(
-            () -> {
-              try {
-                rateLimiterClient.checkFulfilmentRateLimit(
+      UniquePropertyReferenceNumber uprn) throws CTPException {
+
+    rateLimiterClient.checkFulfilmentRateLimit(
                     Domain.RH, product, caseType, ipAddress, uprn, contact.getTelNo());
-                return null;
-              } catch (CTPException e) {
-                // we should get here if the rate-limiter is failing or not communicating
-                // ... wrap and rethrow to be handled by the circuit-breaker
-                throw new RuntimeException(e);
-              } catch (ResponseStatusException e) {
-                // we have got a 429 but don't rethrow it otherwise this will count against
-                // the circuit-breaker accounting, so instead we return it to later throw
-                // outside the circuit-breaker mechanism.
-                return e;
-              }
-            },
-            throwable -> {
-              // This is the Function for the circuitBreaker.run second parameter, which is called
-              // when an exception is thrown from the first Supplier parameter (above), including
-              // as part of the processing of being in the circuit-breaker OPEN state.
-              //
-              // It is OK to carry on, since it is better to tolerate limiter error than fail
-              // operation, however by getting here, the circuit-breaker has counted the failure,
-              // or we are in circuit-breaker OPEN state.
-              if (throwable instanceof CallNotPermittedException) {
-                log.info("Circuit breaker is OPEN calling rate limiter for fulfilments");
-              } else {
-                log.with("error", throwable.getMessage())
-                    .error(throwable, "Rate limiter failure for fulfilments");
-              }
-              return null;
-            });
-    if (limitException != null) {
-      throw limitException;
-    }
   }
 
   private void createAndSendFulfilments(

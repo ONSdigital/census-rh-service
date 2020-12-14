@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.Webform;
 import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 
@@ -23,7 +24,7 @@ public final class WebformEndpoint {
   @Autowired private WebformService webformService;
 
   @RequestMapping(value = "/webform", method = RequestMethod.POST)
-  public void webformCapture(@Valid @RequestBody Webform webform) {
+  public void webformCapture(@Valid @RequestBody Webform webform) throws CTPException {
 
     log.with("requestBody", webform).info("Entering POST webformCapture");
 
