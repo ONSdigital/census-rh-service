@@ -10,8 +10,8 @@ import uk.gov.ons.ctp.common.event.model.Webform;
 public interface WebformService {
 
   /**
-   * Send a Webform event. If the rate limit is breached then this method throws
-   * a ResponseStatusException with a 429 status.
+   * Send a Webform event. If the rate limit is breached then this method throws a
+   * ResponseStatusException with a 429 status.
    *
    * @param webform request information
    * @return the transaction ID of the sent event.

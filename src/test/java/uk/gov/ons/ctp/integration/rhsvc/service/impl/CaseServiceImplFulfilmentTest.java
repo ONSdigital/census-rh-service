@@ -12,11 +12,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import ma.glasnost.orika.MapperFacade;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,8 +34,6 @@ import org.springframework.boot.autoconfigure.validation.ValidationAutoConfigura
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.server.ResponseStatusException;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
-import ma.glasnost.orika.MapperFacade;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
@@ -429,8 +430,9 @@ public class CaseServiceImplFulfilmentTest {
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
 
     doThrow(new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS))
-        .when(rateLimiterClient).checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
- 
+        .when(rateLimiterClient)
+        .checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
+
     postalRequest.setCaseId(caseId);
     mockProductSearch("F1", false, DeliveryChannel.POST, Product.CaseType.HH);
 
@@ -481,7 +483,8 @@ public class CaseServiceImplFulfilmentTest {
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
 
     doThrow(new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS))
-        .when(rateLimiterClient).checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
+        .when(rateLimiterClient)
+        .checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
 
     String phoneNo = "07714111222";
     smsRequest.setCaseId(caseId);

@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
 import java.util.Map;
 import java.util.UUID;
 import javax.validation.ConstraintViolationException;
@@ -168,28 +169,28 @@ public class WebformServiceImplTest {
 
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
   }
-  
+
   @Test
   public void sendWebformWhenRateLimiterNotEnabled() throws Exception {
     Mockito.when(
-        eventPublisher.sendEvent(
-            eq(EventType.WEB_FORM_REQUEST),
-            eq(Source.RESPONDENT_HOME),
-            eq(Channel.RH),
-            webformEventCaptor.capture()))
-    .thenReturn(TRANSACTIONID);
+            eventPublisher.sendEvent(
+                eq(EventType.WEB_FORM_REQUEST),
+                eq(Source.RESPONDENT_HOME),
+                eq(Channel.RH),
+                webformEventCaptor.capture()))
+        .thenReturn(TRANSACTIONID);
 
     // Disable rate limiter
     appConfig.setRateLimiter(rateLimiterConfig(false));
-    
+
     String transactionId = webformService.sendWebformEvent(webform);
 
     Mockito.verify(eventPublisher)
-      .sendEvent(
-        eq(EventType.WEB_FORM_REQUEST),
-        eq(Source.RESPONDENT_HOME),
-        eq(Channel.RH),
-        webformEventCaptor.capture());
+        .sendEvent(
+            eq(EventType.WEB_FORM_REQUEST),
+            eq(Source.RESPONDENT_HOME),
+            eq(Channel.RH),
+            webformEventCaptor.capture());
 
     Webform event = webformEventCaptor.getValue();
 
@@ -260,14 +261,11 @@ public class WebformServiceImplTest {
             TEMPLATE_DESCRIPTION, webform.getDescription());
     return result.equals(personalisation);
   }
-  
+
   // --- helpers
 
   private void verifyRateLimiterCall(int numTimes, String clientIp) throws Exception {
-    verify(rateLimiterClient, times(numTimes))
-        .checkWebformRateLimit(
-            eq(Domain.RH),
-            eq(clientIp));
+    verify(rateLimiterClient, times(numTimes)).checkWebformRateLimit(eq(Domain.RH), eq(clientIp));
   }
 
   private void verifyRateLimiterNotCalled() throws Exception {
