@@ -63,6 +63,22 @@ public class WebformServiceImpl implements WebformService {
   @Override
   public UUID sendWebformEmail(WebformDTO webform) {
     checkWebformRateLimit(webform.getClientIP());
+    return doSendWebFormEmail(webform);
+  }
+
+  /**
+   * Since it is possible the GOV.UK notify service could either fail or be slow, we use a circuit
+   * breaker wrapper here to fail fast to prevent the user waiting for a failed response over a long
+   * time, and also to protect the RHSvc (thread) resources from getting tied up.
+   *
+   * <p>If GOV.UK notify response is too slow an error response will be returned back to the caller.
+   * If GOV.UK notify returns an error, or is down, an error response will go back to the caller,
+   * and for repeated failures the circuit breaker will do it's usual fail-fast mechanism.
+   *
+   * @param webform webform DTO
+   * @return the notification ID returned by the GOV.UK notify service.
+   */
+  private UUID doSendWebFormEmail(WebformDTO webform) {
     return this.webformCircuitBreaker.run(
         () -> {
           SendEmailResponse response = send(webform);
