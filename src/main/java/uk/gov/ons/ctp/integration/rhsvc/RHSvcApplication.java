@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
@@ -97,6 +99,11 @@ public class RHSvcApplication {
     template.setExchange("events");
     template.setChannelTransacted(true);
     return template;
+  }
+
+  @Bean
+  PlatformTransactionManager transactionManager(ConnectionFactory connectionFactory) {
+    return new RabbitTransactionManager(connectionFactory);
   }
 
   @Bean

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
@@ -34,6 +35,7 @@ public class CaseEventReceiverImpl implements CaseEventReceiver {
    * @param caseEvent CaseEvent message from Response Management
    * @throws CTPException something went wrong
    */
+  @Transactional
   @ServiceActivator(inputChannel = "acceptCaseEvent")
   public void acceptCaseEvent(CaseEvent caseEvent) throws CTPException {
 

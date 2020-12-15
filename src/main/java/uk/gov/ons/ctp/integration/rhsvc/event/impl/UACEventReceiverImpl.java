@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.UAC;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
@@ -37,6 +38,7 @@ public class UACEventReceiverImpl {
    * @param uacEvent UACEvent message (either created or updated type)from Response Management
    * @throws CTPException something went wrong
    */
+  @Transactional
   @ServiceActivator(inputChannel = "acceptUACEvent")
   public void acceptUACEvent(UACEvent uacEvent) throws CTPException {
 
