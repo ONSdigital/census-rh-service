@@ -127,7 +127,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>event-publisher</artifactId>
-      <version>0.0.50-SNAPSHOT</version>
+      <version>0.0.50</version>
     </dependency>
 
     <dependency>
