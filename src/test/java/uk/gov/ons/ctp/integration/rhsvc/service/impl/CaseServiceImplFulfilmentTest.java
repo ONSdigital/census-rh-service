@@ -34,8 +34,10 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.CaseType;
@@ -62,6 +64,8 @@ import uk.gov.ons.ctp.integration.rhsvc.representation.PostalFulfilmentRequestDT
 import uk.gov.ons.ctp.integration.rhsvc.representation.SMSFulfilmentRequestDTO;
 
 @RunWith(MockitoJUnitRunner.class)
+@ContextConfiguration(
+    classes = {WebformServiceImpl.class, AppConfig.class, ValidationAutoConfiguration.class})
 public class CaseServiceImplFulfilmentTest {
 
   @InjectMocks private CaseServiceImpl caseSvc;
@@ -434,7 +438,7 @@ public class CaseServiceImplFulfilmentTest {
     UUID caseId = UUID.fromString(caseDetails.getId());
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
 
-    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+    when(rateLimiterClient.checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS));
 
     postalRequest.setCaseId(caseId);
@@ -486,7 +490,7 @@ public class CaseServiceImplFulfilmentTest {
     UUID caseId = UUID.fromString(caseDetails.getId());
     when(dataRepo.readCollectionCase(eq(caseId.toString()))).thenReturn(Optional.of(caseDetails));
 
-    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+    when(rateLimiterClient.checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS));
 
     String phoneNo = "07714111222";
@@ -545,14 +549,14 @@ public class CaseServiceImplFulfilmentTest {
 
   @Test
   public void shouldFulfilRequestByPostForHousehold_withFailingRateLimiter() throws Exception {
-    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+    when(rateLimiterClient.checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new CTPException(Fault.SYSTEM_ERROR));
     doFulfilmentRequestByPost(Product.CaseType.HH, false, "Mrs");
   }
 
   @Test
   public void shouldFulfilRequestBySmsForHousehold_withFailingRateLimiter() throws Exception {
-    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+    when(rateLimiterClient.checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new CTPException(Fault.SYSTEM_ERROR));
     doFulfilmentRequestBySMS(Product.CaseType.HH, false);
   }
@@ -560,7 +564,7 @@ public class CaseServiceImplFulfilmentTest {
   @Test
   public void shouldFulfilRequestBySmsForHousehold_withUnexpectedFailingRateLimiter()
       throws Exception {
-    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+    when(rateLimiterClient.checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(new RuntimeException("Unexpected"));
     doFulfilmentRequestBySMS(Product.CaseType.HH, false);
   }
@@ -568,7 +572,7 @@ public class CaseServiceImplFulfilmentTest {
   @Test
   public void shouldFulfilRequestBySmsForHousehold_withCircuitBreakerOpenOnRateLimiter()
       throws Exception {
-    when(rateLimiterClient.checkRateLimit(any(), any(), any(), any(), any(), any()))
+    when(rateLimiterClient.checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any()))
         .thenThrow(circuitBreakerOpenException);
     doFulfilmentRequestBySMS(Product.CaseType.HH, false);
   }
@@ -580,7 +584,7 @@ public class CaseServiceImplFulfilmentTest {
     UniquePropertyReferenceNumber uprn =
         UniquePropertyReferenceNumber.create(caseDetails.getAddress().getUprn());
     verify(rateLimiterClient, times(numTimes))
-        .checkRateLimit(
+        .checkFulfilmentRateLimit(
             eq(Domain.RH),
             productCaptor.capture(),
             eq(CaseType.valueOf(caseDetails.getCaseType())),
@@ -591,7 +595,8 @@ public class CaseServiceImplFulfilmentTest {
   }
 
   private void verifyRateLimiterNotCalled() throws Exception {
-    verify(rateLimiterClient, never()).checkRateLimit(any(), any(), any(), any(), any(), any());
+    verify(rateLimiterClient, never())
+        .checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
     verify(circuitBreaker, never()).run(any(), any());
   }
 

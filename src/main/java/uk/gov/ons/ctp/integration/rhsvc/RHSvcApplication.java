@@ -25,7 +25,6 @@ import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuit
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.integration.annotation.IntegrationComponentScan;
@@ -48,7 +47,6 @@ import uk.gov.service.notify.NotificationClientApi;
 @SpringBootApplication
 @IntegrationComponentScan("uk.gov.ons.ctp.integration")
 @ComponentScan(basePackages = {"uk.gov.ons.ctp.integration", "uk.gov.ons.ctp.common"})
-@ImportResource("springintegration/broker.xml")
 public class RHSvcApplication {
   private static final Logger log = LoggerFactory.getLogger(RHSvcApplication.class);
 

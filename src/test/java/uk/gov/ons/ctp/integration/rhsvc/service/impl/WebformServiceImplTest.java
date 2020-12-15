@@ -30,8 +30,10 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.NotifyConfig;
+import uk.gov.ons.ctp.integration.rhsvc.config.RateLimiterConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.WebformConfig;
 import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
 import uk.gov.service.notify.NotificationClientException;
@@ -55,7 +57,12 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
   @Mock private CustomCircuitBreakerConfig cbConfig;
 
   @MockBean(name = "webformCb")
-  private CircuitBreaker circuitBreaker;
+  private CircuitBreaker webformCircuitBreaker;
+
+  @MockBean(name = "envoyLimiterCb")
+  private CircuitBreaker envoyCircuitBreaker;
+
+  @MockBean private RateLimiterClient rateLimiterClient;
 
   @Captor ArgumentCaptor<WebformDTO> webformEventCaptor;
   @Captor ArgumentCaptor<Map<String, String>> templateValueCaptor;
@@ -75,7 +82,16 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
 
     when(cbConfig.getTimeout()).thenReturn(4);
     appConfig.setWebformCircuitBreaker(cbConfig);
-    simulateCircuitBreaker();
+    simulateWebformCircuitBreaker();
+
+    appConfig.setRateLimiter(rateLimiterConfig(true));
+    simulateEnvoyCircuitBreaker();
+  }
+
+  private RateLimiterConfig rateLimiterConfig(boolean enabled) {
+    RateLimiterConfig rateLimiterConfig = new RateLimiterConfig();
+    rateLimiterConfig.setEnabled(enabled);
+    return rateLimiterConfig;
   }
 
   @Test
@@ -123,8 +139,8 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
   }
 
   @Test
-  public void shouldHandleTimeoutException() throws Exception {
-    simulateCircuitBreakerTimeout();
+  public void shouldHandleWebformTimeoutException() throws Exception {
+    simulateWebformCircuitBreakerTimeout();
     RuntimeException e =
         assertThrows(RuntimeException.class, () -> webformService.sendWebformEmail(webform));
     assertTrue(e.getCause() instanceof TimeoutException);
@@ -183,7 +199,7 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
     return result.equals(personalisation);
   }
 
-  private void simulateCircuitBreaker() {
+  private void simulateEnvoyCircuitBreaker() {
     doAnswer(
             new Answer<Object>() {
               @SuppressWarnings("unchecked")
@@ -204,11 +220,36 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
                 return null;
               }
             })
-        .when(circuitBreaker)
+        .when(envoyCircuitBreaker)
         .run(any(), any());
   }
 
-  private void simulateCircuitBreakerTimeout() {
+  private void simulateWebformCircuitBreaker() {
+    doAnswer(
+            new Answer<Object>() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                Supplier<Object> runner = (Supplier<Object>) args[0];
+                Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
+
+                try {
+                  // execute the circuitBreaker.run first argument (the Supplier for the code you
+                  // want to run)
+                  return runner.get();
+                } catch (Throwable t) {
+                  // execute the circuitBreaker.run second argument (the fallback Function)
+                  fallback.apply(t);
+                }
+                return null;
+              }
+            })
+        .when(webformCircuitBreaker)
+        .run(any(), any());
+  }
+
+  private void simulateWebformCircuitBreakerTimeout() {
     doAnswer(
             new Answer<Object>() {
               @SuppressWarnings("unchecked")
@@ -220,7 +261,7 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
                 return null;
               }
             })
-        .when(circuitBreaker)
+        .when(webformCircuitBreaker)
         .run(any(), any());
   }
 }

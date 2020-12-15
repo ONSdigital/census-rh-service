@@ -14,10 +14,12 @@ import org.mockito.stubbing.Answer;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.RHSvcCircuitBreakerConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.service.notify.NotificationClientException;
@@ -48,6 +50,8 @@ import uk.gov.service.notify.SendEmailResponse;
 public class WebformServiceImpl_IT extends WebformServiceImplTestBase {
   private static final int WINDOW_SIZE = 4;
   private static final int TIMEOUT = 1;
+
+  @MockBean RateLimiterClient rateLimiterClient;
 
   private void mockSlowSend() throws Exception {
     doAnswer(
