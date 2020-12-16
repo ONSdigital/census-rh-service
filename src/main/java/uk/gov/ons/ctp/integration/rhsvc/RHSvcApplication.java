@@ -17,12 +17,12 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
-import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Primary;
@@ -31,7 +31,6 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
@@ -84,7 +83,8 @@ public class RHSvcApplication {
   public EventPublisher eventPublisher(
       final RabbitTemplate rabbitTemplate,
       final FirestoreEventPersistence eventPersistence,
-      final Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
+      @Qualifier("eventPublisherCbFactory")
+          Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
     EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
     CircuitBreaker circuitBreaker = circuitBreakerFactory.create("eventSendCircuitBreaker");
     return EventPublisher.createWithEventPersistence(sender, eventPersistence, circuitBreaker);
@@ -97,19 +97,6 @@ public class RHSvcApplication {
     template.setExchange("events");
     template.setChannelTransacted(true);
     return template;
-  }
-
-  @Bean
-  public CircuitBreaker rateLimiterCircuitBreaker(
-      Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
-    return circuitBreakerFactory.create("rateLimiterCircuitBreaker");
-  }
-
-  @Bean
-  public Customizer<Resilience4JCircuitBreakerFactory> defaultCircuitBreakerCustomiser() {
-    CustomCircuitBreakerConfig config = appConfig.getCircuitBreaker();
-    log.info("Circuit breaker configuration: {}", config);
-    return config.defaultCircuitBreakerCustomiser();
   }
 
   @Bean

@@ -1,25 +1,19 @@
 package uk.gov.ons.ctp.integration.rhsvc.service;
 
+import java.util.UUID;
 import javax.validation.Valid;
 import org.springframework.validation.annotation.Validated;
-import uk.gov.ons.ctp.common.event.model.Webform;
+import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
 
 /** Service responsible for Webform requests */
 @Validated
 public interface WebformService {
 
   /**
-   * Send a Webform event
-   *
-   * @param webform request information
-   * @return the transaction ID of the sent event.
-   */
-  String sendWebformEvent(Webform webform);
-
-  /**
    * Send a Webform email request
    *
    * @param webform request information
+   * @return notification Id
    */
-  void sendWebformEmail(@Valid Webform webform);
+  UUID sendWebformEmail(@Valid WebformDTO webform);
 }

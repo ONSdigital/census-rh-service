@@ -17,7 +17,9 @@ public class AppConfig {
   private Logging logging;
   private QueueConfig queueConfig;
   private MessagingConfig messaging;
-  private CustomCircuitBreakerConfig circuitBreaker;
+  private CustomCircuitBreakerConfig eventPublisherCircuitBreaker;
+  private CustomCircuitBreakerConfig envoyLimiterCircuitBreaker;
+  private CustomCircuitBreakerConfig webformCircuitBreaker;
   private RateLimiterConfig rateLimiter;
   private NotifyConfig notify;
   private WebformConfig webform;

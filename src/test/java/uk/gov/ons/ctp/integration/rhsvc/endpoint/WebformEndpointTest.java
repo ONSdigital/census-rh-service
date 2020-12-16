@@ -19,8 +19,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.error.RestExceptionHandler;
-import uk.gov.ons.ctp.common.event.model.Webform;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
+import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 
 /** Respondent Home Endpoint Unit tests */
@@ -33,7 +33,7 @@ public final class WebformEndpointTest {
   private MockMvc mockMvc;
   private ObjectMapper mapper = new ObjectMapper();
 
-  private Webform webformRequest;
+  private WebformDTO webformRequest;
   private String webformRequestJson;
 
   /**
@@ -49,7 +49,7 @@ public final class WebformEndpointTest {
             .setMessageConverters(new MappingJackson2HttpMessageConverter(new CustomObjectMapper()))
             .build();
 
-    webformRequest = FixtureHelper.loadClassFixtures(Webform[].class).get(0);
+    webformRequest = FixtureHelper.loadClassFixtures(WebformDTO[].class).get(0);
     webformRequestJson = mapper.writeValueAsString(webformRequest);
   }
 
@@ -118,7 +118,7 @@ public final class WebformEndpointTest {
     invokeEndpointAndExpectBadRequest(webformRequest);
   }
 
-  private void invokeEndpointAndExpectBadRequest(Webform webformRequest)
+  private void invokeEndpointAndExpectBadRequest(WebformDTO webformRequest)
       throws Exception, JsonProcessingException {
     String webformAsJson = mapper.writeValueAsString(webformRequest);
     invokeEndpointAndExpectBadRequest(webformAsJson);

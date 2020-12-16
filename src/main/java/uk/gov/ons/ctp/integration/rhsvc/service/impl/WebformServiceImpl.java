@@ -6,19 +6,17 @@ import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Webform;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient.Domain;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
+import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -36,47 +34,74 @@ public class WebformServiceImpl implements WebformService {
   private static final String TEMPLATE_CATEGORY = "respondent_category";
   private static final String TEMPLATE_DESCRIPTION = "respondent_description";
 
-  private EventPublisher eventPublisher;
-
   private NotificationClientApi notificationClient;
+  private CircuitBreaker webformCircuitBreaker;
+  private CircuitBreaker envoyCircuitBreaker;
 
   private AppConfig appConfig;
+
   @Autowired private RateLimiterClient rateLimiterClient;
-  @Autowired private CircuitBreaker circuitBreaker;
 
   /**
    * Constructor for WebformServiceImpl
    *
-   * @param eventPublisher service for publication of events to RabbitMQ
    * @param notificationClient Gov.uk Notify service client
+   * @param webformCircuitBreaker circuit breaker for calls to GOV.UK notify
+   * @param envoyCircuitBreaker circuit breaker for calls to envoy rate limiter
    * @param appConfig centralised configuration properties
    */
   @Autowired
   public WebformServiceImpl(
-      final EventPublisher eventPublisher,
       final NotificationClientApi notificationClient,
+      final @Qualifier("webformCb") CircuitBreaker webformCircuitBreaker,
+      final @Qualifier("envoyLimiterCb") CircuitBreaker envoyCircuitBreaker,
       final AppConfig appConfig) {
-    this.eventPublisher = eventPublisher;
     this.notificationClient = notificationClient;
+    this.webformCircuitBreaker = webformCircuitBreaker;
+    this.envoyCircuitBreaker = envoyCircuitBreaker;
     this.appConfig = appConfig;
   }
 
   @Override
-  public String sendWebformEvent(Webform webform) {
-
+  public UUID sendWebformEmail(WebformDTO webform) {
     checkWebformRateLimit(webform.getClientIP());
-
-    String transactionId =
-        eventPublisher.sendEvent(
-            EventType.WEB_FORM_REQUEST, Source.RESPONDENT_HOME, Channel.RH, webform);
-    return transactionId;
+    return doSendWebFormEmail(webform);
   }
 
-  @Override
-  public void sendWebformEmail(Webform webform) {
+  /**
+   * Since it is possible the GOV.UK notify service could either fail or be slow, we use a circuit
+   * breaker wrapper here to fail fast to prevent the user waiting for a failed response over a long
+   * time, and also to protect the RHSvc (thread) resources from getting tied up.
+   *
+   * <p>If GOV.UK notify response is too slow an error response will be returned back to the caller.
+   * If GOV.UK notify returns an error, or is down, an error response will go back to the caller,
+   * and for repeated failures the circuit breaker will do it's usual fail-fast mechanism.
+   *
+   * @param webform webform DTO
+   * @return the notification ID returned by the GOV.UK notify service.
+   * @throws RuntimeException a wrapper around any error response exception, which could typically
+   *     be a failure from GOV.UK Notify, or a circuit breaker timeout or fail-fast.
+   */
+  private UUID doSendWebFormEmail(WebformDTO webform) {
+    return this.webformCircuitBreaker.run(
+        () -> {
+          SendEmailResponse response = send(webform);
+          return response.getNotificationId();
+        },
+        throwable -> {
+          String msg = throwable.getMessage();
+          if (throwable instanceof TimeoutException) {
+            int timeout = appConfig.getWebformCircuitBreaker().getTimeout();
+            msg = "call timed out, took longer than " + timeout + " seconds to complete";
+          }
+          log.info("Send within circuit breaker failed: {}", msg);
+          throw new RuntimeException(throwable);
+        });
+  }
 
+  private SendEmailResponse send(WebformDTO webform) {
     String emailToAddress =
-        Webform.WebformLanguage.CY.equals(webform.getLanguage())
+        WebformDTO.WebformLanguage.CY.equals(webform.getLanguage())
             ? appConfig.getWebform().getEmailCy()
             : appConfig.getWebform().getEmailEn();
     String reference = UUID.randomUUID().toString();
@@ -89,10 +114,11 @@ public class WebformServiceImpl implements WebformService {
               templateValues(webform),
               reference);
       log.with("reference", reference)
-          .with("notificationId", response.getNotificationId().toString())
-          .with("templateId", response.getTemplateId().toString())
+          .with("notificationId", response.getNotificationId())
+          .with("templateId", response.getTemplateId())
           .with("templateVersion", response.getTemplateVersion())
-          .debug("Gov Notify sendEmail response recieved");
+          .debug("Gov Notify sendEmail response received");
+      return response;
     } catch (NotificationClientException ex) {
       log.with("reference", reference)
           .with("webform", webform)
@@ -104,7 +130,7 @@ public class WebformServiceImpl implements WebformService {
     }
   }
 
-  private Map<String, String> templateValues(Webform webform) {
+  private Map<String, String> templateValues(WebformDTO webform) {
     Map<String, String> personalisation = new HashMap<>();
     personalisation.put(TEMPLATE_FULL_NAME, webform.getName());
     personalisation.put(TEMPLATE_EMAIL, webform.getEmail());
@@ -131,7 +157,7 @@ public class WebformServiceImpl implements WebformService {
    */
   private void doCheckWebformRateLimit(String ipAddress) {
     ResponseStatusException limitException =
-        circuitBreaker.run(
+        envoyCircuitBreaker.run(
             () -> {
               try {
                 rateLimiterClient.checkWebformRateLimit(Domain.RH, ipAddress);
