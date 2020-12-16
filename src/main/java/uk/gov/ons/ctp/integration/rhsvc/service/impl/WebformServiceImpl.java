@@ -39,13 +39,15 @@ public class WebformServiceImpl implements WebformService {
   private CircuitBreaker envoyCircuitBreaker;
 
   private AppConfig appConfig;
+
   @Autowired private RateLimiterClient rateLimiterClient;
 
   /**
    * Constructor for WebformServiceImpl
    *
    * @param notificationClient Gov.uk Notify service client
-   * @param circuitBreaker circuit breaker
+   * @param webformCircuitBreaker circuit breaker for calls to GOV.UK notify
+   * @param envoyCircuitBreaker circuit breaker for calls to envoy rate limiter
    * @param appConfig centralised configuration properties
    */
   @Autowired
@@ -77,6 +79,8 @@ public class WebformServiceImpl implements WebformService {
    *
    * @param webform webform DTO
    * @return the notification ID returned by the GOV.UK notify service.
+   * @throws RuntimeException a wrapper around any error response exception, which could typically
+   *     be a failure from GOV.UK Notify, or a circuit breaker timeout or fail-fast.
    */
   private UUID doSendWebFormEmail(WebformDTO webform) {
     return this.webformCircuitBreaker.run(
