@@ -13,7 +13,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -75,8 +74,6 @@ public class CaseServiceImplFulfilmentTest {
   @Spy private MapperFacade mapperFacade = new RHSvcBeanMapper();
 
   @Mock private ProductReference productReference;
-
-  @Mock private CallNotPermittedException circuitBreakerOpenException;
 
   @Captor private ArgumentCaptor<Product> productCaptor;
 
