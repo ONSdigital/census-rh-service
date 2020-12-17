@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
@@ -56,9 +57,9 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
 
   private static final UUID NOTIFICATION_ID =
       UUID.fromString("8db6313a-d4e3-47a1-8d0e-ddd30c86e878");
-  
+
   @MockBean private EventPublisher eventPublisher;
-  
+
   private UUID notificationId;
   @Autowired AppConfig appConfig;
 
@@ -117,7 +118,7 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
             any());
 
     verifyRateLimiterCall(1, webform.getClientIP());
-    
+
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
     assertEquals(NOTIFICATION_ID, notificationId);
   }
@@ -138,7 +139,7 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
             any());
 
     verifyRateLimiterCall(1, webform.getClientIP());
-    
+
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
     assertEquals(NOTIFICATION_ID, notificationId);
   }
@@ -156,7 +157,7 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
             eq(appConfig.getWebform().getEmailEn()),
             templateValueCaptor.capture(),
             any());
-    
+
     verifyRateLimiterNotCalled();
 
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
@@ -242,8 +243,7 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
   }
 
   private void verifyRateLimiterNotCalled() throws Exception {
-    verify(rateLimiterClient, never())
-        .checkWebformRateLimit(any(), any());
+    verify(rateLimiterClient, never()).checkWebformRateLimit(any(), any());
   }
 
   private void simulateWebformCircuitBreaker() {

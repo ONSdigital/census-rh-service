@@ -60,11 +60,11 @@ public class RHSvcApplication {
   private String stackdriverStep;
 
   @Autowired private AppConfig appConfig;
-  
+
   @Autowired
   @Qualifier("envoyLimiterCb")
   private CircuitBreaker circuitBreaker;
-  
+
   /**
    * The main entry point for this application.
    *

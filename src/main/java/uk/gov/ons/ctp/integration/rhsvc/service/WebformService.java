@@ -16,7 +16,7 @@ public interface WebformService {
    *
    * @param webform request information
    * @return notification Id
-   * @throws CTPException 
+   * @throws CTPException if RateLimiterClient validation fails.
    */
   UUID sendWebformEmail(@Valid WebformDTO webform) throws CTPException;
 }
