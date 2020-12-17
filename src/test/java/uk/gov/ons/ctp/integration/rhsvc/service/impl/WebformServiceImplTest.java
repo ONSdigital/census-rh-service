@@ -145,7 +145,7 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
   }
 
   @Test
-  public void sendWebformWhenRateLimiterNotEnabled() throws Exception {
+  public void sendWebformEmailWhenRateLimiterNotEnabled() throws Exception {
     mockSuccessfulSend();
     disableRateLimiter();
 
