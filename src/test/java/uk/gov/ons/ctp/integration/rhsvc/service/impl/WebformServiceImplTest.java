@@ -1,89 +1,84 @@
 package uk.gov.ons.ctp.integration.rhsvc.service.impl;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+import static org.mockito.Mockito.when;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.validation.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.ons.ctp.common.FixtureHelper;
+import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
-import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
-import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
-import uk.gov.ons.ctp.common.event.EventPublisher.Source;
-import uk.gov.ons.ctp.common.event.model.Webform;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient.Domain;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.NotifyConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.RateLimiterConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.WebformConfig;
+import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
-import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
-import uk.gov.service.notify.SendEmailResponse;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(
     classes = {WebformServiceImpl.class, AppConfig.class, ValidationAutoConfiguration.class})
-public class WebformServiceImplTest {
-
-  private static final String TRANSACTIONID = "fdc64299-1a08-49b1-af33-63b322a04e34";
-  private static final String SEND_EMAIL_RESPONSE_JSON =
-      "{\"content\" : {"
-          + "\"body\" : null,"
-          + "\"from_email\" : \"census.2021@test.gov.uk\","
-          + "\"subject\" : \"COMPLAINT\"},"
-          + "\"id\" : \"8db6313a-d4e3-47a1-8d0e-ddd30c86e878\","
-          + "\"reference\" : \"88e4a66a-1a8d-4b8e-802d-b8a9dd10528d\","
-          + "\"scheduled_for\" :null,"
-          + "\"template\" : {"
-          + "\"id\" : \"457d8d8c-bdcb-4875-8f2f-88030643ad13\","
-          + "\"uri\" : null,"
-          + "\"version\" : \"1\" },"
-          + "\"uri\" : null }";
-
+public class WebformServiceImplTest extends WebformServiceImplTestBase {
   private static final String TEMPLATE_FULL_NAME = "respondent_full_name";
   private static final String TEMPLATE_EMAIL = "respondent_email";
   private static final String TEMPLATE_REGION = "respondent_region";
   private static final String TEMPLATE_CATEGORY = "respondent_category";
   private static final String TEMPLATE_DESCRIPTION = "respondent_description";
 
-  private Webform webform;
+  private static final UUID NOTIFICATION_ID =
+      UUID.fromString("8db6313a-d4e3-47a1-8d0e-ddd30c86e878");
+  
+  @MockBean private EventPublisher eventPublisher;
+  
+  private UUID notificationId;
   @Autowired AppConfig appConfig;
 
-  @MockBean private EventPublisher eventPublisher;
+  @Mock private CustomCircuitBreakerConfig cbConfig;
 
-  @MockBean private NotificationClientApi notificationClient;
-
-  @MockBean private RateLimiterClient rateLimiterClient;
+  @MockBean(name = "webformCb")
+  private CircuitBreaker webformCircuitBreaker;
 
   @Autowired WebformService webformService;
 
-  @Captor ArgumentCaptor<Webform> webformEventCaptor;
+  @MockBean(name = "envoyLimiterCb")
+  private CircuitBreaker envoyCircuitBreaker;
+
+  @MockBean private RateLimiterClient rateLimiterClient;
+
+  @Captor ArgumentCaptor<WebformDTO> webformEventCaptor;
   @Captor ArgumentCaptor<Map<String, String>> templateValueCaptor;
 
   @Before
   public void setUp() {
-
-    webform = FixtureHelper.loadClassFixtures(Webform[].class).get(0);
-
     NotifyConfig notifyConfig = new NotifyConfig();
     notifyConfig.setApiKey(UUID.randomUUID().toString());
     notifyConfig.setBaseUrl("https://api.notifications.service.gov.uk");
@@ -95,6 +90,10 @@ public class WebformServiceImplTest {
     webformConfig.setEmailCy("welsh-delivered@notifications.service.gov.uk");
     appConfig.setWebform(webformConfig);
 
+    when(cbConfig.getTimeout()).thenReturn(4);
+    appConfig.setWebformCircuitBreaker(cbConfig);
+    simulateWebformCircuitBreaker();
+
     appConfig.setRateLimiter(rateLimiterConfig(true));
   }
 
@@ -105,40 +104,10 @@ public class WebformServiceImplTest {
   }
 
   @Test
-  public void sendWebformEvent() throws Exception {
-
-    Mockito.when(
-            eventPublisher.sendEvent(
-                eq(EventType.WEB_FORM_REQUEST),
-                eq(Source.RESPONDENT_HOME),
-                eq(Channel.RH),
-                webformEventCaptor.capture()))
-        .thenReturn(TRANSACTIONID);
-
-    String transactionId = webformService.sendWebformEvent(webform);
-
-    verifyRateLimiterCall(1, webform.getClientIP());
-
-    Mockito.verify(eventPublisher)
-        .sendEvent(
-            eq(EventType.WEB_FORM_REQUEST),
-            eq(Source.RESPONDENT_HOME),
-            eq(Channel.RH),
-            webformEventCaptor.capture());
-
-    Webform event = webformEventCaptor.getValue();
-
-    assertEquals(TRANSACTIONID, transactionId);
-    assertEquals(webform, event);
-  }
-
-  @Test
   public void sendWebformEmail_EN() throws Exception {
+    mockSuccessfulSend();
 
-    Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
-        .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
-
-    webformService.sendWebformEmail(webform);
+    notificationId = webformService.sendWebformEmail(webform);
 
     Mockito.verify(notificationClient)
         .sendEmail(
@@ -147,18 +116,19 @@ public class WebformServiceImplTest {
             templateValueCaptor.capture(),
             any());
 
+    verifyRateLimiterCall(1, webform.getClientIP());
+    
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
+    assertEquals(NOTIFICATION_ID, notificationId);
   }
 
   @Test
   public void sendWebformEmail_CY() throws Exception {
+    webform.setLanguage(WebformDTO.WebformLanguage.CY);
 
-    webform.setLanguage(Webform.WebformLanguage.CY);
+    mockSuccessfulSend();
 
-    Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
-        .thenReturn(new SendEmailResponse(SEND_EMAIL_RESPONSE_JSON));
-
-    webformService.sendWebformEmail(webform);
+    notificationId = webformService.sendWebformEmail(webform);
 
     Mockito.verify(notificationClient)
         .sendEmail(
@@ -167,91 +137,90 @@ public class WebformServiceImplTest {
             templateValueCaptor.capture(),
             any());
 
+    verifyRateLimiterCall(1, webform.getClientIP());
+    
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
+    assertEquals(NOTIFICATION_ID, notificationId);
   }
 
   @Test
   public void sendWebformWhenRateLimiterNotEnabled() throws Exception {
-    Mockito.when(
-            eventPublisher.sendEvent(
-                eq(EventType.WEB_FORM_REQUEST),
-                eq(Source.RESPONDENT_HOME),
-                eq(Channel.RH),
-                webformEventCaptor.capture()))
-        .thenReturn(TRANSACTIONID);
+    mockSuccessfulSend();
+    disableRateLimiter();
 
-    // Disable rate limiter
-    appConfig.setRateLimiter(rateLimiterConfig(false));
+    notificationId = webformService.sendWebformEmail(webform);
 
-    String transactionId = webformService.sendWebformEvent(webform);
-
-    Mockito.verify(eventPublisher)
-        .sendEvent(
-            eq(EventType.WEB_FORM_REQUEST),
-            eq(Source.RESPONDENT_HOME),
-            eq(Channel.RH),
-            webformEventCaptor.capture());
-
-    Webform event = webformEventCaptor.getValue();
-
-    assertEquals(TRANSACTIONID, transactionId);
-    assertEquals(webform, event);
-
+    Mockito.verify(notificationClient)
+        .sendEmail(
+            eq(appConfig.getWebform().getTemplateId()),
+            eq(appConfig.getWebform().getEmailEn()),
+            templateValueCaptor.capture(),
+            any());
+    
     verifyRateLimiterNotCalled();
+
+    assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
+    assertEquals(NOTIFICATION_ID, notificationId);
   }
 
-  @Test(expected = RuntimeException.class)
   public void sendWebformEmail_Error() throws Exception {
+    mockFailedSend();
+    RuntimeException e =
+        assertThrows(RuntimeException.class, () -> webformService.sendWebformEmail(webform));
+    assertTrue(e.getCause().getCause() instanceof NotificationClientException);
+  }
 
-    Mockito.when(notificationClient.sendEmail(any(), any(), any(), any()))
-        .thenThrow(new NotificationClientException("GOV.UK Notify service failure"));
-
-    webformService.sendWebformEmail(webform);
+  @Test
+  public void shouldHandleWebformTimeoutException() throws Exception {
+    simulateWebformCircuitBreakerTimeout();
+    RuntimeException e =
+        assertThrows(RuntimeException.class, () -> webformService.sendWebformEmail(webform));
+    assertTrue(e.getCause() instanceof TimeoutException);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformCategoryNull() {
+  public void webformCategoryNull() throws CTPException {
 
     webform.setCategory(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformRegionNull() {
+  public void webformRegionNull() throws CTPException {
 
     webform.setRegion(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformLanguageNull() {
+  public void webformLanguageNull() throws CTPException {
 
     webform.setLanguage(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformNameNull() {
+  public void webformNameNull() throws CTPException {
 
     webform.setName(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformDescriptionNull() {
+  public void webformDescriptionNull() throws CTPException {
 
     webform.setDescription(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformEmailNull() {
+  public void webformEmailNull() throws CTPException {
 
     webform.setEmail(null);
     webformService.sendWebformEmail(webform);
   }
 
-  private boolean validateTemplateValues(Webform webform, Map<String, String> personalisation) {
+  private boolean validateTemplateValues(WebformDTO webform, Map<String, String> personalisation) {
     Map<String, Object> result =
         Map.of(
             TEMPLATE_FULL_NAME, webform.getName(),
@@ -264,12 +233,57 @@ public class WebformServiceImplTest {
 
   // --- helpers
 
+  private void disableRateLimiter() {
+    appConfig.setRateLimiter(rateLimiterConfig(false));
+  }
+
   private void verifyRateLimiterCall(int numTimes, String clientIp) throws Exception {
     verify(rateLimiterClient, times(numTimes)).checkWebformRateLimit(eq(Domain.RH), eq(clientIp));
   }
 
   private void verifyRateLimiterNotCalled() throws Exception {
     verify(rateLimiterClient, never())
-        .checkFulfilmentRateLimit(any(), any(), any(), any(), any(), any());
+        .checkWebformRateLimit(any(), any());
+  }
+
+  private void simulateWebformCircuitBreaker() {
+    doAnswer(
+            new Answer<Object>() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                Supplier<Object> runner = (Supplier<Object>) args[0];
+                Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
+
+                try {
+                  // execute the circuitBreaker.run first argument (the Supplier for the code you
+                  // want to run)
+                  return runner.get();
+                } catch (Throwable t) {
+                  // execute the circuitBreaker.run second argument (the fallback Function)
+                  fallback.apply(t);
+                }
+                return null;
+              }
+            })
+        .when(webformCircuitBreaker)
+        .run(any(), any());
+  }
+
+  private void simulateWebformCircuitBreakerTimeout() {
+    doAnswer(
+            new Answer<Object>() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
+                fallback.apply(new TimeoutException());
+                return null;
+              }
+            })
+        .when(webformCircuitBreaker)
+        .run(any(), any());
   }
 }

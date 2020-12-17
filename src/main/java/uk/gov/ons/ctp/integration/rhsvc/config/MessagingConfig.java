@@ -10,11 +10,9 @@ public class MessagingConfig {
   private BackoffConfig recoveryBackoff;
   // default settings for container
   private ContainerConfig uacCaseListener;
-  private ContainerConfig webformListener;
 
   @Data
   public static class ContainerConfig {
-
     // processingBackoff - retrying when an event fails to be processed with rabbit working.
     private BackoffConfig processingBackoff;
     private int consumingThreads;

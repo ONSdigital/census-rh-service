@@ -21,7 +21,6 @@ import org.springframework.util.backoff.BackOff;
 import org.springframework.util.backoff.ExponentialBackOff;
 import uk.gov.ons.ctp.common.event.model.CaseEvent;
 import uk.gov.ons.ctp.common.event.model.UACEvent;
-import uk.gov.ons.ctp.common.event.model.WebformEvent;
 import uk.gov.ons.ctp.common.jackson.CustomObjectMapper;
 import uk.gov.ons.ctp.common.retry.CTPRetryPolicy;
 import uk.gov.ons.ctp.integration.rhsvc.config.MessagingConfig.ContainerConfig;
@@ -86,37 +85,10 @@ public class InboundEventIntegrationConfig {
   }
 
   /**
-   * Configure the retry behaviour for when a Webform message throws a RuntimeException while it is
-   * being processed in our event processing code.
-   *
-   * <p>Note that this does not apply to when Rabbit goes down, just problems with the subsequent
-   * processing throwing an unchecked exception (of the type that Spring might emit).
-   *
-   * <p>Note also that the retry policy is configured with "maximum attempts" so for instance if
-   * "conMaxAttempts" is 3 , then there will be at most 2 retries after the initial attempt.
-   *
-   * @return retry template
-   */
-  @Bean
-  public RetryTemplate webformRetryTemplate() {
-    ContainerConfig messaging = appConfig.getMessaging().getWebformListener();
-    BackoffConfig processingBackoff = messaging.getProcessingBackoff();
-    ExponentialBackOffPolicy backoffPolicy = new ExponentialBackOffPolicy();
-    backoffPolicy.setMaxInterval(processingBackoff.getMax());
-    backoffPolicy.setMultiplier(processingBackoff.getMultiplier());
-    backoffPolicy.setInitialInterval(processingBackoff.getInitial());
-    RetryTemplate template = new RetryTemplate();
-    template.setBackOffPolicy(backoffPolicy);
-    RetryPolicy retryPolicy = new CTPRetryPolicy(messaging.getConMaxAttempts());
-    template.setRetryPolicy(retryPolicy);
-    return template;
-  }
-
-  /**
    * Create advice bean for the UAC, Case listener, containing the retry configuration, and specify
    * that if the retry fails, to place the message in the DLQ.
    *
-   * @param retryTemplate uacCaseRetryTemplate
+   * @param uacCaseRetryTemplate uacCaseRetryTemplate
    * @return retry advice for the listener.
    */
   @Bean
@@ -125,22 +97,6 @@ public class InboundEventIntegrationConfig {
     var advice = new StatelessRetryOperationsInterceptorFactoryBean();
     advice.setMessageRecoverer(new RejectAndDontRequeueRecoverer());
     advice.setRetryOperations(uacCaseRetryTemplate);
-    return advice;
-  }
-
-  /**
-   * Create advice bean for the Webform listener, containing the retry configuration, and specify
-   * that if the retry fails, to place the message in the DLQ.
-   *
-   * @param retryTemplate webformRetryTemplate
-   * @return retry advice for the listener.
-   */
-  @Bean
-  public StatelessRetryOperationsInterceptorFactoryBean webformRetryAdvice(
-      RetryTemplate webformRetryTemplate) {
-    var advice = new StatelessRetryOperationsInterceptorFactoryBean();
-    advice.setMessageRecoverer(new RejectAndDontRequeueRecoverer());
-    advice.setRetryOperations(webformRetryTemplate);
     return advice;
   }
 
@@ -190,28 +146,6 @@ public class InboundEventIntegrationConfig {
         appConfig.getQueueConfig().getUacQueue());
   }
 
-  /**
-   * Configure a listener container for Webform events. This listens on the rabbit Webform queue.
-   *
-   * @param connectionFactory connection factory
-   * @param eventRetryAdvice retry advice
-   * @param rabbitDownBackOff backoff for when rabbit problems occur
-   * @return listener container for Webform events.
-   */
-  @Bean
-  public SimpleMessageListenerContainer webformEventListenerContainer(
-      ConnectionFactory connectionFactory,
-      @Qualifier("webformRetryAdvice")
-          StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
-      BackOff rabbitDownBackOff) {
-    return makeListenerContainer(
-        connectionFactory,
-        eventRetryAdvice,
-        rabbitDownBackOff,
-        appConfig.getMessaging().getWebformListener(),
-        appConfig.getQueueConfig().getWebformQueue());
-  }
-
   private SimpleMessageListenerContainer makeListenerContainer(
       ConnectionFactory connectionFactory,
       StatelessRetryOperationsInterceptorFactoryBean eventRetryAdvice,
@@ -252,17 +186,6 @@ public class InboundEventIntegrationConfig {
     return adapter;
   }
 
-  @Bean
-  public AmqpInboundChannelAdapter webformEventInboundAmqp(
-      @Qualifier("webformEventListenerContainer") SimpleMessageListenerContainer listenerContainer,
-      @Qualifier("webformJsonMessageConverter") MessageConverter msgConverter,
-      @Qualifier("acceptWebformEvent") MessageChannel outputChannel) {
-    AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(listenerContainer);
-    adapter.setMessageConverter(msgConverter);
-    adapter.setOutputChannel(outputChannel);
-    return adapter;
-  }
-
   /**
    * Create a message converter specifically for CASE JSON events to be converted to CaseEvent java
    * objects.
@@ -287,19 +210,6 @@ public class InboundEventIntegrationConfig {
   public Jackson2JsonMessageConverter uacJsonMessageConverter(
       CustomObjectMapper customObjectMapper) {
     return jsonMessageConverter(customObjectMapper, UACEvent.class);
-  }
-
-  /**
-   * Create a message converter specifically for Webform JSON events to be converted to WebformEvent
-   * java objects.
-   *
-   * @param customObjectMapper object mapper
-   * @return JSON converted
-   */
-  @Bean
-  public Jackson2JsonMessageConverter webformJsonMessageConverter(
-      CustomObjectMapper customObjectMapper) {
-    return jsonMessageConverter(customObjectMapper, WebformEvent.class);
   }
 
   private Jackson2JsonMessageConverter jsonMessageConverter(
@@ -329,14 +239,6 @@ public class InboundEventIntegrationConfig {
   public MessageChannel acceptUACEvent() {
     DirectChannel channel = new DirectChannel();
     channel.setDatatypes(UACEvent.class);
-    return channel;
-  }
-
-  /** @return channel for accepting webform events */
-  @Bean
-  public MessageChannel acceptWebformEvent() {
-    DirectChannel channel = new DirectChannel();
-    channel.setDatatypes(WebformEvent.class);
     return channel;
   }
 }
