@@ -114,7 +114,7 @@ public class UacEventReceiverImplIT_Test {
   @Test
   public void uacEventReceivedWithoutMillisecondsTest() throws Exception {
 
-    // Create a UAC with a timestamp. Note that that the milliseconds are not specified
+    // Create a UAC with a timestamp. Note that the milliseconds are not specified
     UACEvent uacEvent = createUAC(RespondentHomeFixture.A_QID, EventType.UAC_UPDATED);
     String uac = new ObjectMapper().writeValueAsString(uacEvent);
     String uacWithTimestamp =

@@ -262,7 +262,7 @@ public class CaseServiceImpl implements CaseService {
 
   /*
    * Call the rate limiter. The RateLimiterClient invokes the EnvoyLimiter within a circuit-breaker,
-   * thus protecting the RHSvc in the unlikely event that that the rate limiter service is failing.
+   * thus protecting the RHSvc in the unlikely event that the rate limiter service is failing.
    *
    * If the limit is breached a ResponseStatusException with HTTP 429 will be thrown.
    * If Rate limiter validation fails then a CTPException is thrown.
