@@ -71,7 +71,7 @@ public class CaseEventReceiverImplIT_Test {
   @Test
   public void caseCaseReceivedWithoutMillisTest() throws Exception {
 
-    // Create a case with a timestamp. Note that that the milliseconds are not specified
+    // Create a case with a timestamp. Note that the milliseconds are not specified
     CaseEvent caseEvent = FixtureHelper.loadPackageFixtures(CaseEvent[].class).get(0);
 
     String caseAsJson = new ObjectMapper().writeValueAsString(caseEvent);

@@ -61,6 +61,10 @@ public class RHSvcApplication {
 
   @Autowired private AppConfig appConfig;
 
+  @Autowired
+  @Qualifier("envoyLimiterCb")
+  private CircuitBreaker circuitBreaker;
+
   /**
    * The main entry point for this application.
    *
@@ -106,7 +110,7 @@ public class RHSvcApplication {
     var statusMapping = clientErrorMapping();
     RestClient restClient =
         new RestClient(clientConfig, statusMapping, HttpStatus.INTERNAL_SERVER_ERROR);
-    return new RateLimiterClient(restClient);
+    return new RateLimiterClient(restClient, circuitBreaker);
   }
 
   private Map<HttpStatus, HttpStatus> clientErrorMapping() {

@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -30,12 +33,16 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.ons.ctp.common.config.CustomCircuitBreakerConfig;
+import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient.Domain;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.NotifyConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.RateLimiterConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.WebformConfig;
 import uk.gov.ons.ctp.integration.rhsvc.representation.WebformDTO;
+import uk.gov.ons.ctp.integration.rhsvc.service.WebformService;
 import uk.gov.service.notify.NotificationClientException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -51,6 +58,8 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
   private static final UUID NOTIFICATION_ID =
       UUID.fromString("8db6313a-d4e3-47a1-8d0e-ddd30c86e878");
 
+  @MockBean private EventPublisher eventPublisher;
+
   private UUID notificationId;
   @Autowired AppConfig appConfig;
 
@@ -58,6 +67,8 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
 
   @MockBean(name = "webformCb")
   private CircuitBreaker webformCircuitBreaker;
+
+  @Autowired WebformService webformService;
 
   @MockBean(name = "envoyLimiterCb")
   private CircuitBreaker envoyCircuitBreaker;
@@ -85,7 +96,6 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
     simulateWebformCircuitBreaker();
 
     appConfig.setRateLimiter(rateLimiterConfig(true));
-    simulateEnvoyCircuitBreaker();
   }
 
   private RateLimiterConfig rateLimiterConfig(boolean enabled) {
@@ -107,6 +117,8 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
             templateValueCaptor.capture(),
             any());
 
+    verifyRateLimiterCall(1, webform.getClientIP());
+
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
     assertEquals(NOTIFICATION_ID, notificationId);
   }
@@ -126,11 +138,32 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
             templateValueCaptor.capture(),
             any());
 
+    verifyRateLimiterCall(1, webform.getClientIP());
+
     assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
     assertEquals(NOTIFICATION_ID, notificationId);
   }
 
   @Test
+  public void sendWebformEmailWhenRateLimiterNotEnabled() throws Exception {
+    mockSuccessfulSend();
+    disableRateLimiter();
+
+    notificationId = webformService.sendWebformEmail(webform);
+
+    Mockito.verify(notificationClient)
+        .sendEmail(
+            eq(appConfig.getWebform().getTemplateId()),
+            eq(appConfig.getWebform().getEmailEn()),
+            templateValueCaptor.capture(),
+            any());
+
+    verifyRateLimiterNotCalled();
+
+    assertTrue(validateTemplateValues(webform, templateValueCaptor.getValue()));
+    assertEquals(NOTIFICATION_ID, notificationId);
+  }
+
   public void sendWebformEmail_Error() throws Exception {
     mockFailedSend();
     RuntimeException e =
@@ -147,42 +180,42 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformCategoryNull() {
+  public void webformCategoryNull() throws CTPException {
 
     webform.setCategory(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformRegionNull() {
+  public void webformRegionNull() throws CTPException {
 
     webform.setRegion(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformLanguageNull() {
+  public void webformLanguageNull() throws CTPException {
 
     webform.setLanguage(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformNameNull() {
+  public void webformNameNull() throws CTPException {
 
     webform.setName(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformDescriptionNull() {
+  public void webformDescriptionNull() throws CTPException {
 
     webform.setDescription(null);
     webformService.sendWebformEmail(webform);
   }
 
   @Test(expected = ConstraintViolationException.class)
-  public void webformEmailNull() {
+  public void webformEmailNull() throws CTPException {
 
     webform.setEmail(null);
     webformService.sendWebformEmail(webform);
@@ -199,29 +232,18 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
     return result.equals(personalisation);
   }
 
-  private void simulateEnvoyCircuitBreaker() {
-    doAnswer(
-            new Answer<Object>() {
-              @SuppressWarnings("unchecked")
-              @Override
-              public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                Supplier<Object> runner = (Supplier<Object>) args[0];
-                Function<Throwable, Object> fallback = (Function<Throwable, Object>) args[1];
+  // --- helpers
 
-                try {
-                  // execute the circuitBreaker.run first argument (the Supplier for the code you
-                  // want to run)
-                  return runner.get();
-                } catch (Throwable t) {
-                  // execute the circuitBreaker.run second argument (the fallback Function)
-                  fallback.apply(t);
-                }
-                return null;
-              }
-            })
-        .when(envoyCircuitBreaker)
-        .run(any(), any());
+  private void disableRateLimiter() {
+    appConfig.setRateLimiter(rateLimiterConfig(false));
+  }
+
+  private void verifyRateLimiterCall(int numTimes, String clientIp) throws Exception {
+    verify(rateLimiterClient, times(numTimes)).checkWebformRateLimit(eq(Domain.RH), eq(clientIp));
+  }
+
+  private void verifyRateLimiterNotCalled() throws Exception {
+    verify(rateLimiterClient, never()).checkWebformRateLimit(any(), any());
   }
 
   private void simulateWebformCircuitBreaker() {
