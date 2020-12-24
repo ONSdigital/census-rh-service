@@ -23,4 +23,5 @@ public class AppConfig {
   private RateLimiterConfig rateLimiter;
   private NotifyConfig notify;
   private WebformConfig webform;
+  private LoadsheddingConfig loadshedding;
 }

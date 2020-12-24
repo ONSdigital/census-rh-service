@@ -11,6 +11,9 @@ import uk.gov.ons.ctp.common.event.EventPublisher.Channel;
 import uk.gov.ons.ctp.common.event.EventPublisher.EventType;
 import uk.gov.ons.ctp.common.event.EventPublisher.Source;
 import uk.gov.ons.ctp.common.event.model.SurveyLaunchedResponse;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
+import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient.Domain;
+import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.representation.SurveyLaunchedDTO;
 import uk.gov.ons.ctp.integration.rhsvc.service.SurveyLaunchedService;
 
@@ -19,12 +22,23 @@ import uk.gov.ons.ctp.integration.rhsvc.service.SurveyLaunchedService;
 public class SurveyLaunchedServiceImpl implements SurveyLaunchedService {
   private static final Logger log = LoggerFactory.getLogger(SurveyLaunchedServiceImpl.class);
 
-  @Autowired private EventPublisher eventPublisher;
+  private EventPublisher eventPublisher;
+  private RateLimiterClient rateLimiterClient;
+  private AppConfig appConfig;
+
+  @Autowired
+  public SurveyLaunchedServiceImpl(
+      EventPublisher eventPublisher, RateLimiterClient rateLimiterClient, AppConfig appConfig) {
+    this.eventPublisher = eventPublisher;
+    this.rateLimiterClient = rateLimiterClient;
+    this.appConfig = appConfig;
+  }
 
   @Override
   public void surveyLaunched(SurveyLaunchedDTO surveyLaunchedDTO) throws CTPException {
-
     log.with("surveyLaunchedDTO", surveyLaunchedDTO).info("Generating SurveyLaunched event");
+
+    checkRateLimit(surveyLaunchedDTO.getClientIP());
 
     SurveyLaunchedResponse response =
         SurveyLaunchedResponse.builder()
@@ -45,5 +59,17 @@ public class SurveyLaunchedServiceImpl implements SurveyLaunchedService {
     log.with("caseId", response.getCaseId())
         .with("transactionId", transactionId)
         .debug("SurveyLaunch event published");
+  }
+
+  private void checkRateLimit(String ipAddress) throws CTPException {
+    if (appConfig.getRateLimiter().isEnabled()) {
+      int modulus = appConfig.getLoadshedding().getModulus();
+      log.with("ipAddress", ipAddress)
+          .with("loadshedding.modulus", modulus)
+          .debug("Invoking rate limiter for survey launched");
+      rateLimiterClient.checkEqLaunchLimit(Domain.RH, ipAddress, modulus);
+    } else {
+      log.info("Rate limiter client is disabled");
+    }
   }
 }
