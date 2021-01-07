@@ -44,10 +44,10 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
   // Enums to capture the linking matrix of valid form type and case types.
   // Original table is from:
   // https://collaborate2.ons.gov.uk/confluence/display/SDC/RH+-+Authentication+-+Unlinked+UAC
+  // https://collaborate2.ons.gov.uk/confluence/display/SDC/Business+Rules
   private enum LinkingCombination {
     H1(FormType.H, CaseType.HH),
     H2(FormType.H, CaseType.SPG),
-    H3(FormType.H, CaseType.CE),
     I1(FormType.I, CaseType.HH),
     I2(FormType.I, CaseType.SPG),
     I3(FormType.I, CaseType.CE),
