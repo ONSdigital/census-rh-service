@@ -546,6 +546,7 @@ public class UniqueAccessCodeServiceImplTest {
    *
    * <p>The code is based on the permutations listed in:
    * https://collaborate2.ons.gov.uk/confluence/display/SDC/RH+-+Authentication+-+Unlinked+UAC
+   * https://collaborate2.ons.gov.uk/confluence/display/SDC/Business+Rules
    *
    * @throws CTPException - exception
    */
@@ -553,10 +554,7 @@ public class UniqueAccessCodeServiceImplTest {
   public void testLinkingMatrix() throws Exception {
     doLinkingTest(FormType.H, CaseType.HH, LinkingExpectation.OK);
     doLinkingTest(FormType.H, CaseType.SPG, LinkingExpectation.OK);
-    doLinkingTest(FormType.H, CaseType.CE, LinkingExpectation.OK);
-    doLinkingTest(FormType.H, CaseType.HH, LinkingExpectation.OK);
-    doLinkingTest(FormType.H, CaseType.SPG, LinkingExpectation.OK);
-    doLinkingTest(FormType.H, CaseType.CE, LinkingExpectation.OK);
+    doLinkingTest(FormType.H, CaseType.CE, LinkingExpectation.INVALID);
 
     doLinkingTest(FormType.I, CaseType.HH, LinkingExpectation.OK);
     doLinkingTest(FormType.I, CaseType.SPG, LinkingExpectation.OK);
