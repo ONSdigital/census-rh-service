@@ -17,4 +17,6 @@ public class SurveyLaunchedDTO implements Serializable {
   @NotNull private UUID caseId;
 
   @NotNull private String agentId;
+
+  private String clientIP;
 }

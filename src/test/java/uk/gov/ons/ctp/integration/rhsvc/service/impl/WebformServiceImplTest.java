@@ -70,9 +70,6 @@ public class WebformServiceImplTest extends WebformServiceImplTestBase {
 
   @Autowired WebformService webformService;
 
-  @MockBean(name = "envoyLimiterCb")
-  private CircuitBreaker envoyCircuitBreaker;
-
   @MockBean private RateLimiterClient rateLimiterClient;
 
   @Captor ArgumentCaptor<WebformDTO> webformEventCaptor;
