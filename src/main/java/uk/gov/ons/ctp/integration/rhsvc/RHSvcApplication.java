@@ -110,7 +110,8 @@ public class RHSvcApplication {
     var statusMapping = clientErrorMapping();
     RestClient restClient =
         new RestClient(clientConfig, statusMapping, HttpStatus.INTERNAL_SERVER_ERROR);
-    return new RateLimiterClient(restClient, circuitBreaker);
+    String password = appConfig.getLogging().getEncryption().getPassword();
+    return new RateLimiterClient(restClient, circuitBreaker, password);
   }
 
   private Map<HttpStatus, HttpStatus> clientErrorMapping() {
