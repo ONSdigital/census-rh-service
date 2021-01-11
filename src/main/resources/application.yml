@@ -146,3 +146,6 @@ webform:
 notify:
   api-key: dummy-key
   base-url: https://api.notifications.service.gov.uk
+
+loadshedding:
+  modulus: 10
