@@ -52,51 +52,51 @@ public final class SurveyLaunchedEndpointUnitTest {
   @Test
   public void surveyLaunchedSuccessCaseEmptyString() throws Exception {
     Mockito.doNothing().when(surveyLaunchedService).surveyLaunched(any());
-    callEndointExpectingSuccess();
+    callEndpointExpectingSuccess();
   }
 
   @Test
   public void surveyLaunchedSuccessCaseAssistedDigitalLocation() throws Exception {
     Mockito.doNothing().when(surveyLaunchedService).surveyLaunched(any());
-    callEndointExpectingSuccess();
+    callEndpointExpectingSuccess();
   }
 
   @Test
   public void shouldRejectMissingQuestionnaireId() throws Exception {
     dto.setQuestionnaireId(null);
-    callEndointExpectingBadRequest();
+    callEndpointExpectingBadRequest();
   }
 
   @Test
   public void shouldLaunchWithMissingClientIP() throws Exception {
     dto.setClientIP(null);
-    callEndointExpectingSuccess();
+    callEndpointExpectingSuccess();
   }
 
   @Test
   public void shouldRejectInvalidCaseId() throws Exception {
     String surveyLaunchedRequestBody =
         "{ \"questionnaireId\": \"23434234234\",   \"caseId\": \"euieuieu@#$@#$\" }";
-    callEndointExpectingBadRequest(surveyLaunchedRequestBody);
+    callEndpointExpectingBadRequest(surveyLaunchedRequestBody);
   }
 
   @Test
   public void shouldRejectInvalidRequest() throws Exception {
     String surveyLaunchedRequestBody = "uoeuoeu 45345345 euieuiaooo";
-    callEndointExpectingBadRequest(surveyLaunchedRequestBody);
+    callEndpointExpectingBadRequest(surveyLaunchedRequestBody);
   }
 
-  private void callEndointExpectingSuccess() throws Exception {
+  private void callEndpointExpectingSuccess() throws Exception {
     mockMvc
         .perform(postJson("/surveyLaunched", mapper.writeValueAsString(dto)))
         .andExpect(status().isOk());
   }
 
-  private void callEndointExpectingBadRequest() throws Exception {
-    callEndointExpectingBadRequest(mapper.writeValueAsString(dto));
+  private void callEndpointExpectingBadRequest() throws Exception {
+    callEndpointExpectingBadRequest(mapper.writeValueAsString(dto));
   }
 
-  private void callEndointExpectingBadRequest(String body) throws Exception {
+  private void callEndpointExpectingBadRequest(String body) throws Exception {
     mockMvc.perform(postJson("/surveyLaunched", body)).andExpect(status().isBadRequest());
   }
 }
