@@ -10,6 +10,7 @@ public class MessagingConfig {
   private BackoffConfig recoveryBackoff;
   // default settings for container
   private ContainerConfig uacCaseListener;
+  private PublishConfig publish;
 
   @Data
   public static class ContainerConfig {
@@ -18,5 +19,10 @@ public class MessagingConfig {
     private int consumingThreads;
     private int conMaxAttempts;
     private int prefetchCount;
+  }
+
+  @Data
+  public static class PublishConfig {
+    private int maxAttempts;
   }
 }

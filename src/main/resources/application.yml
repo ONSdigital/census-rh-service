@@ -101,6 +101,8 @@ messaging:
     consuming-threads: 1
     con-max-attempts: 3
     prefetch-count: 1
+  publish:
+    max-attempts: 4
     
 # circuit breaker configuration can be tuned by setting many other variables:
 # see CustomCircuitBreakerConfig.java . 

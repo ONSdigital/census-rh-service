@@ -31,6 +31,7 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
+import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -45,6 +46,7 @@ import uk.gov.ons.ctp.common.rest.RestClient;
 import uk.gov.ons.ctp.common.rest.RestClientConfig;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
+import uk.gov.ons.ctp.integration.rhsvc.config.MessagingConfig.PublishConfig;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientApi;
 
@@ -114,6 +116,8 @@ public class RHSvcApplication {
   public RetryTemplate sendRetryTemplate(RetryListener sendRetryListener) {
     RetryTemplate template = new RetryTemplate();
     template.registerListener(sendRetryListener);
+    PublishConfig publishConfig = appConfig.getMessaging().getPublish();
+    template.setRetryPolicy(new SimpleRetryPolicy(publishConfig.getMaxAttempts()));
     return template;
   }
 
