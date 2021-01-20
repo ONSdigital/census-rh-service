@@ -28,9 +28,14 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.integration.annotation.IntegrationComponentScan;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import uk.gov.ons.ctp.common.cloud.CloudRetryListener;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
@@ -95,12 +100,33 @@ public class RHSvcApplication {
   }
 
   @Bean
-  public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
+  public RabbitTemplate rabbitTemplate(
+      final ConnectionFactory connectionFactory, RetryTemplate sendRetryTemplate) {
     final var template = new RabbitTemplate(connectionFactory);
     template.setMessageConverter(new Jackson2JsonMessageConverter());
     template.setExchange("events");
     template.setChannelTransacted(true);
+    template.setRetryTemplate(sendRetryTemplate);
     return template;
+  }
+
+  @Bean
+  public RetryTemplate sendRetryTemplate(RetryListener sendRetryListener) {
+    RetryTemplate template = new RetryTemplate();
+    template.registerListener(sendRetryListener);
+    return template;
+  }
+
+  @Bean
+  public RetryListener sendRetryListener() {
+    return new CloudRetryListener() {
+      @Override
+      public <T, E extends Throwable> boolean open(
+          RetryContext context, RetryCallback<T, E> callback) {
+        context.setAttribute(RetryContext.NAME, "publish-event");
+        return true;
+      }
+    };
   }
 
   @Bean
