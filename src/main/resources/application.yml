@@ -122,6 +122,11 @@ rate-limiter:
     scheme: http
     host: localhost
     port: 8181
+    connection-manager-default-max-per-route: 100
+    connection-manager-max-total: 100
+    connectTimeoutMillis: 0
+    connectionRequestTimeoutMillis: 0
+    socketTimeoutMillis: 0
 
 swagger-settings:
   swagger-ui-active: true
