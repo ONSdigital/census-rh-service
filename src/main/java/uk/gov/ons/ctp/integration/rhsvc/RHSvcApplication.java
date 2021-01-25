@@ -37,6 +37,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import uk.gov.ons.ctp.common.cloud.CloudRetryListener;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.EventPublisher;
 import uk.gov.ons.ctp.common.event.EventSender;
 import uk.gov.ons.ctp.common.event.SpringRabbitEventSender;
@@ -134,7 +135,7 @@ public class RHSvcApplication {
   }
 
   @Bean
-  public RateLimiterClient rateLimiterClient() {
+  public RateLimiterClient rateLimiterClient() throws CTPException {
     RestClientConfig clientConfig = appConfig.getRateLimiter().getRestClientConfig();
     log.info("Rate Limiter configuration: {}", appConfig.getRateLimiter());
     var statusMapping = clientErrorMapping();
