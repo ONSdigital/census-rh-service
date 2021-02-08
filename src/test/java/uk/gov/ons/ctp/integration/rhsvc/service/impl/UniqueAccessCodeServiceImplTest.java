@@ -30,6 +30,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.AddressLevel;
 import uk.gov.ons.ctp.common.domain.CaseType;
+import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.domain.FormType;
 import uk.gov.ons.ctp.common.domain.UniquePropertyReferenceNumber;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -624,7 +625,7 @@ public class UniqueAccessCodeServiceImplTest {
     expectedAddress.setUprn(Long.toString(request.getUprn().getValue()));
     expectedAddress.setAddressType(caseType.name());
     expectedAddress.setAddressLevel(AddressLevel.U.name());
-    expectedAddress.setEstabType(request.getEstabType());
+    expectedAddress.setEstabType(EstabType.forCode(request.getEstabType()).getCode());
 
     return expectedAddress;
   }

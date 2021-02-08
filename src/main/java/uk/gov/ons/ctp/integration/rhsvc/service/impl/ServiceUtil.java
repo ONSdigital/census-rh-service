@@ -68,7 +68,7 @@ public class ServiceUtil {
     address.setPostcode(request.getPostcode());
     address.setUprn(Long.toString(request.getUprn().getValue()));
     address.setAddressType(caseType.name());
-    address.setEstabType(request.getEstabType());
+    address.setEstabType(EstabType.forCode(request.getEstabType()).getCode());
     address.setAddressLevel(
         caseType.equals(CaseType.CE) ? AddressLevel.E.name() : AddressLevel.U.name());
     newCase.setAddress(address);
