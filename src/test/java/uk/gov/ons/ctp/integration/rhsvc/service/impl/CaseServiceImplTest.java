@@ -325,28 +325,36 @@ public class CaseServiceImplTest {
 
   @Test
   public void createNewCase_CE() throws Exception {
-    doCreateNewCaseTest(EstabType.CARE_HOME, AddressType.CE, CaseType.CE, AddressLevel.E);
+    doCreateNewCaseTest(
+        EstabType.CARE_HOME.getCode(),
+        EstabType.CARE_HOME,
+        AddressType.CE,
+        CaseType.CE,
+        AddressLevel.E);
   }
 
   @Test
   public void createNewCase_HH() throws Exception {
-    doCreateNewCaseTest(EstabType.HOUSEHOLD, AddressType.HH, CaseType.HH, AddressLevel.U);
+    doCreateNewCaseTest(
+        "Household", EstabType.HOUSEHOLD, AddressType.HH, CaseType.HH, AddressLevel.U);
   }
 
   @Test
   public void createNewCase_withNoAddressTypeForEstab() throws Exception {
     // In this test the Address type will be used to set the case type
-    doCreateNewCaseTest(EstabType.OTHER, AddressType.SPG, CaseType.SPG, AddressLevel.U);
+    doCreateNewCaseTest(
+        "Floating palace", EstabType.OTHER, AddressType.SPG, CaseType.SPG, AddressLevel.U);
   }
 
   private void doCreateNewCaseTest(
-      EstabType estabType,
+      String estabType,
+      EstabType expectedEstabType,
       AddressType addressType,
       CaseType expectedCaseType,
       AddressLevel expectedAddressLevel)
       throws Exception {
     CaseRequestDTO request = FixtureHelper.loadClassFixtures(CaseRequestDTO[].class).get(0);
-    request.setEstabType(estabType.getCode());
+    request.setEstabType(estabType);
     request.setAddressType(addressType);
 
     // Invoke code under test
@@ -354,6 +362,7 @@ public class CaseServiceImplTest {
 
     Address expectedAddress = mapperFacade.map(request, Address.class);
     expectedAddress.setAddressLevel(expectedAddressLevel.name());
+    expectedAddress.setEstabType(expectedEstabType.getCode());
 
     // Verify returned case
     testUtil.validateCaseDTO(expectedCaseType, expectedAddress, newCase);
