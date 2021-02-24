@@ -122,8 +122,10 @@ public class ExperimentalEndpoint {
   @RequestMapping(value = "/reset", method = RequestMethod.GET)
   @ResponseStatus(value = HttpStatus.OK)
   public void reset() {
-    LocalDateTime stopped = LocalDateTime.now(UK_ZONE);
-    history.put(stopped, currentStats());
+    if (started != null) {
+      LocalDateTime stopped = LocalDateTime.now(UK_ZONE);
+      history.put(stopped, currentStats());
+    }
     started = null;
     logCount.getAndSet(0);
   }
