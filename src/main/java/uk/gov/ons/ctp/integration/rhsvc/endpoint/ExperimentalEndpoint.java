@@ -65,33 +65,38 @@ public class ExperimentalEndpoint {
     }
 
     initialise();
-    ExecutorService executor = Executors.newFixedThreadPool(threads);
-    List<Callable<Boolean>> logTasks = new ArrayList<>();
-
-    for (int i = 0; i < num; i++) {
-      logTasks.add(
-          () -> {
-            log.with("running_log_count", logCount.incrementAndGet())
-                .info("Experimental logging in local threads");
-            return true;
-          });
-    }
-
+    ExecutorService executor = null;
     try {
-      List<Future<Boolean>> futures = executor.invokeAll(logTasks);
-      futures.stream()
-          .forEach(
-              (future) -> {
-                try {
-                  future.get();
-                } catch (InterruptedException e) {
-                  log.error("Future interrupted");
-                } catch (ExecutionException e) {
-                  log.error("Future execution fail");
-                }
-              });
-    } catch (InterruptedException e) {
-      log.error("Threads interrupted");
+      executor = Executors.newFixedThreadPool(threads);
+      List<Callable<Boolean>> logTasks = new ArrayList<>();
+
+      for (int i = 0; i < num; i++) {
+        logTasks.add(
+            () -> {
+              log.with("running_log_count", logCount.incrementAndGet())
+                  .info("Experimental logging in local threads");
+              return true;
+            });
+      }
+
+      try {
+        List<Future<Boolean>> futures = executor.invokeAll(logTasks);
+        futures.stream()
+            .forEach(
+                (future) -> {
+                  try {
+                    future.get();
+                  } catch (InterruptedException e) {
+                    log.error("Future interrupted");
+                  } catch (ExecutionException e) {
+                    log.error("Future execution fail");
+                  }
+                });
+      } catch (InterruptedException e) {
+        log.error("Threads interrupted");
+      }
+    } finally {
+      executor.shutdown();
     }
 
     log.with("num", num).info("Exiting doSomeLoggingInThreads; count so far {}", logCount.get());
