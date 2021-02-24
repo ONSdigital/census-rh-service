@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.PostConstruct;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -33,8 +34,18 @@ public class ExperimentalEndpoint {
   private static final Logger log = LoggerFactory.getLogger(ExperimentalEndpoint.class);
   private final AtomicInteger logCount = new AtomicInteger();
 
+  private int numThreads = 60;
+
+  private ExecutorService executor;
+
   private LocalDateTime started;
   private Map<LocalDateTime, LogStats> history = new HashMap<>();
+
+  @PostConstruct
+  public void setup() {
+    executor = Executors.newFixedThreadPool(numThreads);
+    log.info("Running with {} threads for executor", numThreads);
+  }
 
   private void initialise() {
     if (started == null) {
@@ -55,48 +66,38 @@ public class ExperimentalEndpoint {
     log.with("num", num).info("Exiting doSomeLogging; count so far {}", logCount.get());
   }
 
-  @RequestMapping(value = "/log/{threads}/{num}", method = RequestMethod.GET)
+  @RequestMapping(value = "/log/threaded/{num}", method = RequestMethod.GET)
   @ResponseStatus(value = HttpStatus.OK)
-  public void doSomeLoggingInThreads(@PathVariable final int threads, @PathVariable final int num) {
-    log.with("threads", threads).with("num", num).info("Entering doSomeLoggingInThreads");
-
-    if (threads < 1 || threads > 200) {
-      throw new IllegalArgumentException("Cannot process " + threads + " threads");
-    }
+  public void doSomeLoggingInThreads(@PathVariable final int num) {
+    log.with("num", num).info("Entering doSomeLoggingInThreads");
 
     initialise();
-    ExecutorService executor = null;
+    List<Callable<Boolean>> logTasks = new ArrayList<>();
+
+    for (int i = 0; i < num; i++) {
+      logTasks.add(
+          () -> {
+            log.with("running_log_count", logCount.incrementAndGet())
+                .info("Experimental logging in local threads");
+            return true;
+          });
+    }
+
     try {
-      executor = Executors.newFixedThreadPool(threads);
-      List<Callable<Boolean>> logTasks = new ArrayList<>();
-
-      for (int i = 0; i < num; i++) {
-        logTasks.add(
-            () -> {
-              log.with("running_log_count", logCount.incrementAndGet())
-                  .info("Experimental logging in local threads");
-              return true;
-            });
-      }
-
-      try {
-        List<Future<Boolean>> futures = executor.invokeAll(logTasks);
-        futures.stream()
-            .forEach(
-                (future) -> {
-                  try {
-                    future.get();
-                  } catch (InterruptedException e) {
-                    log.error("Future interrupted");
-                  } catch (ExecutionException e) {
-                    log.error("Future execution fail");
-                  }
-                });
-      } catch (InterruptedException e) {
-        log.error("Threads interrupted");
-      }
-    } finally {
-      executor.shutdown();
+      List<Future<Boolean>> futures = executor.invokeAll(logTasks);
+      futures.stream()
+          .forEach(
+              (future) -> {
+                try {
+                  future.get();
+                } catch (InterruptedException e) {
+                  log.error("Future interrupted");
+                } catch (ExecutionException e) {
+                  log.error("Future execution fail");
+                }
+              });
+    } catch (InterruptedException e) {
+      log.error("Threads interrupted");
     }
 
     log.with("num", num).info("Exiting doSomeLoggingInThreads; count so far {}", logCount.get());
