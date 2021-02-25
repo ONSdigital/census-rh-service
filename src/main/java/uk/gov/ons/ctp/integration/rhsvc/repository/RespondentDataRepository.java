@@ -20,4 +20,6 @@ public interface RespondentDataRepository {
       throws CTPException;
 
   Optional<CollectionCase> readLatestCollectionCaseByUprn(String uprn) throws CTPException;
+
+  void writeFirestoreStartupCheckObject() throws CTPException;
 }

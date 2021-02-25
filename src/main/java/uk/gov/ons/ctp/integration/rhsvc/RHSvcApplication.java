@@ -48,6 +48,7 @@ import uk.gov.ons.ctp.common.rest.RestClientConfig;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.MessagingConfig.PublishConfig;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientApi;
 
@@ -73,6 +74,8 @@ public class RHSvcApplication {
   @Qualifier("envoyLimiterCb")
   private CircuitBreaker circuitBreaker;
 
+  @Autowired private RespondentDataRepository respondentDataRepo;
+
   /**
    * The main entry point for this application.
    *
@@ -97,6 +100,7 @@ public class RHSvcApplication {
       final FirestoreEventPersistence eventPersistence,
       @Qualifier("eventPublisherCbFactory")
           Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
+
     EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
     CircuitBreaker circuitBreaker = circuitBreakerFactory.create("eventSendCircuitBreaker");
     return EventPublisher.createWithEventPersistence(sender, eventPersistence, circuitBreaker);
@@ -168,9 +172,45 @@ public class RHSvcApplication {
   private boolean useJsonLogging;
 
   @PostConstruct
-  public void initJsonLogging() {
+  public void init() {
     if (useJsonLogging) {
       LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
+    }
+
+    //    if (System.currentTimeMillis() < 234) {
+    //      log.error("FAILED", "PMB: No Firestore");
+    //      System.exit(1);
+    //    }
+
+    String doFirestoreStartupCheckStr = System.getenv("do-firestore-startup-check");
+    boolean doFirestoreStartupCheck = true;
+    if (doFirestoreStartupCheckStr != null
+        && doFirestoreStartupCheckStr.equalsIgnoreCase("false")) {
+      doFirestoreStartupCheck = false;
+    }
+
+    if (doFirestoreStartupCheck) {
+      // Abort if we have not reached the go-live time
+      // TEMPORARY CODE - FOR DEV TESTING ONLY
+      String goLiveTimestampStr = System.getenv("goLiveTimestamp");
+      log.with("goLiveTimestampStr", goLiveTimestampStr)
+          .info("PMB: goLiveTimestamp environment variable");
+      long goLiveTimestamp = Long.parseLong(goLiveTimestampStr);
+      long currentTimestamp = System.currentTimeMillis();
+      if (currentTimestamp < goLiveTimestamp) {
+        long timeUntilOpen = goLiveTimestamp - currentTimestamp;
+        log.with("millisUntilLive", timeUntilOpen).info("PMB: Exiting. Not at go live time yet");
+        System.exit(-1);
+      } else {
+        log.info("PMB: Past go live time");
+      }
+
+      try {
+        respondentDataRepo.writeFirestoreStartupCheckObject();
+      } catch (Exception e) {
+        log.error("Failed to do test write to Firestore. Aborting", e);
+        System.exit(-1);
+      }
     }
   }
 

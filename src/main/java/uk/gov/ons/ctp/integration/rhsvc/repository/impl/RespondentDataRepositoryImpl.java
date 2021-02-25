@@ -140,4 +140,14 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
         .filter(c -> !c.isAddressInvalid())
         .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
   }
+
+  @Override
+  public void writeFirestoreStartupCheckObject() throws CTPException {
+    FirestoreStartupCheck timestamp = new FirestoreStartupCheck();
+    String timestampAsString = Long.toString(System.currentTimeMillis());
+    timestamp.setTimestamp(timestampAsString);
+
+    cloudDataStore.storeObject(
+        "firestore-startup-check", timestampAsString, timestamp, "firestore-startup-check");
+  }
 }
