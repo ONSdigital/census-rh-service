@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FirestoreStartupCheck {
+class DatastoreStartupCheckData {
+  private String startupAuditId;
   private String timestamp;
 }

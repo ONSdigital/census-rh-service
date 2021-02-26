@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import javax.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -177,19 +178,15 @@ public class RHSvcApplication {
       LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
     }
 
-    //    if (System.currentTimeMillis() < 234) {
-    //      log.error("FAILED", "PMB: No Firestore");
-    //      System.exit(1);
-    //    }
-
-    String doFirestoreStartupCheckStr = System.getenv("do-firestore-startup-check");
-    boolean doFirestoreStartupCheck = true;
-    if (doFirestoreStartupCheckStr != null
-        && doFirestoreStartupCheckStr.equalsIgnoreCase("false")) {
-      doFirestoreStartupCheck = false;
+    boolean doCloudStorageStartupCheck = true;
+    String doCloudStorageStartupCheckStr = System.getenv("doCloudStorageStartupCheck");
+    log.info("PMB check: " + doCloudStorageStartupCheckStr);
+    if (doCloudStorageStartupCheckStr != null
+        && doCloudStorageStartupCheckStr.equalsIgnoreCase("false")) {
+      doCloudStorageStartupCheck = false;
     }
 
-    if (doFirestoreStartupCheck) {
+    if (doCloudStorageStartupCheck) {
       // Abort if we have not reached the go-live time
       // TEMPORARY CODE - FOR DEV TESTING ONLY
       String goLiveTimestampStr = System.getenv("goLiveTimestamp");
@@ -204,13 +201,18 @@ public class RHSvcApplication {
       } else {
         log.info("PMB: Past go live time");
       }
+      // END of TEMPORARY CODE
 
       try {
-        respondentDataRepo.writeFirestoreStartupCheckObject();
-      } catch (Exception e) {
-        log.error("Failed to do test write to Firestore. Aborting", e);
+        log.info("About to run cloud storage startup check");
+        UUID startupAuditId = respondentDataRepo.writeCloudStartupCheckObject();
+        log.with("startupAuditId", startupAuditId).info("Passed cloud storage startup check");
+      } catch (Throwable e) {
+        log.error("Failed cloud storage startup check. Aborting service", e);
         System.exit(-1);
       }
+    } else {
+      log.info("Skipping cloud storage startup check");
     }
   }
 

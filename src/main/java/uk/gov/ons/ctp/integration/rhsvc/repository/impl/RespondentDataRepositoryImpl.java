@@ -3,10 +3,12 @@ package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.cloud.CloudDataStore;
 import uk.gov.ons.ctp.common.cloud.RetryableCloudDataStore;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -18,6 +20,9 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 @Service
 public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   private RetryableCloudDataStore cloudDataStore;
+
+  // Cloud data store access for startup checks only
+  @Autowired CloudDataStore nonRetryableCloudDataStore;
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
   private String gcpProject;
@@ -141,13 +146,29 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
         .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
   }
 
+  /**
+   * Confirms cloud datastore connection by writing an object.
+   *
+   * @return UUID containing the UUID id for this datastore check.
+   * @throws Exception - if a cloud exception was detected.
+   */
   @Override
-  public void writeFirestoreStartupCheckObject() throws CTPException {
-    FirestoreStartupCheck timestamp = new FirestoreStartupCheck();
+  public UUID writeCloudStartupCheckObject() throws Exception {
+    // Create an object to write to the datastore.
+    // To prevent any problems with multiple RH instances writing to the same record at
+    // the same time, each one will contain a UUID to make it unique
+    DatastoreStartupCheckData startupAuditData = new DatastoreStartupCheckData();
+    UUID startupAuditId = UUID.randomUUID();
     String timestampAsString = Long.toString(System.currentTimeMillis());
-    timestamp.setTimestamp(timestampAsString);
+    startupAuditData.setStartupAuditId(startupAuditId.toString());
+    startupAuditData.setTimestamp(timestampAsString);
 
-    cloudDataStore.storeObject(
-        "firestore-startup-check", timestampAsString, timestamp, "firestore-startup-check");
+    // Attempt write to datastore. Note that if the datastore is not available then we don't want to
+    // go into
+    // retries loop. This will either succeed or fail.
+    nonRetryableCloudDataStore.storeObject(
+        "datastore-startup-check", startupAuditId.toString(), startupAuditData);
+
+    return startupAuditId;
   }
 }
