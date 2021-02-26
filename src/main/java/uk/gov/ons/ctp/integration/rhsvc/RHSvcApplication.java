@@ -193,7 +193,7 @@ public class RHSvcApplication {
       log.with("goLiveTimestampStr", goLiveTimestampStr)
           .info("PMB: goLiveTimestamp environment variable");
       if (goLiveTimestampStr == null) {
-        goLiveTimestampStr = "1614350100000"; // 14:35
+        goLiveTimestampStr = "1614353400000"; // 15:30
       }
       long goLiveTimestamp = Long.parseLong(goLiveTimestampStr);
       long currentTimestamp = System.currentTimeMillis();
