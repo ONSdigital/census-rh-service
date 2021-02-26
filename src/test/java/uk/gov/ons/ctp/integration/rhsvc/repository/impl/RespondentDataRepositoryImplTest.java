@@ -54,7 +54,7 @@ public class RespondentDataRepositoryImplTest {
     Assert.assertEquals(
         "Expects Empty Optional",
         Optional.empty(),
-        target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
+        target.readNonHILatestCollectionCaseByUprn(UPRN_STRING, true));
   }
 
   /** Returns Empty Optional where no valid caseType cases are returned from repository */
@@ -69,7 +69,7 @@ public class RespondentDataRepositoryImplTest {
     Assert.assertEquals(
         "Expects Empty Optional",
         Optional.empty(),
-        target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
+        target.readNonHILatestCollectionCaseByUprn(UPRN_STRING, true));
   }
 
   /** Returns Empty Optional where no valid Address cases are returned from repository */
@@ -84,7 +84,7 @@ public class RespondentDataRepositoryImplTest {
     Assert.assertEquals(
         "Expects Empty Optional",
         Optional.empty(),
-        target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
+        target.readNonHILatestCollectionCaseByUprn(UPRN_STRING, true));
   }
 
   /** Test retrieves latest case when all valid HH */
@@ -106,7 +106,7 @@ public class RespondentDataRepositoryImplTest {
     assertEquals(
         "Expects Item with Latest Date",
         Optional.of(collectionCase.get(1)),
-        target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
+        target.readNonHILatestCollectionCaseByUprn(UPRN_STRING, true));
   }
 
   /** Test retrieves latest valid case when actual latest date is an HI case */
@@ -129,7 +129,7 @@ public class RespondentDataRepositoryImplTest {
     assertEquals(
         "Expects HH Item With Latest Date",
         Optional.of(collectionCase.get(0)),
-        target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
+        target.readNonHILatestCollectionCaseByUprn(UPRN_STRING, true));
   }
 
   /** Test retrieves latest Address valid case when actual latest date is an HI case */
@@ -153,39 +153,30 @@ public class RespondentDataRepositoryImplTest {
     assertEquals(
         "Expects Latest Item With Valid Address",
         Optional.of(collectionCase.get(2)),
-        target.readNonHILatestValidCollectionCaseByUprn(UPRN_STRING));
+        target.readNonHILatestCollectionCaseByUprn(UPRN_STRING, true));
   }
 
-  /** Returns Empty Optional where no cases are returned from repository */
+  /** Test retrieves latest invalid Address case when actual latest date is an HI case */
   @Test
-  public void readLatestCollectionCaseByUprn_noCasesFound() throws Exception {
-
-    final List<CollectionCase> emptyList = new ArrayList<>();
-    when(mockCloudDataStore.search(
-            CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
-        .thenReturn(emptyList);
-
-    Assert.assertEquals(
-        "Expects Empty Optional",
-        Optional.empty(),
-        target.readLatestCollectionCaseByUprn(UPRN_STRING));
-  }
-
-  /** Test which gets multiple cases from repo and returns the latest one. */
-  @Test
-  public void readLatestCollectionCaseByUprn_multipleCasesFound() throws Exception {
+  public void getLatestAddressCaseNoneHIByUPRNOnly() throws Exception {
 
     final Date earliest = new Date();
     final Date mid = DateUtils.addDays(new Date(), 1);
     final Date latest = DateUtils.addDays(new Date(), 2);
     collectionCase.get(0).setCreatedDateTime(mid);
+    collectionCase.get(0).setCaseType("HH");
+    collectionCase.get(0).setAddressInvalid(Boolean.TRUE); // INVALID , but EXPECTED
     collectionCase.get(1).setCreatedDateTime(latest);
+    collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
+    collectionCase.get(2).setCaseType("HH"); // VALID
     when(mockCloudDataStore.search(
             CollectionCase.class, target.caseSchema, searchByUprnPath, UPRN_STRING))
         .thenReturn(collectionCase);
 
     assertEquals(
-        Optional.of(collectionCase.get(1)), target.readLatestCollectionCaseByUprn(UPRN_STRING));
+        "Expects Latest Item With non HI Address",
+        Optional.of(collectionCase.get(0)),
+        target.readNonHILatestCollectionCaseByUprn(UPRN_STRING, false));
   }
 }

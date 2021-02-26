@@ -605,7 +605,7 @@ public class UniqueAccessCodeServiceImplTest {
   private void mockDataRepoForReadNonHILatestValidCollectionCaseByUprn(
       UniquePropertyReferenceNumber uprn, CollectionCase fakeCase) throws CTPException {
     List<CollectionCase> cases = Stream.of(fakeCase).collect(Collectors.toList());
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(eq(Long.toString(uprn.getValue()))))
+    when(dataRepo.readNonHILatestCollectionCaseByUprn(eq(Long.toString(uprn.getValue())), eq(true)))
         .thenReturn(Optional.of(cases.get(0)));
   }
 

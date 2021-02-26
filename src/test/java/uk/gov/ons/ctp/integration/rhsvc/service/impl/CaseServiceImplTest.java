@@ -91,7 +91,7 @@ public class CaseServiceImplTest {
   @Test
   public void getCaseByUPRNFound() throws Exception {
 
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+    when(dataRepo.readNonHILatestCollectionCaseByUprn(Long.toString(UPRN.getValue()), true))
         .thenReturn(Optional.of(collectionCase.get(0)));
 
     CollectionCase nonHICase = this.collectionCase.get(0);
@@ -116,7 +116,7 @@ public class CaseServiceImplTest {
   /** Test throws a CTPException where no valid Address cases are returned from repository */
   @Test(expected = CTPException.class)
   public void getInvalidAddressCaseByUPRNOnly() throws Exception {
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+    when(dataRepo.readNonHILatestCollectionCaseByUprn(Long.toString(UPRN.getValue()), true))
         .thenThrow(new CTPException(null));
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
   }
@@ -134,7 +134,7 @@ public class CaseServiceImplTest {
     collectionCase.get(0).setCreatedDateTime(mid);
     collectionCase.get(1).setCreatedDateTime(latest); // EXPECTED
     collectionCase.get(2).setCreatedDateTime(earliest);
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+    when(dataRepo.readNonHILatestCollectionCaseByUprn(Long.toString(UPRN.getValue()), true))
         .thenReturn(Optional.of(collectionCase.get(1)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
@@ -157,7 +157,7 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+    when(dataRepo.readNonHILatestCollectionCaseByUprn(Long.toString(UPRN.getValue()), true))
         .thenReturn(Optional.of(collectionCase.get(0)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
@@ -181,7 +181,7 @@ public class CaseServiceImplTest {
     collectionCase.get(1).setCaseType("HI"); // INVALID
     collectionCase.get(2).setCreatedDateTime(earliest);
     collectionCase.get(2).setCaseType("HH"); // VALID / EXPECTED
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+    when(dataRepo.readNonHILatestCollectionCaseByUprn(Long.toString(UPRN.getValue()), true))
         .thenReturn(Optional.of(collectionCase.get(2)));
     CaseDTO result = caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
 
@@ -195,7 +195,7 @@ public class CaseServiceImplTest {
   @Test(expected = CTPException.class)
   public void getCaseByUPRNNotFound() throws Exception {
 
-    when(dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(UPRN.getValue())))
+    when(dataRepo.readNonHILatestCollectionCaseByUprn(Long.toString(UPRN.getValue()), true))
         .thenReturn(Optional.empty());
 
     caseSvc.getLatestValidNonHICaseByUPRN(UPRN);
@@ -310,7 +310,8 @@ public class CaseServiceImplTest {
     CollectionCase existingCase = FixtureHelper.loadClassFixtures(CollectionCase[].class).get(0);
     existingCase.getAddress().setUprn(uprn);
     Optional<CollectionCase> existingCaseResult = Optional.of(existingCase);
-    when(dataRepo.readLatestCollectionCaseByUprn(eq(uprn))).thenReturn(existingCaseResult);
+    when(dataRepo.readNonHILatestCollectionCaseByUprn(eq(uprn), eq(false)))
+        .thenReturn(existingCaseResult);
 
     // Invoke code under test
     CaseDTO newCase = caseSvc.createNewCase(request);
