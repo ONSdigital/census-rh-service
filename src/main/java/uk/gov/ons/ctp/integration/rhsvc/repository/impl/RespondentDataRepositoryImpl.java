@@ -96,7 +96,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    * whether the case is valid.
    *
    * @param uprn - is the uprn that the target case(s) must contain.
-   * @param onlyValid - true if only valid cases to be returned; false otherwise
+   * @param onlyValid - true if only valid cases to be returned; false if we don't care
    * @return - Optional containing 1 de-serialised version of the stored object. If no matching
    *     cases are found then an empty Optional is returned.
    * @throws CTPException - if a cloud exception was detected.
@@ -113,6 +113,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    * Filter search results returning Latest !addressInvalid non HI case
    *
    * @param searchResults - Search results found in dataStore by searching by uprn
+   * @param onlyValid - true if only valid cases to be returned; false if we don't care
    * @return Optional of the resulting collection case or Empty
    */
   private Optional<CollectionCase> filterLatestValidNonHiCollectionCaseSearchResults(
