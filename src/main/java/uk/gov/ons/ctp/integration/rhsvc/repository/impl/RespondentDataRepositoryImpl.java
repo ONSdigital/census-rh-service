@@ -166,8 +166,8 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     // Attempt write to datastore. Note that if the datastore is not available then we don't want to
     // go into
     // retries loop. This will either succeed or fail.
-    nonRetryableCloudDataStore.storeObject(
-        "datastore-startup-check", startupAuditId.toString(), startupAuditData);
+    String schemaName = gcpProject + "-" + "datastore-startup-check";
+    nonRetryableCloudDataStore.storeObject(schemaName, startupAuditId.toString(), startupAuditData);
 
     return startupAuditId;
   }
