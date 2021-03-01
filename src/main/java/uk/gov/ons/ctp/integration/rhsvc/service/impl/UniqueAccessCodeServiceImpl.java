@@ -126,8 +126,8 @@ public class UniqueAccessCodeServiceImpl implements UniqueAccessCodeService {
 
     // Read the Case(s) for the UPRN from firestore if we can
     Optional<CollectionCase> primaryCaseOptional =
-        dataRepo.readNonHILatestValidCollectionCaseByUprn(
-            Long.toString(request.getUprn().getValue()));
+        dataRepo.readNonHILatestCollectionCaseByUprn(
+            Long.toString(request.getUprn().getValue()), true);
     if (primaryCaseOptional.isPresent()) {
       primaryCase = primaryCaseOptional.get();
       log.with(primaryCase.getId()).debug("Found existing case");
