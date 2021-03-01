@@ -4,7 +4,6 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -19,7 +18,6 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
  * details of in bound queue.
  */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 @MessageEndpoint
 public class UACEventReceiverImpl {
@@ -29,6 +27,10 @@ public class UACEventReceiverImpl {
   @Autowired private RespondentDataRepository respondentDataRepo;
 
   @Autowired private AppConfig appConfig;
+
+  public UACEventReceiverImpl() {
+    log.info("PMB: Created UACEventReceiverImpl");
+  }
 
   /**
    * Message end point for events from Response Management. At present sends straight to publisher

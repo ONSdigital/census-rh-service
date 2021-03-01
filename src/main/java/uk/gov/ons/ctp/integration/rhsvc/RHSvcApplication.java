@@ -204,6 +204,15 @@ public class RHSvcApplication {
       } else {
         log.info("PMB: Past go live time");
       }
+
+      // Now wait for a while - to prove that the consuming threads haven't been created yet
+      try {
+        log.info("PMB: Before sleep");
+        Thread.sleep(10 * 1000);
+        log.info("PMB: After sleep");
+      } catch (InterruptedException e1) {
+        e1.printStackTrace();
+      }
       // END of TEMPORARY CODE
 
       try {
