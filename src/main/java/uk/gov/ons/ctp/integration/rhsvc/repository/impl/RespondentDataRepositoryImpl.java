@@ -148,7 +148,9 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     startupAuditData.setStartupAuditId(startupAuditId.toString());
     startupAuditData.setTimestamp(timestamp);
 
-    // Attempt write to datastore. Note that there are no retries on this.
+    // Attempt to write to datastore. Note that there are no retries on this.
+    // We don't expect any contention on the collection so the write will either succeed or fail
+    // (which would result in GCP restarting the service)
     String schemaName = gcpProject + "-" + "datastore-startup-check";
     String primaryKey = timestamp + "-" + startupAuditId;
     nonRetryableCloudDataStore.storeObject(schemaName, primaryKey, startupAuditData);

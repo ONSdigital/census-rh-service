@@ -178,7 +178,8 @@ public class RHSvcApplication {
       LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
     }
 
-    // Find out if we are doing a cloud storage check on startup
+    // Find out if we are doing a cloud storage check on startup.
+    // Default is to always to do the check unless disabled by an environment variable
     boolean checkCloudStorageOnStartup = true;
     String checkCloudStorageOnStartupStr = System.getenv("checkCloudStorageOnStartup");
     if (checkCloudStorageOnStartupStr != null
@@ -187,14 +188,17 @@ public class RHSvcApplication {
     }
 
     if (checkCloudStorageOnStartup) {
-      // Write to the cloud, or if that is not possible abort to prevent queued events ending up in
-      // the DLQ
+      // Test connectivity with cloud storage by writing a test object
       try {
         log.info("About to run cloud storage startup check");
         UUID startupAuditId = respondentDataRepo.writeCloudStartupCheckObject();
         log.with("startupAuditId", startupAuditId).info("Passed cloud storage startup check");
       } catch (Throwable e) {
-        log.error("Failed cloud storage startup check. Aborting service", e);
+        // There was some sort of failure with the cloud data storage.
+        // Abort the process to prevent a half dead service consuming events that would shortly end
+        // up on the DLQ
+        log.error(
+            "Failed cloud storage startup check. Unable to write to storage. Aborting service", e);
         System.exit(-1);
       }
     } else {
