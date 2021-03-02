@@ -99,52 +99,35 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   }
 
   /**
-   * Read case objects from cloud based on its uprn. Filter by non HI, not addressInvalid, latest
-   * case
+   * Read case objects from cloud based on its uprn. Filter by non HI, latest case, and optionally
+   * whether the case is valid.
    *
    * @param uprn - is the uprn that the target case(s) must contain.
+   * @param onlyValid - true if only valid cases to be returned; false if we don't care
    * @return - Optional containing 1 de-serialised version of the stored object. If no matching
    *     cases are found then an empty Optional is returned.
    * @throws CTPException - if a cloud exception was detected.
    */
   @Override
-  public Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(final String uprn)
-      throws CTPException {
+  public Optional<CollectionCase> readNonHILatestCollectionCaseByUprn(
+      final String uprn, boolean onlyValid) throws CTPException {
     List<CollectionCase> searchResults =
         retryableCloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
-    return filterLatestValidNonHiCollectionCaseSearchResults(searchResults);
-  }
-
-  /**
-   * Read the latest case from cloud storage based on its uprn.
-   *
-   * @param uprn - is the uprn that the target case(s) must contain.
-   * @return - Optional containing the latest case or Empty.
-   * @throws CTPException - if a cloud exception was detected.
-   */
-  @Override
-  public Optional<CollectionCase> readLatestCollectionCaseByUprn(final String uprn)
-      throws CTPException {
-    List<CollectionCase> searchResults =
-        retryableCloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
-
-    Optional<CollectionCase> latestCase =
-        searchResults.stream().max(Comparator.comparing(CollectionCase::getCreatedDateTime));
-
-    return latestCase;
+    return filterLatestValidNonHiCollectionCaseSearchResults(searchResults, onlyValid);
   }
 
   /**
    * Filter search results returning Latest !addressInvalid non HI case
    *
    * @param searchResults - Search results found in dataStore by searching by uprn
+   * @param onlyValid - true if only valid cases to be returned; false if we don't care
    * @return Optional of the resulting collection case or Empty
    */
   private Optional<CollectionCase> filterLatestValidNonHiCollectionCaseSearchResults(
-      final List<CollectionCase> searchResults) {
+      final List<CollectionCase> searchResults, boolean onlyValid) {
     return searchResults.stream()
         .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
-        .filter(c -> !c.isAddressInvalid())
+        .filter(c -> onlyValid ? !c.isAddressInvalid() : true)
         .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
   }
 
