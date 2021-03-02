@@ -178,43 +178,17 @@ public class RHSvcApplication {
       LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
     }
 
-    boolean doCloudStorageStartupCheck = true;
-    String doCloudStorageStartupCheckStr = System.getenv("doCloudStorageStartupCheck");
-    log.info("PMB check: " + doCloudStorageStartupCheckStr);
-    if (doCloudStorageStartupCheckStr != null
-        && doCloudStorageStartupCheckStr.equalsIgnoreCase("false")) {
-      doCloudStorageStartupCheck = false;
+    // Find out if we are doing a cloud storage check on startup
+    boolean checkCloudStorageOnStartup = true;
+    String checkCloudStorageOnStartupStr = System.getenv("checkCloudStorageOnStartup");
+    if (checkCloudStorageOnStartupStr != null
+        && checkCloudStorageOnStartupStr.equalsIgnoreCase("false")) {
+      checkCloudStorageOnStartup = false;
     }
 
-    if (doCloudStorageStartupCheck) {
-      // Abort if we have not reached the go-live time
-      // TEMPORARY CODE - FOR DEV TESTING ONLY
-      String goLiveTimestampStr = System.getenv("goLiveTimestamp");
-      log.with("goLiveTimestampStr", goLiveTimestampStr)
-          .info("PMB: goLiveTimestamp environment variable");
-      if (goLiveTimestampStr == null) {
-        goLiveTimestampStr = "1614353400000"; // 15:30
-      }
-      long goLiveTimestamp = Long.parseLong(goLiveTimestampStr);
-      long currentTimestamp = System.currentTimeMillis();
-      if (currentTimestamp < goLiveTimestamp) {
-        long timeUntilOpen = goLiveTimestamp - currentTimestamp;
-        log.with("millisUntilLive", timeUntilOpen).info("PMB: Exiting. Not at go live time yet");
-        System.exit(-1);
-      } else {
-        log.info("PMB: Past go live time");
-      }
-
-      // Now wait for a while - to prove that the consuming threads haven't been created yet
-      try {
-        log.info("PMB: Before sleep");
-        Thread.sleep(10 * 1000);
-        log.info("PMB: After sleep");
-      } catch (InterruptedException e1) {
-        e1.printStackTrace();
-      }
-      // END of TEMPORARY CODE
-
+    if (checkCloudStorageOnStartup) {
+      // Write to the cloud, or if that is not possible abort to prevent queued events ending up in
+      // the DLQ
       try {
         log.info("About to run cloud storage startup check");
         UUID startupAuditId = respondentDataRepo.writeCloudStartupCheckObject();

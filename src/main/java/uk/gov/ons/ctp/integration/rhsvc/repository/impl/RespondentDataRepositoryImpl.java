@@ -1,6 +1,8 @@
 package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,7 +21,7 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 /** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
 @Service
 public class RespondentDataRepositoryImpl implements RespondentDataRepository {
-  private RetryableCloudDataStore cloudDataStore;
+  private RetryableCloudDataStore retryableCloudDataStore;
 
   // Cloud data store access for startup checks only
   @Autowired CloudDataStore nonRetryableCloudDataStore;
@@ -46,7 +48,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
 
   @Autowired
   public RespondentDataRepositoryImpl(RetryableCloudDataStore retryableCloudDataStore) {
-    this.cloudDataStore = retryableCloudDataStore;
+    this.retryableCloudDataStore = retryableCloudDataStore;
   }
 
   /**
@@ -57,7 +59,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public void writeUAC(final UAC uac) throws CTPException {
-    cloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac, uac.getCaseId());
+    retryableCloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac, uac.getCaseId());
   }
 
   /**
@@ -69,7 +71,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public Optional<UAC> readUAC(final String universalAccessCodeHash) throws CTPException {
-    return cloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCodeHash);
+    return retryableCloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCodeHash);
   }
 
   /**
@@ -81,7 +83,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   @Override
   public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
     String id = collectionCase.getId();
-    cloudDataStore.storeObject(caseSchema, id, collectionCase, id);
+    retryableCloudDataStore.storeObject(caseSchema, id, collectionCase, id);
   }
 
   /**
@@ -93,7 +95,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public Optional<CollectionCase> readCollectionCase(final String caseId) throws CTPException {
-    return cloudDataStore.retrieveObject(CollectionCase.class, caseSchema, caseId);
+    return retryableCloudDataStore.retrieveObject(CollectionCase.class, caseSchema, caseId);
   }
 
   /**
@@ -109,7 +111,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   public Optional<CollectionCase> readNonHILatestValidCollectionCaseByUprn(final String uprn)
       throws CTPException {
     List<CollectionCase> searchResults =
-        cloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
+        retryableCloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
     return filterLatestValidNonHiCollectionCaseSearchResults(searchResults);
   }
 
@@ -124,7 +126,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   public Optional<CollectionCase> readLatestCollectionCaseByUprn(final String uprn)
       throws CTPException {
     List<CollectionCase> searchResults =
-        cloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
+        retryableCloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
 
     Optional<CollectionCase> latestCase =
         searchResults.stream().max(Comparator.comparing(CollectionCase::getCreatedDateTime));
@@ -159,15 +161,14 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     // the same time, each one will contain a UUID to make it unique
     DatastoreStartupCheckData startupAuditData = new DatastoreStartupCheckData();
     UUID startupAuditId = UUID.randomUUID();
-    String timestampAsString = Long.toString(System.currentTimeMillis());
+    String timestamp = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss").format(new Date());
     startupAuditData.setStartupAuditId(startupAuditId.toString());
-    startupAuditData.setTimestamp(timestampAsString);
+    startupAuditData.setTimestamp(timestamp);
 
-    // Attempt write to datastore. Note that if the datastore is not available then we don't want to
-    // go into
-    // retries loop. This will either succeed or fail.
+    // Attempt write to datastore. Note that there are no retries on this.
     String schemaName = gcpProject + "-" + "datastore-startup-check";
-    nonRetryableCloudDataStore.storeObject(schemaName, startupAuditId.toString(), startupAuditData);
+    String primaryKey = timestamp + "-" + startupAuditId;
+    nonRetryableCloudDataStore.storeObject(schemaName, primaryKey, startupAuditData);
 
     return startupAuditId;
   }
