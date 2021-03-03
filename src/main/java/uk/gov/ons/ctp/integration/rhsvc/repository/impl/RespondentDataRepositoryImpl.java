@@ -139,11 +139,11 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public UUID writeCloudStartupCheckObject() throws Exception {
-    UUID startupAuditId = UUID.randomUUID();
     String hostname = System.getenv("HOSTNAME");
     if (hostname == null) {
       hostname = "unknown-host";
     }
+    final UUID startupAuditId = UUID.randomUUID();
 
     // Create an object to write to the datastore.
     // To prevent any problems with multiple RH instances writing to the same record at
