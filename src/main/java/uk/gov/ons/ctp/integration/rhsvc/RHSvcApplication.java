@@ -48,6 +48,7 @@ import uk.gov.ons.ctp.common.rest.RestClientConfig;
 import uk.gov.ons.ctp.integration.ratelimiter.client.RateLimiterClient;
 import uk.gov.ons.ctp.integration.rhsvc.config.AppConfig;
 import uk.gov.ons.ctp.integration.rhsvc.config.MessagingConfig.PublishConfig;
+import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientApi;
 
@@ -73,6 +74,8 @@ public class RHSvcApplication {
   @Qualifier("envoyLimiterCb")
   private CircuitBreaker circuitBreaker;
 
+  @Autowired private RespondentDataRepository respondentDataRepo;
+
   /**
    * The main entry point for this application.
    *
@@ -97,6 +100,7 @@ public class RHSvcApplication {
       final FirestoreEventPersistence eventPersistence,
       @Qualifier("eventPublisherCbFactory")
           Resilience4JCircuitBreakerFactory circuitBreakerFactory) {
+
     EventSender sender = new SpringRabbitEventSender(rabbitTemplate);
     CircuitBreaker circuitBreaker = circuitBreakerFactory.create("eventSendCircuitBreaker");
     return EventPublisher.createWithEventPersistence(sender, eventPersistence, circuitBreaker);
@@ -168,9 +172,36 @@ public class RHSvcApplication {
   private boolean useJsonLogging;
 
   @PostConstruct
-  public void initJsonLogging() {
+  public void init() {
     if (useJsonLogging) {
       LoggingConfigs.setCurrent(LoggingConfigs.getCurrent().useJson());
+    }
+
+    // Find out if we are doing a cloud storage check on startup.
+    // Default is to always to do the check unless disabled by an environment variable
+    boolean checkCloudStorageOnStartup = true;
+    String checkCloudStorageOnStartupStr = System.getenv("CHECK_CLOUD_STORAGE_ON_STARTUP");
+    if (checkCloudStorageOnStartupStr != null
+        && checkCloudStorageOnStartupStr.equalsIgnoreCase("false")) {
+      checkCloudStorageOnStartup = false;
+    }
+
+    if (checkCloudStorageOnStartup) {
+      // Test connectivity with cloud storage by writing a test object
+      try {
+        log.info("About to run cloud storage startup check");
+        String startupCheckKey = respondentDataRepo.writeCloudStartupCheckObject();
+        log.with("startupAuditId", startupCheckKey).info("Passed cloud storage startup check");
+      } catch (Throwable e) {
+        // There was some sort of failure with the cloud data storage.
+        // Abort the process to prevent a half dead service consuming events that would shortly end
+        // up on the DLQ
+        log.error(
+            "Failed cloud storage startup check. Unable to write to storage. Aborting service", e);
+        System.exit(-1);
+      }
+    } else {
+      log.info("Skipping cloud storage startup check");
     }
   }
 

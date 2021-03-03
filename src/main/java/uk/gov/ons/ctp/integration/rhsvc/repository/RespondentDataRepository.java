@@ -18,4 +18,6 @@ public interface RespondentDataRepository {
 
   Optional<CollectionCase> readNonHILatestCollectionCaseByUprn(String uprn, boolean onlyValid)
       throws CTPException;
+
+  String writeCloudStartupCheckObject() throws Exception;
 }

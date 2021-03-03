@@ -1,12 +1,15 @@
 package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.ctp.common.cloud.CloudDataStore;
 import uk.gov.ons.ctp.common.cloud.RetryableCloudDataStore;
 import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -17,7 +20,10 @@ import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 /** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
 @Service
 public class RespondentDataRepositoryImpl implements RespondentDataRepository {
-  private RetryableCloudDataStore cloudDataStore;
+  private RetryableCloudDataStore retryableCloudDataStore;
+
+  // Cloud data store access for startup checks only
+  @Autowired CloudDataStore nonRetryableCloudDataStore;
 
   @Value("${GOOGLE_CLOUD_PROJECT}")
   private String gcpProject;
@@ -41,7 +47,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
 
   @Autowired
   public RespondentDataRepositoryImpl(RetryableCloudDataStore retryableCloudDataStore) {
-    this.cloudDataStore = retryableCloudDataStore;
+    this.retryableCloudDataStore = retryableCloudDataStore;
   }
 
   /**
@@ -52,7 +58,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public void writeUAC(final UAC uac) throws CTPException {
-    cloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac, uac.getCaseId());
+    retryableCloudDataStore.storeObject(uacSchema, uac.getUacHash(), uac, uac.getCaseId());
   }
 
   /**
@@ -64,7 +70,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public Optional<UAC> readUAC(final String universalAccessCodeHash) throws CTPException {
-    return cloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCodeHash);
+    return retryableCloudDataStore.retrieveObject(UAC.class, uacSchema, universalAccessCodeHash);
   }
 
   /**
@@ -76,7 +82,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   @Override
   public void writeCollectionCase(final CollectionCase collectionCase) throws CTPException {
     String id = collectionCase.getId();
-    cloudDataStore.storeObject(caseSchema, id, collectionCase, id);
+    retryableCloudDataStore.storeObject(caseSchema, id, collectionCase, id);
   }
 
   /**
@@ -88,7 +94,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public Optional<CollectionCase> readCollectionCase(final String caseId) throws CTPException {
-    return cloudDataStore.retrieveObject(CollectionCase.class, caseSchema, caseId);
+    return retryableCloudDataStore.retrieveObject(CollectionCase.class, caseSchema, caseId);
   }
 
   /**
@@ -105,7 +111,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   public Optional<CollectionCase> readNonHILatestCollectionCaseByUprn(
       final String uprn, boolean onlyValid) throws CTPException {
     List<CollectionCase> searchResults =
-        cloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
+        retryableCloudDataStore.search(CollectionCase.class, caseSchema, SEARCH_BY_UPRN_PATH, uprn);
     return filterLatestValidNonHiCollectionCaseSearchResults(searchResults, onlyValid);
   }
 
@@ -122,5 +128,36 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
         .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
         .filter(c -> onlyValid ? !c.isAddressInvalid() : true)
         .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
+  }
+
+  /**
+   * Confirms cloud datastore connection by writing an object.
+   *
+   * @return String containing the primary key for the datastore check.
+   * @throws Exception - if a cloud exception was detected.
+   */
+  @Override
+  public String writeCloudStartupCheckObject() throws Exception {
+    String hostname = System.getenv("HOSTNAME");
+    if (hostname == null) {
+      hostname = "unknown-host";
+    }
+
+    // Create an object to write to the datastore.
+    // To prevent any problems with multiple RH instances writing to the same record at
+    // the same time, each one will contain a UUID to make it unique
+    DatastoreStartupCheckData startupAuditData = new DatastoreStartupCheckData();
+    String timestamp = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss").format(new Date());
+    startupAuditData.setHostname(hostname);
+    startupAuditData.setTimestamp(timestamp);
+
+    // Attempt to write to datastore. Note that there are no retries on this.
+    // We don't expect any contention on the collection so the write will either succeed or fail
+    // (which will result in GCP restarting the service)
+    String schemaName = gcpProject + "-" + "datastore-startup-check";
+    String primaryKey = timestamp + "-" + hostname;
+    nonRetryableCloudDataStore.storeObject(schemaName, primaryKey, startupAuditData);
+
+    return primaryKey;
   }
 }
