@@ -64,7 +64,7 @@ public class CaseServiceImpl implements CaseService {
       throws CTPException {
 
     Optional<CollectionCase> caseFound =
-        dataRepo.readNonHILatestValidCollectionCaseByUprn(Long.toString(uprn.getValue()));
+        dataRepo.readNonHILatestCollectionCaseByUprn(Long.toString(uprn.getValue()), true);
     if (caseFound.isPresent()) {
       log.with("case", caseFound.get().getId())
           .with("uprn", uprn)
@@ -79,7 +79,7 @@ public class CaseServiceImpl implements CaseService {
   @Override
   public CaseDTO createNewCase(CaseRequestDTO request) throws CTPException {
 
-    Optional<CaseDTO> existingCase = getLatestCaseByUPRN(request.getUprn());
+    Optional<CaseDTO> existingCase = getLatestNonHICaseByUPRN(request.getUprn());
 
     CaseDTO caseToReturn;
     if (existingCase.isPresent()) {
@@ -366,12 +366,14 @@ public class CaseServiceImpl implements CaseService {
     }
   }
 
-  private Optional<CaseDTO> getLatestCaseByUPRN(UniquePropertyReferenceNumber uprn)
+  // get the latest Case , which can have a valid, or invalid address, but must not have a casetype
+  // of HI.
+  private Optional<CaseDTO> getLatestNonHICaseByUPRN(UniquePropertyReferenceNumber uprn)
       throws CTPException {
     Optional<CaseDTO> result = Optional.empty();
 
     Optional<CollectionCase> caseFound =
-        dataRepo.readLatestCollectionCaseByUprn(Long.toString(uprn.getValue()));
+        dataRepo.readNonHILatestCollectionCaseByUprn(Long.toString(uprn.getValue()), false);
     if (caseFound.isPresent()) {
       log.with("case", caseFound.get().getId())
           .with("uprn", uprn)

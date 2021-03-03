@@ -44,7 +44,6 @@ public class WebformServiceImpl implements WebformService {
    *
    * @param notificationClient Gov.uk Notify service client
    * @param webformCircuitBreaker circuit breaker for calls to GOV.UK notify
-   * @param envoyCircuitBreaker circuit breaker for calls to envoy rate limiter
    * @param appConfig centralised configuration properties
    */
   @Autowired
