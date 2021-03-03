@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 class DatastoreStartupCheckData {
   private String timestamp;
   private String hostname;
-  private String startupAuditId;
 }

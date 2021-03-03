@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import javax.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -181,7 +180,7 @@ public class RHSvcApplication {
     // Find out if we are doing a cloud storage check on startup.
     // Default is to always to do the check unless disabled by an environment variable
     boolean checkCloudStorageOnStartup = true;
-    String checkCloudStorageOnStartupStr = System.getenv("checkCloudStorageOnStartup");
+    String checkCloudStorageOnStartupStr = System.getenv("CHECK_CLOUD_STORAGE_ON_STARTUP");
     if (checkCloudStorageOnStartupStr != null
         && checkCloudStorageOnStartupStr.equalsIgnoreCase("false")) {
       checkCloudStorageOnStartup = false;
@@ -191,8 +190,8 @@ public class RHSvcApplication {
       // Test connectivity with cloud storage by writing a test object
       try {
         log.info("About to run cloud storage startup check");
-        UUID startupAuditId = respondentDataRepo.writeCloudStartupCheckObject();
-        log.with("startupAuditId", startupAuditId).info("Passed cloud storage startup check");
+        String startupCheckKey = respondentDataRepo.writeCloudStartupCheckObject();
+        log.with("startupAuditId", startupCheckKey).info("Passed cloud storage startup check");
       } catch (Throwable e) {
         // There was some sort of failure with the cloud data storage.
         // Abort the process to prevent a half dead service consuming events that would shortly end

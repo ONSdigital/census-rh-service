@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -134,16 +133,15 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   /**
    * Confirms cloud datastore connection by writing an object.
    *
-   * @return UUID containing the UUID id for this datastore check.
+   * @return String containing the primary key for the datastore check.
    * @throws Exception - if a cloud exception was detected.
    */
   @Override
-  public UUID writeCloudStartupCheckObject() throws Exception {
+  public String writeCloudStartupCheckObject() throws Exception {
     String hostname = System.getenv("HOSTNAME");
     if (hostname == null) {
       hostname = "unknown-host";
     }
-    final UUID startupAuditId = UUID.randomUUID();
 
     // Create an object to write to the datastore.
     // To prevent any problems with multiple RH instances writing to the same record at
@@ -152,7 +150,6 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     String timestamp = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss").format(new Date());
     startupAuditData.setHostname(hostname);
     startupAuditData.setTimestamp(timestamp);
-    startupAuditData.setStartupAuditId(startupAuditId.toString());
 
     // Attempt to write to datastore. Note that there are no retries on this.
     // We don't expect any contention on the collection so the write will either succeed or fail
@@ -161,6 +158,6 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     String primaryKey = timestamp + "-" + hostname;
     nonRetryableCloudDataStore.storeObject(schemaName, primaryKey, startupAuditData);
 
-    return startupAuditId;
+    return primaryKey;
   }
 }
