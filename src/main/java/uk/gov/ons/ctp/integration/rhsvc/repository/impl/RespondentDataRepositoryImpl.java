@@ -139,20 +139,26 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
    */
   @Override
   public UUID writeCloudStartupCheckObject() throws Exception {
+    UUID startupAuditId = UUID.randomUUID();
+    String hostname = System.getenv("HOSTNAME");
+    if (hostname == null) {
+      hostname = "unknown-host";
+    }
+
     // Create an object to write to the datastore.
     // To prevent any problems with multiple RH instances writing to the same record at
     // the same time, each one will contain a UUID to make it unique
     DatastoreStartupCheckData startupAuditData = new DatastoreStartupCheckData();
-    UUID startupAuditId = UUID.randomUUID();
     String timestamp = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss").format(new Date());
-    startupAuditData.setStartupAuditId(startupAuditId.toString());
+    startupAuditData.setHostname(hostname);
     startupAuditData.setTimestamp(timestamp);
+    startupAuditData.setStartupAuditId(startupAuditId.toString());
 
     // Attempt to write to datastore. Note that there are no retries on this.
     // We don't expect any contention on the collection so the write will either succeed or fail
-    // (which would result in GCP restarting the service)
+    // (which will result in GCP restarting the service)
     String schemaName = gcpProject + "-" + "datastore-startup-check";
-    String primaryKey = timestamp + "-" + startupAuditId;
+    String primaryKey = timestamp + "-" + hostname;
     nonRetryableCloudDataStore.storeObject(schemaName, primaryKey, startupAuditData);
 
     return startupAuditId;

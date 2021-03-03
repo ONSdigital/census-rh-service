@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 class DatastoreStartupCheckData {
-  private String startupAuditId;
   private String timestamp;
+  private String hostname;
+  private String startupAuditId;
 }
