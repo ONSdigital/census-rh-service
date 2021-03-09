@@ -144,7 +144,9 @@ public class CaseEndpoint {
       @Valid @RequestBody PostalFulfilmentRequestDTO requestBodyDTO)
       throws CTPException {
     String methodName = "fulfilmentRequestByPost";
-    log.with("pathParam.caseId", caseId).info("Entering POST {}", methodName);
+    log.with("pathParam.caseId", caseId)
+        .with("requestBody", requestBodyDTO)
+        .info("Entering POST {}", methodName);
 
     // Treat an empty clientIP as if it's a null value
     String clientIP = requestBodyDTO.getClientIP();
