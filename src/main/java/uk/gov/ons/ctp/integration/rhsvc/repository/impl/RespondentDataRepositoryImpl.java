@@ -49,34 +49,6 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
     caseSchema = gcpProject + "-" + caseSchemaName.toLowerCase();
     uacSchema = gcpProject + "-" + uacSchemaName.toLowerCase();
 
-    // Abort if we have not reached the go-live time
-    // PMB - TEMPORARY CODE - FOR DEV TESTING ONLY
-    String goLiveTimestampStr = System.getenv("goLiveTimestamp");
-    log.with("goLiveTimestampStr", goLiveTimestampStr)
-        .info("PMB: goLiveTimestamp environment variable");
-    if (goLiveTimestampStr == null) {
-      goLiveTimestampStr = "1614353400000"; // 15:30
-    }
-    long goLiveTimestamp = Long.parseLong(goLiveTimestampStr);
-    long currentTimestamp = System.currentTimeMillis();
-    if (currentTimestamp < goLiveTimestamp) {
-      long timeUntilOpen = goLiveTimestamp - currentTimestamp;
-      log.with("millisUntilLive", timeUntilOpen).info("PMB: Exiting. Not at go live time yet");
-      System.exit(-1);
-    } else {
-      log.info("PMB: Past go live time");
-    }
-
-    // Now wait for a while - to prove that the consuming threads haven't been created yet
-    try {
-      log.info("PMB: Before sleep");
-      Thread.sleep(10 * 1000);
-      log.info("PMB: After sleep");
-    } catch (InterruptedException e1) {
-      e1.printStackTrace();
-    }
-    // PMB - END of TEMPORARY CODE
-
     // Verify that Cloud Storage is working before consuming any events
     try {
       runCloudStartupCheck();
