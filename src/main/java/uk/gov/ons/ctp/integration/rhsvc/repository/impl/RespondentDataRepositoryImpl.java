@@ -1,5 +1,7 @@
 package uk.gov.ons.ctp.integration.rhsvc.repository.impl;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -15,11 +17,14 @@ import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.event.model.CollectionCase;
 import uk.gov.ons.ctp.common.event.model.UAC;
+import uk.gov.ons.ctp.integration.rhsvc.RHSvcApplication;
 import uk.gov.ons.ctp.integration.rhsvc.repository.RespondentDataRepository;
 
 /** A RespondentDataRepository implementation for CRUD operations on Respondent data entities */
 @Service
 public class RespondentDataRepositoryImpl implements RespondentDataRepository {
+  private static final Logger log = LoggerFactory.getLogger(RHSvcApplication.class);
+
   private RetryableCloudDataStore retryableCloudDataStore;
 
   // Cloud data store access for startup checks only
@@ -43,6 +48,18 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
   public void init() {
     caseSchema = gcpProject + "-" + caseSchemaName.toLowerCase();
     uacSchema = gcpProject + "-" + uacSchemaName.toLowerCase();
+
+    // Verify that Cloud Storage is working before consuming any events
+    try {
+      runCloudStartupCheck();
+    } catch (Throwable e) {
+      // There was some sort of failure with the cloud data storage.
+      // Abort the process to prevent a half dead service consuming events that would shortly end
+      // up on the DLQ
+      log.error(
+          "Failed cloud storage startup check. Unable to write to storage. Aborting service", e);
+      System.exit(-1);
+    }
   }
 
   @Autowired
@@ -128,6 +145,26 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
         .filter(c -> !c.getCaseType().equals(CaseType.HI.name()))
         .filter(c -> onlyValid ? !c.isAddressInvalid() : true)
         .max(Comparator.comparing(CollectionCase::getCreatedDateTime));
+  }
+
+  private void runCloudStartupCheck() throws Throwable {
+    // Find out if we are doing a cloud storage check on startup.
+    // Default is to always to do the check unless disabled by an environment variable
+    boolean checkCloudStorageOnStartup = true;
+    String checkCloudStorageOnStartupStr = System.getenv("CHECK_CLOUD_STORAGE_ON_STARTUP");
+    if (checkCloudStorageOnStartupStr != null
+        && checkCloudStorageOnStartupStr.equalsIgnoreCase("false")) {
+      checkCloudStorageOnStartup = false;
+    }
+
+    if (checkCloudStorageOnStartup) {
+      // Test connectivity with cloud storage by writing a test object
+      log.info("About to run cloud storage startup check");
+      String startupCheckKey = writeCloudStartupCheckObject();
+      log.with("startupAuditId", startupCheckKey).info("Passed cloud storage startup check");
+    } else {
+      log.info("Skipping cloud storage startup check");
+    }
   }
 
   /**
