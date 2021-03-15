@@ -76,8 +76,7 @@ public class RespondentDataRepositoryImpl implements RespondentDataRepository {
       e1.printStackTrace();
     }
     // PMB - END of TEMPORARY CODE
-    
-    
+
     // Verify that Cloud Storage is working before consuming any events
     try {
       runCloudStartupCheck();
