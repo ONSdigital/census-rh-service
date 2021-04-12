@@ -27,5 +27,5 @@ public class CaseDTO {
 
   private String addressLevel;
 
-  @NotNull private EstabType estabType = EstabType.OTHER;
+  @NotNull private EstabType estabType;
 }

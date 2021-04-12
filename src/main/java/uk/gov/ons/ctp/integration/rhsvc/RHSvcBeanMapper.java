@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.rhsvc;
 
+import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.converter.BidirectionalConverter;
@@ -7,6 +8,7 @@ import ma.glasnost.orika.converter.ConverterFactory;
 import ma.glasnost.orika.impl.ConfigurableMapper;
 import ma.glasnost.orika.metadata.Type;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.ctp.common.domain.CaseType;
 import uk.gov.ons.ctp.common.domain.EstabType;
 import uk.gov.ons.ctp.common.event.model.Address;
 import uk.gov.ons.ctp.common.event.model.AddressCompact;
@@ -35,13 +37,25 @@ public class RHSvcBeanMapper extends ConfigurableMapper {
 
     factory
         .classMap(CollectionCase.class, CaseDTO.class)
-        .mapNulls(false)
         .field("id", "caseId")
         .field("address.addressType", "addressType")
         .field("address.region", "region")
         .field("address.addressLevel", "addressLevel")
         .field("address.estabType", "estabType")
         .byDefault()
+        .customize(
+            new CustomMapper<CollectionCase, CaseDTO>() {
+              @Override
+              public void mapAtoB(
+                  CollectionCase collectionCase, CaseDTO dto, MappingContext context) {
+                if (dto.getEstabType() == null) {
+                  dto.setEstabType(
+                      CaseType.HH.name().equals(dto.getCaseType())
+                          ? EstabType.HOUSEHOLD
+                          : EstabType.OTHER);
+                }
+              }
+            })
         .register();
 
     factory

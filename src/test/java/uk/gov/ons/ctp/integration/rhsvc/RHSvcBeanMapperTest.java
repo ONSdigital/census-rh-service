@@ -64,4 +64,13 @@ public class RHSvcBeanMapperTest {
     CaseDTO dto = mapper.map(collectionCase, CaseDTO.class);
     assertEquals(EstabType.OTHER, dto.getEstabType());
   }
+
+  // Household caseType should default to Household estabType if incoming estabType is null
+  @Test
+  public void shouldMapHouseholdCollectionCaseWithNullEstabTypeToCaseDTO() {
+    collectionCase.getAddress().setEstabType(null);
+    collectionCase.setCaseType(CaseType.HH.name());
+    CaseDTO dto = mapper.map(collectionCase, CaseDTO.class);
+    assertEquals(EstabType.HOUSEHOLD, dto.getEstabType());
+  }
 }
