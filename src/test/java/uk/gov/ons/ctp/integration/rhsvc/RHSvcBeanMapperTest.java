@@ -57,6 +57,13 @@ public class RHSvcBeanMapperTest {
     assertEquals(EstabType.PRISON, dto.getEstabType());
   }
 
+  @Test
+  public void shouldMapCollectionCaseWithUnrecognisedEstabTypeToCaseDTO() {
+    collectionCase.getAddress().setEstabType("XXX");
+    CaseDTO dto = mapper.map(collectionCase, CaseDTO.class);
+    assertEquals(EstabType.OTHER, dto.getEstabType());
+  }
+
   // some Cases from RH have had null EstabType in production. Make sure we handle them.
   @Test
   public void shouldMapCollectionCaseWithNullEstabTypeToCaseDTO() {
