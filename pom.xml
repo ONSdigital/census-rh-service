@@ -29,21 +29,6 @@
     <tag>rhsvc-0.1.2</tag>
   </scm>
 
-  <profiles>
-    <profile>
-      <id>bintray</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <repositories>
-        <repository>
-          <id>notify-repo</id>
-          <url>https://dl.bintray.com/gov-uk-notify/maven</url>
-        </repository>
-      </repositories>
-    </profile>
-  </profiles>
-
   <dependencies>
     <!-- Spring dependencies -->
 
