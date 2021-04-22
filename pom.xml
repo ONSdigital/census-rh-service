@@ -121,32 +121,32 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>framework</artifactId>
-      <version>0.0.74</version>
+      <version>0.0.79</version>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>event-publisher</artifactId>
-      <version>0.0.51</version>
+      <version>0.0.52</version>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>test-framework</artifactId>
-      <version>0.0.18</version>
+      <version>0.0.20</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>product-reference</artifactId>
-      <version>1.0.12</version>
+      <version>1.0.14</version>
     </dependency>
 
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>census-int-rate-limiter-client</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.12</version>
     </dependency>
 
     <!-- ONS END -->
